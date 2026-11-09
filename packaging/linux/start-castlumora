@@ -39,6 +39,8 @@ if [[ -n ${CASTLUMORA_LEGACY_WEB_DIR:-} ]]; then
   else echo 'Remove the packaged legacy help directory before attaching optional compiled legacy assets (see instructions).' >&2; exit 2
   fi
 fi
+mkdir -p -- "$state_root/cache/tmp"
+export TMPDIR="$state_root/cache/tmp"
 export DOTNET_BUNDLE_EXTRACT_BASE_DIR="$state_root/cache/dotnet"
 printf 'Castlumora 1.0 Development Preview\nOpen http://127.0.0.1:%s/web/\nData: %s\nStop: Ctrl+C\n' "$port" "$state_root"
 exec "$package_root/server/jellyfin" --datadir "$state_root/data" --configdir "$state_root/config" --cachedir "$state_root/cache" --logdir "$state_root/logs" --webdir "$package_root/web" --ffmpeg "$ffmpeg_path" "$@"

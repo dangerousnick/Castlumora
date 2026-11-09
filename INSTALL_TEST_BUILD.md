@@ -44,7 +44,7 @@ A terminal remains open with status. Open **http://127.0.0.1:28096/web/**. Castl
 
 `Castlumora.desktop` offers an optional terminal-launch shortcut when your desktop permits it; mark it executable/trusted through its Properties if required. Running `start-castlumora` directly is the reliable fallback.
 
-Preview state defaults to `~/.local/share/castlumora-preview` (or `$XDG_DATA_HOME/castlumora-preview`). It is separate from system Jellyfin/Castlumora/Coon Media directories. The launcher refuses an existing nonempty directory without its own `.castlumora-preview` marker. **Never point it at production data/configuration.** It does not install a service, modify another server or start at login. Default binding is 127.0.0.1 on port 28096. Choose a different unused port or fresh data root on first launch if necessary:
+Preview state defaults to `~/.local/share/castlumora-preview` (or `$XDG_DATA_HOME/castlumora-preview`). It is separate from system Jellyfin/Castlumora/Coon Media directories. The launcher refuses an existing nonempty directory without its own `.castlumora-preview` marker. **Never point it at production data/configuration.** It keeps temporary files beneath its own cache and disables discovery on fresh installs. It does not install a service, modify another server or start at login. Default binding is 127.0.0.1 on port 28096. Choose a different unused port or fresh data root on first launch if necessary:
 
 ```bash
 CASTLUMORA_PORT=28097 CASTLUMORA_DATA_DIR="$HOME/.local/share/castlumora-preview-other" ./start-castlumora

@@ -31,7 +31,7 @@ test('packaged preview: fresh setup, login, administration and logout', async ({
   await expect(page.getByRole('link', { name: 'Browse', exact: true })).toBeVisible();
   await expect(page.locator('header').getByRole('link', { name: 'Castlumora home' })).toBeVisible();
   await page.getByRole('link', { name: 'Administration', exact: true }).click();
-  await expect(page.getByRole('heading', { name: /Administration/ })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Your castle. Your rules.' })).toBeVisible();
   const legacy = await request.get(new URL('legacy/', preview!).href);
   expect(await legacy.text()).toContain('does not silently install an older incompatible client');
   const session = await page.evaluate(() =>
@@ -45,7 +45,7 @@ test('packaged preview: fresh setup, login, administration and logout', async ({
   });
   expect([401, 403]).toContain(setupAgain.status());
   await page.locator('.profile-menu summary').click();
-  await page.getByRole('button', { name: 'Sign out', exact: true }).click();
+  await page.getByRole('button', { name: 'Sign out / switch profile', exact: true }).click();
   await expect(page.getByRole('heading', { name: 'Welcome home' })).toBeVisible();
   expect(errors).toEqual([]);
 });

@@ -2,8 +2,9 @@
 set -euo pipefail
 repo=$(git rev-parse --show-toplevel)
 cd "$repo"
-if [[ -n $(git status --porcelain) && ${CASTLUMORA_ALLOW_DIRTY_BUILD:-0} != 1 ]]; then echo 'Commit source changes first; preview provenance requires a clean Git tree.' >&2; exit 2; fi
+if [[ -n $(git status --porcelain) ]]; then echo 'Commit source changes first; preview provenance requires a clean Git tree.' >&2; exit 2; fi
 sha=$(git rev-parse HEAD)
+epoch=$(git show -s --format=%ct "$sha")
 output=${CASTLUMORA_BUILD_DIR:-$repo/dist/preview}
 output=$(realpath -m -- "$output")
 if [[ -e $output ]]; then echo "Build output already exists: $output. Choose a fresh CASTLUMORA_BUILD_DIR." >&2; exit 2; fi
@@ -21,6 +22,7 @@ cp packaging/linux/start-castlumora packaging/linux/Castlumora.desktop "$stage/"
 cp INSTALL_TEST_BUILD.md "$stage/"
 cp docs/TEST_BUILD_CHECKLIST.md "$stage/"
 cp LICENSE CONTRIBUTORS.md "$stage/licenses/"
+cp -a packaging/licenses/. "$stage/licenses/"
 python3 packaging/linux/collect-licenses.py Jellyfin.Server/obj/project.assets.json "$stage/licenses/nuget"
 cp FEATURE_PARITY.md PRODUCT_ROADMAP.md DEVELOPMENT_PROGRESS.md "$stage/"
 cp Castlumora.Web/public/THIRD_PARTY_NOTICES.txt "$stage/licenses/WEB_DEPENDENCIES.txt"
@@ -28,5 +30,5 @@ cp -a branding "$stage/branding"
 cp docs/CASTLUMORA_READER_AND_SHELVES.md docs/CASTLUMORA_SKIPPER.md docs/CASTLUMORA_REGISTRATION.md "$stage/"
 printf '{"product":"Castlumora","version":"1.0 development preview","commit":"%s","platform":"linux-x64","selfContainedDotnet":true,"legacyWebIncluded":false,"importerImplemented":false,"metadataProviderImplemented":false}\n' "$sha" > "$stage/BUILD_INFO.json"
 cp "$stage/BUILD_INFO.json" "$stage/web/BUILD_INFO.json"
-(cd "$output"; tar --sort=name --mtime="$(git show -s --format=%cI HEAD)" --owner=0 --group=0 --numeric-owner -czf "$name.tar.gz" "$name"; sha256sum "$name.tar.gz" > "$name.tar.gz.sha256")
+(cd "$output"; tar --sort=name --mtime="@$epoch" --owner=0 --group=0 --numeric-owner -czf "$name.tar.gz" "$name"; sha256sum "$name.tar.gz" > "$name.tar.gz.sha256")
 printf 'Package: %s/%s.tar.gz\nSource: %s\n' "$output" "$name" "$sha"

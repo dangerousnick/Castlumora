@@ -39,3 +39,14 @@ for key, item in sorted(assets['libraries'].items()):
         shutil.copyfile(file, destination / (str(index) + '-' + file.name))
     lines.append('')
 (output / 'NUGET_LICENSES.txt').write_text('\n'.join(lines))
+
+# Framework runtime packs are downloads, not ordinary project.assets library entries.
+for folder in folders:
+    for name in ['microsoft.netcore.app.runtime.linux-x64', 'microsoft.aspnetcore.app.runtime.linux-x64']:
+        for package in (folder / name).glob('*'):
+            if not package.is_dir(): continue
+            destination = output / (name + '-' + package.name)
+            for file in package.iterdir():
+                if file.is_file() and file.name.lower().startswith(('license', 'third-party-notice', 'thirdpartynotice', 'notice')):
+                    destination.mkdir(exist_ok=True)
+                    shutil.copyfile(file, destination / file.name)
