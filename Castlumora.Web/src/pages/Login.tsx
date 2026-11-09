@@ -2,11 +2,14 @@ import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import type { FormEvent } from 'react';
 import { ArrowRight, LockKeyhole, Server, ShieldCheck } from 'lucide-react';
-import { Api } from '../api/client';
+import { Api, integratedServer } from '../api/client';
+import Setup from '../setup/Setup';
 import type { Session, User } from '../api/types';
 import { errorText } from '../state';
 export default function Login({ onLogin }: { onLogin: (s: Session) => void }) {
-  const [server, setServer] = useState(localStorage.getItem('castlumora-server') ?? '');
+  const [server, setServer] = useState(
+    localStorage.getItem('castlumora-server') ?? integratedServer(window.location.href),
+  );
   const [autoConnect, setAutoConnect] = useState(Boolean(server));
   const [name, setName] = useState('');
   const [password, setPassword] = useState('');
@@ -14,6 +17,7 @@ export default function Login({ onLogin }: { onLogin: (s: Session) => void }) {
   const [connected, setConnected] = useState('');
   const [error, setError] = useState('');
   const [busy, setBusy] = useState(false);
+  const [needsSetup, setNeedsSetup] = useState(false);
   useEffect(() => {
     if (!autoConnect) return;
     let active = true;
@@ -21,11 +25,19 @@ export default function Login({ onLogin }: { onLogin: (s: Session) => void }) {
     void Promise.resolve()
       .then(() => {
         const api = new Api(server);
-        return Promise.all([api.publicInfo(), api.profiles()]);
+        return api
+          .publicInfo()
+          .then(
+            async (info) =>
+              [info, info.StartupWizardCompleted ? await api.profiles() : []] as const,
+          );
       })
       .then(([info, profiles]) => {
         if (!active) return;
-        if (!info.StartupWizardCompleted) throw new Error('Finish server setup first.');
+        if (!info.StartupWizardCompleted) {
+          setNeedsSetup(true);
+          return;
+        }
         setConnected(info.ServerName);
         setProfiles(profiles);
       })
@@ -47,8 +59,10 @@ export default function Login({ onLogin }: { onLogin: (s: Session) => void }) {
       const api = new Api(server);
       if (!connected) {
         const info = await api.publicInfo();
-        if (!info.StartupWizardCompleted)
-          throw new Error('Finish server setup in the existing server interface first.');
+        if (!info.StartupWizardCompleted) {
+          setNeedsSetup(true);
+          return;
+        }
         setConnected(info.ServerName);
         localStorage.setItem('castlumora-server', api.server);
         setProfiles(await api.profiles());
@@ -62,6 +76,28 @@ export default function Login({ onLogin }: { onLogin: (s: Session) => void }) {
       setBusy(false);
     }
   }
+  if (needsSetup)
+    return (
+      <Setup
+        server={server}
+        back={() => {
+          setNeedsSetup(false);
+          setAutoConnect(false);
+        }}
+        completed={() => {
+          localStorage.setItem('castlumora-server', server);
+          setNeedsSetup(false);
+          setAutoConnect(false);
+          void new Api(server)
+            .publicInfo()
+            .then(async (info) => {
+              setConnected(info.ServerName);
+              setProfiles(await new Api(server).profiles());
+            })
+            .catch((error) => setError(errorText(error)));
+        }}
+      />
+    );
   return (
     <main className="login-page">
       <div className="login-story">

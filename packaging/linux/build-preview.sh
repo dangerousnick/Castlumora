@@ -1,0 +1,32 @@
+#!/usr/bin/env bash
+set -euo pipefail
+repo=$(git rev-parse --show-toplevel)
+cd "$repo"
+if [[ -n $(git status --porcelain) && ${CASTLUMORA_ALLOW_DIRTY_BUILD:-0} != 1 ]]; then echo 'Commit source changes first; preview provenance requires a clean Git tree.' >&2; exit 2; fi
+sha=$(git rev-parse HEAD)
+output=${CASTLUMORA_BUILD_DIR:-$repo/dist/preview}
+output=$(realpath -m -- "$output")
+if [[ -e $output ]]; then echo "Build output already exists: $output. Choose a fresh CASTLUMORA_BUILD_DIR." >&2; exit 2; fi
+name="Castlumora-1.0-dev-${sha:0:12}-linux-x64"
+stage="$output/$name"
+mkdir -p "$stage/server" "$stage/web" "$stage/licenses"
+export DOTNET_CLI_TELEMETRY_OPTOUT=1
+export DOTNET_NOLOGO=1
+(cd Castlumora.Web; npm ci; npm run typecheck; npm run lint; npm test; VITE_LEGACY_WEB_PATH=web/legacy/ npm run build)
+dotnet publish Jellyfin.Server/Jellyfin.Server.csproj --configuration Release --runtime linux-x64 --self-contained true --nologo -m:1 -p:PublishSingleFile=false -p:ContinuousIntegrationBuild=true -o "$stage/server"
+cp -a Castlumora.Web/dist/. "$stage/web/"
+mkdir "$stage/web/legacy"
+cp packaging/linux/legacy-help.html "$stage/web/legacy/index.html"
+cp packaging/linux/start-castlumora packaging/linux/Castlumora.desktop "$stage/"
+cp INSTALL_TEST_BUILD.md "$stage/"
+cp docs/TEST_BUILD_CHECKLIST.md "$stage/"
+cp LICENSE CONTRIBUTORS.md "$stage/licenses/"
+python3 packaging/linux/collect-licenses.py Jellyfin.Server/obj/project.assets.json "$stage/licenses/nuget"
+cp FEATURE_PARITY.md PRODUCT_ROADMAP.md DEVELOPMENT_PROGRESS.md "$stage/"
+cp Castlumora.Web/public/THIRD_PARTY_NOTICES.txt "$stage/licenses/WEB_DEPENDENCIES.txt"
+cp -a branding "$stage/branding"
+cp docs/CASTLUMORA_READER_AND_SHELVES.md docs/CASTLUMORA_SKIPPER.md docs/CASTLUMORA_REGISTRATION.md "$stage/"
+printf '{"product":"Castlumora","version":"1.0 development preview","commit":"%s","platform":"linux-x64","selfContainedDotnet":true,"legacyWebIncluded":false,"importerImplemented":false,"metadataProviderImplemented":false}\n' "$sha" > "$stage/BUILD_INFO.json"
+cp "$stage/BUILD_INFO.json" "$stage/web/BUILD_INFO.json"
+(cd "$output"; tar --sort=name --mtime="$(git show -s --format=%cI HEAD)" --owner=0 --group=0 --numeric-owner -czf "$name.tar.gz" "$name"; sha256sum "$name.tar.gz" > "$name.tar.gz.sha256")
+printf 'Package: %s/%s.tar.gz\nSource: %s\n' "$output" "$name" "$sha"

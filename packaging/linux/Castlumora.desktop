@@ -1,0 +1,8 @@
+[Desktop Entry]
+Type=Application
+Name=Castlumora Development Preview
+Comment=Start the isolated local Castlumora test server
+Exec=sh -c 'cd "$(dirname "$1")" && exec ./start-castlumora' sh %k
+Icon=applications-multimedia
+Terminal=true
+Categories=AudioVideo;Video;

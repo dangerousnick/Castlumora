@@ -4,7 +4,7 @@ export default defineConfig({
   workers: 1,
   timeout: 45000,
   use: {
-    baseURL: 'http://127.0.0.1:5173',
+    baseURL: process.env.CASTLUMORA_BROWSER_URL ?? 'http://127.0.0.1:5173',
     headless: true,
     launchOptions: {
       executablePath: process.env.CHROMIUM_PATH ?? '/usr/bin/chromium',

@@ -1,6 +1,11 @@
 import type { Category, Layout, RowDefinition } from '../config/schema';
 import { parsePublished } from '../config/schema';
 import type { Item, PlaybackInfo, Preferences, QueryResult, Session, User } from './types';
+export function integratedServer(location: string) {
+  const url = new URL(location);
+  const web = url.pathname.indexOf('/web/');
+  return web < 0 ? '' : url.origin + url.pathname.slice(0, web);
+}
 export class ApiError extends Error {
   constructor(
     public status: number,
@@ -323,6 +328,6 @@ export class Api {
   }
   legacy() {
     // Let the installed Web version choose its own router and login flow.
-    return this.server + '/web/';
+    return this.url(import.meta.env.VITE_LEGACY_WEB_PATH || 'web/').href;
   }
 }

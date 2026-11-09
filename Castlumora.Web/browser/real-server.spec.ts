@@ -4,6 +4,15 @@ import { existsSync } from 'node:fs';
 const server = process.env.CASTLUMORA_TEST_SERVER;
 const username = process.env.CASTLUMORA_TEST_USER;
 const password = process.env.CASTLUMORA_TEST_PASSWORD;
+// Full packaged-output regressions also exercise the manual pairing path. Do not reset saved pairing on reload.
+test.beforeEach(async ({ page }) => {
+  if (process.env.CASTLUMORA_TEST_INTEGRATED === '1')
+    await page.addInitScript(() => {
+      if (localStorage.getItem('castlumora-server') === null)
+        localStorage.setItem('castlumora-server', '');
+    });
+});
+
 test('real disposable server: authenticate, browse, details, stream and report progress', async ({
   page,
 }) => {
