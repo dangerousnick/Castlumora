@@ -288,7 +288,8 @@ export class Api {
       );
     await Promise.allSettled(tasks);
   }
-  legacy(admin = false) {
-    return this.server + '/web/' + (admin ? '#/dashboard' : '#/home');
+  legacy() {
+    // Let the installed Web version choose its own router and login flow.
+    return this.server + '/web/';
   }
 }

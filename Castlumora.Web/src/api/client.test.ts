@@ -86,3 +86,9 @@ describe('API adapter', () => {
     expect(ticks(12.5)).toBe(125000000);
   });
 });
+
+it('opens the installed legacy client without assuming a Web router version', () => {
+  expect(new Api('https://example.test/media', session).legacy()).toBe(
+    'https://example.test/media/web/',
+  );
+});

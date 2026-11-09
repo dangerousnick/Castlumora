@@ -8,9 +8,10 @@ Disposable Linux workspace only. No Coon Media access or deployment. Node 24.22.
 | --- | --- |
 | `npm run typecheck` | Passed |
 | `npm run lint` | Passed |
-| `npm test` | 15 passed (schema, API adapter, component behavior) |
+| `npm test` | 16 passed (schema, API adapter, component behavior) |
 | `npm run build` | Passed; lazy player/HLS chunk is ~602 kB minified / ~189 kB gzip and produces Vite's size advisory |
 | `npx playwright test browser/fixture.spec.ts` | 2 passed: isolated API/MP4 fixture flow and mobile login overflow check |
+| Real HTTP presentation authorization/persistence | 1 passed against in-memory actual server |
 | API tests: `dotnet test tests/Jellyfin.Api.Tests/Jellyfin.Api.Tests.csproj --configuration Debug --runtime linux-x64 --no-restore --nologo -m:1` | 164 passed, 3 skipped (existing Windows-specific tests) |
 
 Browser fixture flow: connect, authenticate, browse, details, watchlist, direct MP4 playback (video time advanced), progress/pause/stop requests, administrator draft save/publish, mobile screenshot. Those responses are **intercepted fixtures**, not evidence of real backend or tuner compatibility. No mock catalog is present in application runtime.
@@ -19,7 +20,7 @@ Initial checks caught repository analyzer/style issues; corrected before the pas
 
 ## Pending
 
-Server executable build, HTTP authorization integration run and actual disposable-server browser playback verification are still in progress. Results will be updated before final delivery. Real tuner/EPG/recording/hardware/browser codec matrices and production proxy deployment are not verified. Do not interpret implementation or fixture tests as those claims.
+Server executable build against prebuilt references passed with 0 warnings/errors; final full server/reference build and actual disposable-server browser playback verification are still in progress. HTTP authorization/persistence integration passed. Results will be updated before final delivery. Real tuner/EPG/recording/hardware/browser codec matrices and production proxy deployment are not verified. Do not interpret implementation or fixture tests as those claims.
 
 ## Reproduce browser fixtures
 

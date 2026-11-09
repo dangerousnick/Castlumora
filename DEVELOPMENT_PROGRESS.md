@@ -16,7 +16,11 @@ Milestone 1 published on GitHub as `b30674348ab61176bc1193a819522e11177b5e3f`: i
 
 ## Milestone 2 checkpoint
 
-Presentation API/store and 7 new server unit cases are implemented; API regression suite passes 164 tests with 3 existing skips. Final isolated API compilation and executable compilation against existing built references each pass with 0 warnings/errors. A full server/reference build and the new HTTP integration test are the next verification gates. Browser fixtures pass 2 tests. Backend, tests, formatting, screenshots, requirements, roadmap and parity docs are being committed/published together so work is recoverable. No claim of real-server playback yet.
+Presentation API/store and 7 new server unit cases are implemented; API regression suite passes 164 tests with 3 existing skips. Final isolated API compilation and executable compilation against existing built references each pass with 0 warnings/errors. A full server/reference build and the new HTTP integration test are the next verification gates. Browser fixtures pass 2 tests. Milestone 2 is published as `73b7960fdae6bb48af4f34722249cc3da743e480`. Backend, tests, formatting, screenshots, requirements, roadmap and parity docs are recoverable from GitHub. No claim of real-server playback yet.
+
+## Milestone 3 checkpoint
+
+HTTP integration verification passed: anonymous access rejected, administrator save/publish succeeds, stale revisions rejected, ordinary-user save/publish forbidden, user preferences isolated. Test cancellation-token analyzer requirements fixed. Frontend has 16 passing unit/component/API tests, typecheck and lint pass. Legacy links now use the installed client root rather than assuming a router version. Full server-reference build and real-server/browser playback are still running/pending.
 
 ## Exact next steps
 

@@ -21,7 +21,7 @@ export default function Live() {
         </div>
         <a
           className="button secondary"
-          href={api.server + '/web/#/livetv.html'}
+          href={api.legacy()}
           target="_blank"
           rel="noopener noreferrer"
         >

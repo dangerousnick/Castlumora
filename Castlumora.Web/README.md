@@ -25,6 +25,6 @@ Native video elements require token-bearing stream/subtitle URLs; API fetches us
 
 Login/logout, existing user profiles, movie/series browsing/search, details/seasons/episodes, resumable browser playback, server-negotiated HLS, audio/subtitle selection, progress reporting, Live TV channels/three-hour guide, separate server-backed watchlist and resume hiding, administrator overview and draft/publish presentation editor. Actual stream/browser coverage must be read in the verification report; source implementation does not imply every codec or tuner was verified.
 
-Music/photos/books, library setup, tuners/XMLTV, DVR scheduling, hardware encoding, plugins, networking, backups and advanced user administration remain accessible through **Existing client** / **Full server administration** links. The legacy dashboard may require a separate login. Its configured Web distribution must remain installed.
+Music/photos/books, library setup, tuners/XMLTV, DVR scheduling, hardware encoding, plugins, networking, backups and advanced user administration remain accessible through **Existing client** / **Full server administration** links. Legacy links open the installed client root to avoid assuming its router version. Sign in there and choose Dashboard or Live TV as needed. Its configured Web distribution must remain installed.
 
 See root `DEVELOPMENT_PROGRESS.md` for current validation, known limitations and continuation instructions. Root `docs/CASTLUMORA_PRODUCT_REQUIREMENTS.md` is the permanent product specification.

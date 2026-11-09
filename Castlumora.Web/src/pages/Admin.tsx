@@ -524,7 +524,7 @@ export default function Admin() {
         </div>
         <a
           className="button secondary"
-          href={api.legacy(true)}
+          href={api.legacy()}
           target="_blank"
           rel="noopener noreferrer"
         >
@@ -553,14 +553,14 @@ export default function Admin() {
           </section>
           <nav className="admin-sections">
             {sections.map(([name]) => (
-              <a key={name} href={api.legacy(true)} target="_blank" rel="noopener noreferrer">
+              <a key={name} href={api.legacy()} target="_blank" rel="noopener noreferrer">
                 {name} ↗
               </a>
             ))}
           </nav>
           <p className="muted">
-            Advanced settings open the existing dashboard, where all inherited server features
-            remain available. It may require a separate sign-in.
+            Advanced settings open the existing client. Choose Dashboard after signing in; inherited
+            server features remain available. It may require a separate sign-in.
           </p>
           <LayoutEditor initial={result.value.draft} users={result.value.users} />
         </>
