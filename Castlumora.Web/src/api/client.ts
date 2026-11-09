@@ -59,7 +59,11 @@ export class Api {
             ? 'Your profile cannot access this feature.'
             : `Server returned ${response.status}. Please try again.`,
       );
-    return response.status === 204 ? (undefined as T) : ((await response.json()) as T);
+    return response.status === 204
+      ? (undefined as T)
+      : response.headers.get('content-type')?.includes('json')
+        ? ((await response.json()) as T)
+        : ((await response.text()) as T);
   }
   publicInfo() {
     return this.request<{ ServerName: string; StartupWizardCompleted: boolean }>(
@@ -165,26 +169,27 @@ export class Api {
       body: JSON.stringify(config),
     });
   }
+  history() {
+    return this.request<{ revision: number; publishedAt: string }[]>(
+      'Castlumora/Presentation/History',
+    );
+  }
+  restore(revision: number, expectedRevision: number) {
+    return this.request<Layout>(
+      `Castlumora/Presentation/History/${revision}/Restore`,
+      { method: 'POST' },
+      { expectedRevision },
+    );
+  }
+  categoryPage(id: string, startIndex = 0, limit = 48, searchTerm?: string) {
+    return this.request<QueryResult>(
+      `Castlumora/Categories/${encodeURIComponent(id)}/Items`,
+      {},
+      { startIndex, limit, searchTerm },
+    );
+  }
   async category(category: Category) {
-    const r = category.rules;
-    const types = r.contentTypes?.join(',') || 'Movie,Series';
-    const requests: Promise<QueryResult>[] = [];
-    if (r.itemIds.length)
-      requests.push(this.items({ Ids: r.itemIds.join(','), IncludeItemTypes: types, Limit: 200 }));
-    for (const folderId of r.folderIds)
-      requests.push(this.items({ ParentId: folderId, IncludeItemTypes: types }));
-    if (r.genres.length)
-      requests.push(this.items({ Genres: r.genres.join('|'), IncludeItemTypes: types }));
-    if (r.studios.length)
-      requests.push(this.items({ Studios: r.studios.join('|'), IncludeItemTypes: types }));
-    return [
-      ...new Map(
-        (await Promise.all(requests))
-          .flatMap((r) => r.Items)
-          .filter((i) => !r.excludeIds?.some((id) => sameId(id, i.Id)))
-          .map((i) => [i.Id, i]),
-      ).values(),
-    ].slice(0, 48);
+    return (await this.categoryPage(category.id, 0, 20)).Items;
   }
   async row(row: RowDefinition, categories: Category[], preferences: Preferences) {
     if (row.kind === 'resume')

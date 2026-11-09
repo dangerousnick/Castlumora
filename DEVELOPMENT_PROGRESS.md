@@ -63,3 +63,15 @@ Current milestone: real HLS/remux/seek/resume and track/quality controls, then s
 ### Continuation checkpoint: playback controls
 
 Real HLS, seeking, bitrate negotiation, English/French audio switching and external subtitle loading now pass against the disposable server using a 90-second synthetic multi-track/chapter fixture. Added quality/source/chapter/absolute-timeline/next-episode controls and corrected exact-zero resume handling. See docs/verification-web-continuation.md. Layout history/rollback and server-side paginated folder-name category rules are being implemented next; those backend changes are not yet marked verified.
+
+### Continuation checkpoint: categories, history and native administration
+
+Implemented permission-filtered server-side category pages (metadata, physical/configured folder names, manual OR selection, exclusions and totals). Explicit selections retain allowed-library roots. Added administrator-only published revision history and draft restoration with optimistic concurrency, plus featured/artwork title pickers and category controls.
+
+Added native administration sections for library creation/options/scans, users/policies/passwords/devices, encoding, general/network settings, tasks/triggers/logs, backup actions, plugins/repositories/catalog and tuner/XMLTV/channel mapping. Forms preserve unknown inherited configuration fields and expose advanced JSON; existing dashboard remains available. These screens are implemented, but not every mutating operation is verified: real tuner/DVR, hardware settings, plugin installation, backup restoration and restart/shutdown need their own isolated fixtures.
+
+Verification: frontend typecheck/lint/build and 22 tests pass; 2 fixture browser tests include publish/restore isolation. Three real-server browser cases cover direct playback, HLS/tracks and persisted encoding settings plus administration navigation. API tests: 168 pass, 3 Windows-specific skips. Extended presentation HTTP authorization test passes. Actual disposable-server category checks pass for genre/folder/manual matching, exclusions, pagination and restricted-library permissions. No production data or server involved.
+
+This checkpoint supersedes earlier limits for category pagination/folder names, revision history and administration links. Remaining work includes complete DVR/Live TV workflows, other media types, native skipper, registration/invites, personalization/notifications, presets/resource plans, creator/cloud/offline/native-client/plugin UI requirements and corresponding verification. The complete specification is **not finished**.
+
+Next: publish this tested checkpoint on the existing branch, then implement and test native Live TV/DVR workflows with synthetic M3U/XMLTV; proceed through remaining requirements without replacing existing work. Keep publishing tested milestones; no automatic merge/deployment.

@@ -1,10 +1,13 @@
 import { useState } from 'react';
+import { Link } from 'react-router-dom';
 import { ArrowDown, ArrowUp, Plus, Save, Upload, Trash2 } from 'lucide-react';
 import type { Layout } from '../config/schema';
 import { layoutSchema, orderedRows } from '../config/schema';
 import type { User } from '../api/types';
 import { errorText, useApp, useLoad } from '../state';
 import { Feedback } from '../components/Media';
+import { PresentationHistory } from '../components/PresentationHistory';
+import { MediaPicker } from '../components/MediaPicker';
 function move<T>(items: T[], index: number, delta: number) {
   const updated = [...items];
   const target = index + delta;
@@ -91,6 +94,46 @@ function LayoutEditor({ initial, users }: { initial: Layout; users: User[] }) {
         </p>
       )}
       {dirty && <p className="muted">Save the draft before publishing.</p>}
+      <PresentationHistory
+        draft={draft}
+        dirty={dirty}
+        onRestore={(config) => {
+          setDraft(config);
+          setAdvanced(JSON.stringify(config, null, 2));
+          setDirty(false);
+          setMessage('Revision restored to draft. Review and publish when ready.');
+        }}
+      />
+      <section className="panel">
+        <h3>Featured banners</h3>
+        <p>
+          Choose real titles and their server artwork. Published order controls the featured
+          content.
+        </p>
+        {draft.featured.map((f, index) => (
+          <div className="editor-row" key={index}>
+            <span>{f.itemId}</span>
+            <Reorder
+              index={index}
+              length={draft.featured.length}
+              onMove={(delta) => change({ ...draft, featured: move(draft.featured, index, delta) })}
+            />
+            <button
+              onClick={() =>
+                change({ ...draft, featured: draft.featured.filter((_, i) => i !== index) })
+              }
+            >
+              Remove
+            </button>
+          </div>
+        ))}
+        <MediaPicker
+          label="Add featured title"
+          onChoose={(item) =>
+            change({ ...draft, featured: [...draft.featured, { itemId: item.Id }] })
+          }
+        />
+      </section>
       <div className="editor-columns">
         <div>
           <section className="panel">
@@ -395,13 +438,88 @@ function LayoutEditor({ initial, users }: { initial: Layout; users: User[] }) {
                 onMove={(d) => change({ ...draft, categories: move(draft.categories, index, d) })}
               />
             </div>
+            <div className="filters">
+              <label>
+                Enabled
+                <input
+                  type="checkbox"
+                  checked={c.enabled !== false}
+                  onChange={(e) =>
+                    change({
+                      ...draft,
+                      categories: draft.categories.map((v, i) =>
+                        i === index ? { ...v, enabled: e.target.checked } : v,
+                      ),
+                    })
+                  }
+                />
+              </label>
+              <label>
+                Color
+                <input
+                  type="color"
+                  value={c.color ?? '#7020d6'}
+                  onChange={(e) =>
+                    change({
+                      ...draft,
+                      categories: draft.categories.map((v, i) =>
+                        i === index ? { ...v, color: e.target.value } : v,
+                      ),
+                    })
+                  }
+                />
+              </label>
+              <label>
+                Content types
+                <select
+                  multiple
+                  value={c.rules.contentTypes ?? ['Movie', 'Series']}
+                  onChange={(e) =>
+                    change({
+                      ...draft,
+                      categories: draft.categories.map((v, i) =>
+                        i === index
+                          ? {
+                              ...v,
+                              rules: {
+                                ...v.rules,
+                                contentTypes: [...e.target.selectedOptions].map(
+                                  (o) => o.value as 'Movie' | 'Series' | 'Episode',
+                                ),
+                              },
+                            }
+                          : v,
+                      ),
+                    })
+                  }
+                >
+                  {['Movie', 'Series', 'Episode'].map((t) => (
+                    <option key={t}>{t}</option>
+                  ))}
+                </select>
+              </label>
+            </div>
+            <MediaPicker
+              label="Category artwork"
+              onChoose={(item) =>
+                change({
+                  ...draft,
+                  categories: draft.categories.map((v, i) =>
+                    i === index ? { ...v, artworkItemId: item.Id } : v,
+                  ),
+                })
+              }
+            />
             <div className="rule-fields">
-              {(['genres', 'studios', 'folderIds', 'itemIds', 'excludeIds'] as const).map((key) => (
+              {(
+                ['genres', 'studios', 'folderNames', 'folderIds', 'itemIds', 'excludeIds'] as const
+              ).map((key) => (
                 <label key={key}>
                   {
                     {
                       genres: 'Genres',
                       studios: 'Studios',
+                      folderNames: 'Folder names',
                       folderIds: 'Folder IDs',
                       itemIds: 'Include item IDs',
                       excludeIds: 'Exclude item IDs',
@@ -489,12 +607,12 @@ function LayoutEditor({ initial, users }: { initial: Layout; users: User[] }) {
   );
 }
 const sections = [
-  ['Libraries', 'dashboard/libraries'],
-  ['Live TV & DVR', 'dashboard/livetv'],
-  ['Playback & Encoding', 'dashboard/playback'],
-  ['Users & Access', 'dashboard/users'],
-  ['Plugins', 'dashboard/plugins'],
-  ['System & backups', 'dashboard/general'],
+  ['Libraries', 'libraries'],
+  ['Live TV & DVR', 'live'],
+  ['Playback & Encoding', 'encoding'],
+  ['Users & Access', 'users'],
+  ['Plugins', 'plugins'],
+  ['System & backups', 'system'],
 ];
 export default function Admin() {
   const { api, session } = useApp();
@@ -515,7 +633,7 @@ export default function Admin() {
       </main>
     );
   return (
-    <main className="page admin">
+    <div className="page admin">
       <div className="page-heading">
         <div>
           <span className="eyebrow">THE CONTROL ROOM</span>
@@ -552,19 +670,19 @@ export default function Admin() {
             </article>
           </section>
           <nav className="admin-sections">
-            {sections.map(([name]) => (
-              <a key={name} href={api.legacy()} target="_blank" rel="noopener noreferrer">
-                {name} ↗
-              </a>
+            {sections.map(([name, path]) => (
+              <Link key={name} to={'/admin/' + path}>
+                {name}
+              </Link>
             ))}
           </nav>
           <p className="muted">
-            Advanced settings open the existing client. Choose Dashboard after signing in; inherited
-            server features remain available. It may require a separate sign-in.
+            The sections above use the existing server APIs. The existing dashboard remains
+            available for any unsupported setting or plugin-specific screen.
           </p>
           <LayoutEditor initial={result.value.draft} users={result.value.users} />
         </>
       )}
-    </main>
+    </div>
   );
 }

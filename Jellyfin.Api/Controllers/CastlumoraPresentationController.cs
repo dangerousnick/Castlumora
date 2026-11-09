@@ -74,6 +74,34 @@ public class CastlumoraPresentationController : BaseJellyfinApiController
     [RequestSizeLimit(262144)]
     public Task<ActionResult<JsonObject>> Publish([FromBody] JsonObject config) => SaveAsync(config, true);
 
+    /// <summary>Lists published presentation snapshots.</summary>
+    /// <returns>Revision metadata.</returns>
+    [HttpGet("History")]
+    [Authorize(Policy = Policies.RequiresElevation)]
+    public async Task<ActionResult<JsonArray>> GetHistory() => await _store.HistoryAsync().ConfigureAwait(false);
+
+    /// <summary>Restores a historical publication to the draft for review.</summary>
+    /// <param name="revision">Historical revision.</param>
+    /// <param name="expectedRevision">Current draft revision.</param>
+    /// <returns>The restored draft.</returns>
+    [HttpPost("History/{revision:int}/Restore")]
+    [Authorize(Policy = Policies.RequiresElevation)]
+    public async Task<ActionResult<JsonObject>> Restore(int revision, [FromQuery] int expectedRevision)
+    {
+        try
+        {
+            return await _store.RestoreAsync(revision, expectedRevision).ConfigureAwait(false);
+        }
+        catch (InvalidOperationException exception)
+        {
+            return Conflict(exception.Message);
+        }
+        catch (System.Collections.Generic.KeyNotFoundException)
+        {
+            return NotFound();
+        }
+    }
+
     /// <summary>Gets this user's independent watchlist and resume exclusions.</summary>
     /// <returns>User preferences.</returns>
     [HttpGet("Preferences")]

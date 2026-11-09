@@ -34,22 +34,23 @@ describe('API adapter', () => {
     expect(fetcher.mock.calls[0][1].method).toBe('PUT');
     expect(fetcher.mock.calls).toHaveLength(1);
   });
-  it('combines category rule groups, deduplicates and applies exclusions', async () => {
-    const api = new Api(session.server, session);
-    vi.spyOn(api, 'items').mockResolvedValue({
-      Items: [
-        { Id: id, Name: 'Excluded', Type: 'Movie' },
-        { Id: '22222222222222222222222222222222', Name: 'Kept', Type: 'Movie' },
-      ],
-      TotalRecordCount: 2,
-    });
-    const items = await api.category({
-      id: 'winter',
-      title: 'Winter',
-      rules: { itemIds: [id], folderIds: [], genres: ['Adventure'], studios: [], excludeIds: [id] },
-    });
-    expect(items.map((i) => i.Name)).toEqual(['Kept']);
-    expect(api.items).toHaveBeenCalledTimes(2);
+  it('requests paginated published category data without sending client-defined rules', async () => {
+    const fetcher = vi
+      .fn()
+      .mockResolvedValue(
+        Response.json({
+          Items: [{ Id: id, Name: 'Permitted', Type: 'Movie' }],
+          TotalRecordCount: 101,
+        }),
+      );
+    vi.stubGlobal('fetch', fetcher);
+    const result = await new Api(session.server, session).categoryPage('winter', 48, 48, 'snow');
+    const [url, options] = fetcher.mock.calls[0];
+    expect(url.pathname).toBe('/media/Castlumora/Categories/winter/Items');
+    expect(url.searchParams.get('startIndex')).toBe('48');
+    expect(url.searchParams.get('searchTerm')).toBe('snow');
+    expect(options.body).toBeUndefined();
+    expect(result.TotalRecordCount).toBe(101);
   });
   it('surfaces authorization errors and never returns response secrets', async () => {
     vi.stubGlobal('fetch', vi.fn().mockResolvedValue(new Response('secret', { status: 403 })));

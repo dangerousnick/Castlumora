@@ -26,6 +26,8 @@ public sealed class CastlumoraPresentationControllerTests : IClassFixture<Jellyf
         admin.DefaultRequestHeaders.AddAuthHeader(await AuthHelper.CompleteStartupAsync(admin));
         var config = PresentationStore.Defaults();
         config["theme"]!["accent"] = "#abcdef";
+        config["categories"]!.AsArray().Add(JsonNode.Parse("""{"id":"empty","title":"Empty","rules":{"itemIds":[],"folderIds":[],"genres":[],"studios":[]}}"""));
+        config["categories"]!.AsArray().Add(JsonNode.Parse("""{"id":"restricted","title":"Restricted","userIds":["11111111111111111111111111111111"],"rules":{"itemIds":[],"folderIds":[],"genres":[],"studios":[]}}"""));
         using var saved = await admin.PutAsJsonAsync("Castlumora/Presentation/Draft", config, TestContext.Current.CancellationToken);
         saved.EnsureSuccessStatusCode();
         var draft = await saved.Content.ReadFromJsonAsync<JsonObject>(TestContext.Current.CancellationToken);
@@ -44,6 +46,16 @@ public sealed class CastlumoraPresentationControllerTests : IClassFixture<Jellyf
         var authentication = await login.Content.ReadFromJsonAsync<JsonObject>(TestContext.Current.CancellationToken);
         viewer.DefaultRequestHeaders.Remove("Authorization");
         viewer.DefaultRequestHeaders.AddAuthHeader(authentication!["AccessToken"]!.GetValue<string>());
+        using var historyDenied = await viewer.GetAsync("Castlumora/Presentation/History", TestContext.Current.CancellationToken);
+        Assert.Equal(HttpStatusCode.Forbidden, historyDenied.StatusCode);
+        var history = await admin.GetFromJsonAsync<JsonArray>("Castlumora/Presentation/History", TestContext.Current.CancellationToken);
+        Assert.Single(history!);
+        var emptyCategory = await viewer.GetFromJsonAsync<JsonObject>("Castlumora/Categories/empty/Items", TestContext.Current.CancellationToken);
+        Assert.Equal(0, emptyCategory!["TotalRecordCount"]!.GetValue<int>());
+        using var hiddenCategory = await viewer.GetAsync("Castlumora/Categories/restricted/Items", TestContext.Current.CancellationToken);
+        Assert.Equal(HttpStatusCode.NotFound, hiddenCategory.StatusCode);
+        using var badPage = await viewer.GetAsync("Castlumora/Categories/empty/Items?limit=1000", TestContext.Current.CancellationToken);
+        Assert.Equal(HttpStatusCode.BadRequest, badPage.StatusCode);
         using var forbidden = await viewer.PutAsJsonAsync("Castlumora/Presentation/Draft", config, TestContext.Current.CancellationToken);
         Assert.Equal(HttpStatusCode.Forbidden, forbidden.StatusCode);
         using var forbiddenPublish = await viewer.PostAsJsonAsync("Castlumora/Presentation/Publish", config, TestContext.Current.CancellationToken);

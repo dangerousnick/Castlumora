@@ -34,3 +34,14 @@
 | Setup presets/native clients | Existing server startup preserved | Startup directs to existing setup | Full inherited setup | No feature locks introduced | Family/creator/business presets and TV/mobile renderers roadmap |
 | Tiers/payments/creator/cloud/offline/notifications | Existing server permissions/downloads preserved | Not implemented | Existing applicable server tools | None for proposed platform features | Optional/$0 tiers and full roadmap in PRODUCT_ROADMAP.md |
 | Built-in intro/outro skipper | Inherited media-segment API retained; native repeated-segment analysis not added | Skip controls/auto-skip not implemented | Existing configured plugin/client behavior is unchanged; no mandatory plugin chosen | No new detection/skip tests | Planned: built-in scheduled detection, central intervals, correction, profile modes, post-credit safeguards and cross-client verification |
+
+## Continuation checkpoint overrides
+
+The initial table records the foundation baseline. The following changes supersede its corresponding pending entries:
+
+- Playback: quality/source/chapter/seek/next-episode controls; actual synthetic HLS, multi-audio and external subtitles verified.
+- Categories: server-side pagination/totals, folder names, permission-preserving manual selections and artwork/title pickers implemented; actual restricted-library and synthetic catalog checks pass.
+- Presentation: published history (100 snapshots), restore-to-draft and explicit publish implemented and tested. Navigation icon rendering and complete preview fidelity remain pending.
+- Administration: native library/options/scan, users/policies/passwords/devices, encoding, network/general settings, tasks/triggers/logs, plugin/repository/catalog, backup and tuner/listing/channel-mapping screens implemented. Real encoding persistence and library/user/log loading verified. Plugin installation, backup restoration, tuner hardware and destructive system actions remain unverified.
+
+All other unfinished product groups remain unfinished; this checkpoint does not establish full master-spec parity.

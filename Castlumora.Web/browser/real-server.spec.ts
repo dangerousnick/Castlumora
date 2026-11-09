@@ -153,3 +153,50 @@ test('real disposable server: compatible HLS playback and cleanup', async ({ pag
     .poll(() => responses.some((r) => r.path.includes('ActiveEncodings') && r.status === 204))
     .toBe(true);
 });
+
+test('real disposable server: administrator settings persist and advanced sections load', async ({
+  page,
+}) => {
+  test.skip(
+    !server || !username || password === undefined,
+    'Requires disposable-server environment.',
+  );
+  if (!['127.0.0.1', 'localhost', '[::1]'].includes(new URL(server!).hostname))
+    throw new Error('Disposable loopback server required.');
+  await page.goto('/');
+  await page.getByLabel('Server address').fill(server!);
+  await page.getByRole('button', { name: 'Connect', exact: true }).click();
+  await page.getByLabel('Username').fill(username!);
+  await page.getByLabel('Password', { exact: true }).fill(password!);
+  await page.getByRole('button', { name: 'Sign in', exact: true }).click();
+  await page.getByRole('link', { name: 'Administration', exact: true }).click();
+  const nav = page.getByRole('navigation', { name: 'Administration sections' });
+  await nav.getByRole('link', { name: 'Playback & encoding', exact: true }).click();
+  const crf = page.getByLabel('H264 quality (CRF)', { exact: true });
+  await expect(crf).toBeVisible();
+  const original = await crf.inputValue();
+  const changed = original === '23' ? '24' : '23';
+  await crf.fill(changed);
+  await page.getByRole('button', { name: 'Save encoding', exact: true }).click();
+  await expect(page.getByRole('status')).toContainText('Saved on the server.');
+  await page.reload();
+  await expect(crf).toHaveValue(changed);
+  await crf.fill(original);
+  await page.getByRole('button', { name: 'Save encoding', exact: true }).click();
+  await expect(page.getByRole('status')).toContainText('Saved on the server.');
+  await nav.getByRole('link', { name: 'Libraries & metadata', exact: true }).click();
+  await expect(
+    page.getByRole('heading', { name: 'Libraries & metadata', exact: true }),
+  ).toBeVisible();
+  await expect(page.getByRole('button', { name: /Fixture Movies/ })).toBeVisible();
+  await nav.getByRole('link', { name: 'Users & devices', exact: true }).click();
+  await expect(
+    page.getByRole('heading', { name: 'Users, access & devices', exact: true }),
+  ).toBeVisible();
+  await nav.getByRole('link', { name: 'System & backups', exact: true }).click();
+  await page.getByRole('button', { name: 'logs', exact: true }).click();
+  const logs = page.getByRole('combobox', { name: 'Server log', exact: true });
+  await expect.poll(() => logs.locator('option').count()).toBeGreaterThan(1);
+  await logs.selectOption({ index: 1 });
+  await expect.poll(() => page.locator('.server-log').textContent()).not.toBe('');
+});

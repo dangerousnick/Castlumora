@@ -3,7 +3,10 @@ const id = z.string().regex(/^[a-zA-Z0-9_-]{1,64}$/);
 const mediaId = z
   .string()
   .regex(/^(?:[0-9a-fA-F]{32}|[0-9a-fA-F]{8}(?:-[0-9a-fA-F]{4}){3}-[0-9a-fA-F]{12})$/);
-const visibility = { userIds: z.array(mediaId).max(200).optional() };
+const visibility = {
+  userIds: z.array(mediaId).max(200).optional(),
+  enabled: z.boolean().optional(),
+};
 const color = z.string().regex(/^#[0-9a-fA-F]{6}$/);
 export const categorySchema = z.object({
   id,
@@ -15,6 +18,7 @@ export const categorySchema = z.object({
   rules: z.object({
     itemIds: z.array(mediaId).max(200),
     folderIds: z.array(mediaId).max(200),
+    folderNames: z.array(z.string().min(1).max(128)).max(100).optional(),
     genres: z.array(z.string().min(1).max(128)).max(200),
     studios: z.array(z.string().min(1).max(128)).max(200),
     excludeIds: z.array(mediaId).max(200).optional(),
@@ -38,6 +42,7 @@ export const layoutSchema = z
         z.object({
           id: z.enum(['home', 'browse', 'list', 'search']),
           label: z.string().min(1).max(120),
+          icon: z.string().max(120).optional(),
           ...visibility,
         }),
       )

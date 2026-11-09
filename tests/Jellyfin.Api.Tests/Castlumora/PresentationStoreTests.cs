@@ -34,6 +34,24 @@ public sealed class PresentationStoreTests : IDisposable
     }
 
     [Fact]
+    public async Task PublishedHistory_RestoresDraftWithoutChangingPublication()
+    {
+        using var store = CreateStore();
+        var first = await store.SaveLayoutAsync(PresentationStore.Defaults(), false);
+        first = await store.SaveLayoutAsync(first, true);
+        var second = first.DeepClone().AsObject();
+        second["theme"]!["accent"] = "#abcdef";
+        second = await store.SaveLayoutAsync(second, false);
+        second = await store.SaveLayoutAsync(second, true);
+        Assert.Equal(2, (await CreateStore().HistoryAsync()).Count);
+        var restored = await store.RestoreAsync(first["revision"]!.GetValue<int>(), second["revision"]!.GetValue<int>());
+        Assert.Equal("#ad70ff", restored["theme"]!["accent"]!.GetValue<string>());
+        Assert.Equal("#abcdef", (await store.ReadLayoutAsync(false))["theme"]!["accent"]!.GetValue<string>());
+        await Assert.ThrowsAsync<InvalidOperationException>(() => store.RestoreAsync(2, 0));
+        await Assert.ThrowsAsync<System.Collections.Generic.KeyNotFoundException>(() => store.RestoreAsync(999, restored["revision"]!.GetValue<int>()));
+    }
+
+    [Fact]
     public async Task Preferences_AreIsolatedAndIndependent()
     {
         var store = CreateStore();
@@ -75,6 +93,8 @@ public sealed class PresentationStoreTests : IDisposable
     [InlineData(nameof(CastlumoraPresentationController.GetDraft))]
     [InlineData(nameof(CastlumoraPresentationController.SaveDraft))]
     [InlineData(nameof(CastlumoraPresentationController.Publish))]
+    [InlineData(nameof(CastlumoraPresentationController.GetHistory))]
+    [InlineData(nameof(CastlumoraPresentationController.Restore))]
     public void GlobalWrites_RequireExistingAdministratorPolicy(string method)
     {
         var attributes = typeof(CastlumoraPresentationController).GetMethod(method)!.GetCustomAttributes(typeof(AuthorizeAttribute), true).Cast<AuthorizeAttribute>();

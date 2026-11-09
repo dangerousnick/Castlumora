@@ -26,6 +26,7 @@ test(
   async ({ page }) => {
     let draft = structuredClone(defaultLayout);
     let published = structuredClone(defaultLayout);
+    const history: (typeof defaultLayout)[] = [];
     let prefs = { watchlist: [] as string[], hiddenResume: [] as string[] };
     const reports: string[] = [];
     const fixture = '/tmp/castlumora-web-fixtures/test.mp4';
@@ -69,9 +70,24 @@ test(
           draft = { ...route.request().postDataJSON(), revision: draft.revision + 1 };
         return json(draft);
       }
+      if (path === '/Castlumora/Presentation/History')
+        return json(
+          history.map((config) => ({
+            revision: config.revision,
+            publishedAt: '2026-11-09T00:00:00Z',
+          })),
+        );
+      if (path.includes('/Castlumora/Presentation/History/') && path.endsWith('/Restore')) {
+        const revision = Number(path.split('/')[4]);
+        const config = history.find((h) => h.revision === revision);
+        if (!config) return route.fulfill({ status: 404 });
+        draft = { ...structuredClone(config), revision: draft.revision + 1 };
+        return json(draft);
+      }
       if (path === '/Castlumora/Presentation/Publish') {
         published = { ...draft, revision: draft.revision + 1 };
         draft = structuredClone(published);
+        history.push(structuredClone(published));
         return json(draft);
       }
       if (path === '/Castlumora/Presentation/Preferences') return json(prefs);
@@ -139,6 +155,20 @@ test(
     await expect(page.getByText('Draft saved on the server.', { exact: true })).toBeVisible();
     await page.getByRole('button', { name: 'Publish', exact: true }).click();
     await expect(page.getByRole('link', { name: 'My home', exact: true })).toBeVisible();
+    await page.getByLabel('home navigation label').fill('New home');
+    await page.getByRole('button', { name: 'Save draft', exact: true }).click();
+    await expect(page.getByText('Draft saved on the server.', { exact: true })).toBeVisible();
+    await page.getByRole('button', { name: 'Publish', exact: true }).click();
+    await expect(page.getByRole('link', { name: 'New home', exact: true })).toBeVisible();
+    await page.getByRole('combobox', { name: 'Published revision', exact: true }).selectOption('2');
+    await page.getByRole('button', { name: 'Restore to draft', exact: true }).click();
+    await expect(
+      page.getByText('Revision restored to draft. Review and publish when ready.', { exact: true }),
+    ).toBeVisible();
+    await expect(page.getByRole('link', { name: 'New home', exact: true })).toBeVisible();
+    await page.getByRole('button', { name: 'Publish', exact: true }).click();
+    await expect(page.getByRole('link', { name: 'My home', exact: true })).toBeVisible();
+
     await page.setViewportSize({ width: 390, height: 844 });
     await page.screenshot({
       path: '../docs/screenshots/web-editor-mobile-fixture.png',

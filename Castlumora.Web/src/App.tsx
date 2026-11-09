@@ -12,7 +12,7 @@ import Home from './pages/Home';
 import Browse from './pages/Browse';
 import Detail from './pages/Detail';
 import Live from './pages/Live';
-import Admin from './pages/Admin';
+import Administration from './admin/Administration';
 import { Feedback } from './components/Media';
 const Player = lazy(() => import('./player/Player'));
 function PlayerRoute() {
@@ -170,7 +170,7 @@ function Shell({
                 <Route path="/item/:id" element={<Detail />} />
                 <Route path="/play/:id" element={<PlayerRoute />} />
                 <Route path="/live" element={<Live />} />
-                <Route path="/admin" element={<Admin />} />
+                <Route path="/admin/*" element={<Administration />} />
                 <Route
                   path="*"
                   element={

@@ -17,7 +17,7 @@ export default function Browse() {
   const searching = path === '/search';
   const views = useLoad(() => api.views(), [api]);
   const result = useLoad(async () => {
-    if (category) return { Items: await api.category(category), TotalRecordCount: 0 };
+    if (category) return api.categoryPage(category.id, page * 48, 48, search || undefined);
     if (list && !preferences.watchlist.length) return { Items: [], TotalRecordCount: 0 };
     return api.items({
       IncludeItemTypes: type,
@@ -127,7 +127,7 @@ export default function Browse() {
               </p>
             </div>
           )}
-          {!category && (
+          {
             <div className="pagination">
               <button disabled={page === 0} onClick={() => setPage(page - 1)}>
                 Previous
@@ -140,7 +140,7 @@ export default function Browse() {
                 Next
               </button>
             </div>
-          )}
+          }
         </>
       )}
     </main>

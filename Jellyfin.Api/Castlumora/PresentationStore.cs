@@ -57,6 +57,10 @@ public sealed class PresentationStore : IDisposable
             {
                 Require(Regex.IsMatch(entry!["id"]!.GetValue<string>(), "^[a-zA-Z0-9_-]{1,64}$"), "Invalid ID.");
                 ValidateUsers(entry.AsObject());
+                if (entry["enabled"] is not null)
+                {
+                    _ = entry["enabled"]!.GetValue<bool>();
+                }
             }
         }
 
@@ -64,6 +68,10 @@ public sealed class PresentationStore : IDisposable
         {
             Require(new[] { "home", "browse", "list", "search" }.Contains(nav!["id"]!.GetValue<string>(), StringComparer.Ordinal), "Unknown navigation item.");
             Text(nav, "label");
+            if (nav["icon"] is not null)
+            {
+                Text(nav, "icon");
+            }
         }
 
         foreach (var row in rows)
@@ -95,6 +103,14 @@ public sealed class PresentationStore : IDisposable
             }
 
             var rules = category["rules"]!.AsObject();
+            if (rules["folderNames"] is not null)
+            {
+                foreach (var name in Array(rules, "folderNames", 100))
+                {
+                    Require(name!.GetValue<string>().Length is > 0 and <= 128, "Invalid folder name.");
+                }
+            }
+
             if (rules["excludeIds"] is not null)
             {
                 foreach (var value in Array(rules, "excludeIds", 200))
@@ -170,7 +186,7 @@ public sealed class PresentationStore : IDisposable
             for (var i = entries.Count - 1; i >= 0; i--)
             {
                 var users = entries[i]!["userIds"]?.AsArray();
-                if (users is { Count: > 0 } && !users.Any(u => Guid.Parse(u!.GetValue<string>()).Equals(userId)))
+                if (entries[i]!["enabled"]?.GetValue<bool>() == false || (users is { Count: > 0 } && !users.Any(u => Guid.Parse(u!.GetValue<string>()).Equals(userId))))
                 {
                     entries.RemoveAt(i);
                 }
@@ -250,10 +266,82 @@ public sealed class PresentationStore : IDisposable
             if (publish)
             {
                 document["published"] = updated.DeepClone();
+                document["history"] ??= new JsonArray();
+                var history = document["history"]!.AsArray();
+                history.Add(new JsonObject
+                {
+                    ["publishedAt"] = DateTimeOffset.UtcNow.ToString("O", System.Globalization.CultureInfo.InvariantCulture),
+                    ["configuration"] = updated.DeepClone()
+                });
+                while (history.Count > 100)
+                {
+                    history.RemoveAt(0);
+                }
             }
 
             await WriteAsync("layout.json", document).ConfigureAwait(false);
             return updated;
+        }
+        finally
+        {
+            _gate.Release();
+        }
+    }
+
+    /// <summary>Lists persisted published revisions without disclosing full payloads.</summary>
+    /// <returns>Revision identifiers and publication timestamps.</returns>
+    public async Task<JsonArray> HistoryAsync()
+    {
+        await _gate.WaitAsync().ConfigureAwait(false);
+        try
+        {
+            var document = await ReadAsync("layout.json").ConfigureAwait(false);
+            var result = new JsonArray();
+            foreach (var entry in document["history"]?.AsArray() ?? new JsonArray())
+            {
+                result.Add(new JsonObject
+                {
+                    ["revision"] = entry!["configuration"]!["revision"]!.GetValue<int>(),
+                    ["publishedAt"] = entry["publishedAt"]!.GetValue<string>()
+                });
+            }
+
+            return result;
+        }
+        finally
+        {
+            _gate.Release();
+        }
+    }
+
+    /// <summary>Restores a published snapshot into a new draft, retaining the current publication.</summary>
+    /// <param name="revision">Published snapshot to restore.</param>
+    /// <param name="expectedRevision">Expected current draft revision.</param>
+    /// <returns>The restored draft.</returns>
+    public async Task<JsonObject> RestoreAsync(int revision, int expectedRevision)
+    {
+        await _gate.WaitAsync().ConfigureAwait(false);
+        try
+        {
+            var document = await ReadAsync("layout.json").ConfigureAwait(false);
+            var current = document["draft"]?.AsObject() ?? Defaults();
+            if (current["revision"]!.GetValue<int>() != expectedRevision)
+            {
+                throw new InvalidOperationException("The draft changed. Reload it before restoring.");
+            }
+
+            var snapshot = document["history"]?.AsArray().FirstOrDefault(e => e!["configuration"]!["revision"]!.GetValue<int>() == revision);
+            if (snapshot is null)
+            {
+                throw new System.Collections.Generic.KeyNotFoundException("Published revision not found.");
+            }
+
+            var restored = snapshot["configuration"]!.DeepClone().AsObject();
+            Validate(restored);
+            restored["revision"] = checked(expectedRevision + 1);
+            document["draft"] = restored.DeepClone();
+            await WriteAsync("layout.json", document).ConfigureAwait(false);
+            return restored;
         }
         finally
         {
