@@ -56,3 +56,16 @@ The original [GNU GPL license](LICENSE), [contributors](CONTRIBUTORS.md), copyri
 ---
 
 <div align="center"><strong>Castlumora · Version 1.0</strong></div>
+
+## Castlumora Web — Phase 1.3 development
+
+An independent React/TypeScript streaming frontend lives in [Castlumora.Web](Castlumora.Web/README.md). It uses the existing server APIs and adds server-owned presentation drafts/publishing, categories and separate watchlist/resume preferences. The inherited Web client remains available for advanced administration and media features not yet covered. This work does not deploy or modify a running server.
+
+- [Development progress and exact next steps](DEVELOPMENT_PROGRESS.md)
+- [Permanent product requirements](docs/CASTLUMORA_PRODUCT_REQUIREMENTS.md)
+- [Feature parity and limitations](FEATURE_PARITY.md)
+- [Product roadmap](PRODUCT_ROADMAP.md)
+- [Presentation schema and persistence](docs/castlumora-presentation-v1.md)
+- [API adapter](docs/castlumora-api-adapter.md)
+
+Castlumora remains free and GPL licensed; upstream Jellyfin source history, copyright, contributors and existing compatibility contracts are preserved.

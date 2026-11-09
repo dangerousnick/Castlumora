@@ -53,6 +53,7 @@ namespace Jellyfin.Server.Extensions
         public static IServiceCollection AddJellyfinApiAuthorization(this IServiceCollection serviceCollection)
         {
             // The default handler must be first so that it is evaluated first
+            serviceCollection.AddSingleton<Jellyfin.Api.Castlumora.PresentationStore>();
             serviceCollection.AddSingleton<IAuthorizationHandler, DefaultAuthorizationHandler>();
             serviceCollection.AddSingleton<IAuthorizationHandler, UserPermissionHandler>();
             serviceCollection.AddSingleton<IAuthorizationHandler, FirstTimeSetupHandler>();
