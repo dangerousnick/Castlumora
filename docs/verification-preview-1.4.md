@@ -1,3 +1,23 @@
+# Delivered GitHub Actions preview
+
+**Download:** https://github.com/dangerousnick/Castlumora/actions/runs/42702481467/artifacts/13712785582 (GitHub sign-in, 30-day retention).
+
+**Exact delivered source commit:** `cc59df91a8c06364d6ca1e6944ba938031754bd7`.
+
+**Archive:** `Castlumora-1.0-dev-cc59df91a8c0-linux-x64.tar.gz`.
+
+**SHA-256:** `57dd13e5ad925d3f9c9baa0bfb0779f505f50e3c17e4a63dca984f5e709ff89a`.
+
+GitHub-hosted **Ubuntu 24.04 x86-64** run 42702481467 succeeded in source checkout, pinned toolchain setup, native dependencies, clean frontend/tests/self-contained server/archive build, browser installation, checksum/extraction, actual packaged fresh setup/auth/admin/logout/security, normal restart/account persistence/native library creation/scanning/movie playback, CI report creation and artifact upload. Contents permission is read-only; it does not publish releases or merge/deploy. Exact source is checked out from PR head, not an untested merge commit.
+
+Artifact metadata confirmed ID 13712785582, 79,471,478 bytes, not expired, expiry 2026-12-09T21:30:11Z. The workspace CLI download followed GitHub to Azure and returned 403; the connected GitHub app successfully downloaded the artifact. Retrieved ZIP bytes were inspected for unsafe paths, extracted and checked: **archive checksum OK**, manifest exact source commit match. This verifies an actual uploaded/downloaded build, not merely a source archive or CI log. The ZIP contains archive/checksum/BUILD_INFO/INSTALL_TEST_BUILD/TEST_BUILD_CHECKLIST/CI_SMOKE_REPORT.
+
+Workspace release uploads had returned 401 from uploads.github.com; the empty failed unpublished draft was removed. Automatic approval review rejected persistent PR-triggered release-write permissions. The narrower read-only artifact delivery completed the authorized alternative. No source/features were discarded, no official Jellyfin repository was modified, and no Coon Media or production server was accessed or deployed.
+
+The full local packaged media evidence below uses earlier application commit `8d591a4d58cc705de1668fb7dc63a0b013cc35e4`. Production frontend/backend sources are unchanged between that commit and the delivered CI commit; only delivery/docs/browser harness follow it. Broader 13-workflow checks below are local packaged tests, not falsely claimed as executed on GitHub. The delivered CI independently ran its two actual-package smoke cases. Current install/checklist and retained product requirements define remaining limitations.
+
+---
+
 # Castlumora 1.0 Development Preview — packaged-output verification
 
 Application source commit: **8d591a4d58cc705de1668fb7dc63a0b013cc35e4**.
