@@ -10,6 +10,7 @@ import urllib.request
 
 parser = argparse.ArgumentParser(description=__doc__)
 parser.add_argument('--fixture-root', type=Path, required=True)
+parser.add_argument('--active-stop', action='store_true', help='Prepare only a short active-stop programme.')
 args = parser.parse_args()
 root = args.fixture_root.resolve()
 server = os.environ['CASTLUMORA_TEST_SERVER'].rstrip('/')
@@ -54,7 +55,7 @@ channel = guide.find('channel').attrib['id']
 now = datetime.now(timezone.utc)
 stamp = now.strftime('%Y%m%d%H%M%S')
 programs = []
-for kind, delay, length in [('Complete', 90, 25), ('Cancel', 150, 45)]:
+for kind, delay, length in ([('Stop', 60, 90)] if args.active_stop else [('Complete', 90, 25), ('Cancel', 150, 45)]):
     name = 'Synthetic DVR ' + kind + ' ' + stamp
     start = now + timedelta(seconds=delay)
     end = start + timedelta(seconds=length)
@@ -82,7 +83,7 @@ if task['State'] == 'Idle': request('/ScheduledTasks/Running/' + task['Id'], {},
 for attempt in range(60):
     found = request('/LiveTv/Programs?' + urllib.parse.urlencode({'UserId': auth['User']['Id'], 'MinEndDate': now.isoformat(), 'MaxStartDate': (now + timedelta(minutes=10)).isoformat()}))['Items']
     selected = [item for item in found if any(item['Name'] == program['name'] for program in programs)]
-    if len(selected) == 2:
+    if len(selected) == len(programs):
         state['programIds'] = {item['Name']: item['Id'] for item in selected}
         state_file.write_text(json.dumps(state))
         print('Short synthetic DVR programmes are indexed. Run dvr-server.spec.ts immediately.')

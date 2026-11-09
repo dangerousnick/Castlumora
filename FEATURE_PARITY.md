@@ -65,3 +65,5 @@ Owner install guide: INSTALL_TEST_BUILD.md; systematic feature/limitations check
 ### Phase 1.4 DVR recorded-media lifecycle
 
 Native Recordings now refreshes automatically while visible and separates retained-file library removal from confirmed physical file deletion using server CanDelete. The recordings API preserves that explicitly requested field; no deletion authorization is broadened. Real synthetic M3U/XMLTV schedule/cancel/complete/file/play/remove/rescan/delete and denied-viewer checks pass; 81 LiveTV regression tests pass. Active-stop browser coverage, physical tuners, long duration, groups and per-user quotas remain pending. See docs/CASTLUMORA_DVR.md.
+
+- Active DVR stop continuation: explicit Stop recording for InProgress single timers, permission-denied viewer stop, retained nonempty partial file and actual partial playback verified in a separate Chromium/real-backend synthetic case. Frontend 48 tests/typecheck/lint/build pass. This does not certify quotas, real tuners or long-running DVR.

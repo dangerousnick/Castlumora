@@ -204,16 +204,25 @@ export default function Live() {
                         window.confirm(
                           tab === 'Series'
                             ? 'Cancel this series and its scheduled recordings?'
-                            : 'Cancel this scheduled recording?',
+                            : timer.Status === 'InProgress'
+                              ? 'Stop this recording now? Any recorded media is retained; an empty recording is removed.'
+                              : 'Cancel this scheduled recording?',
                         )
                       )
-                        void action.run(async () => {
-                          await live.cancel(timer.Id!, tab === 'Series');
-                          reload();
-                        }, 'Recording schedule cancelled.');
+                        void action.run(
+                          async () => {
+                            await live.cancel(timer.Id!, tab === 'Series');
+                            reload();
+                          },
+                          timer.Status === 'InProgress' && tab !== 'Series'
+                            ? 'Stop requested. Any recorded media is retained.'
+                            : 'Recording schedule cancelled.',
+                        );
                     }}
                   >
-                    Cancel recording
+                    {timer.Status === 'InProgress' && tab !== 'Series'
+                      ? 'Stop recording'
+                      : 'Cancel recording'}
                   </button>
                 </>
               )}

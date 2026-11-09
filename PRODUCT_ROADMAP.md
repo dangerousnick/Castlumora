@@ -55,3 +55,5 @@ Read docs/CASTLUMORA_PHASE_1_4.md and docs/CASTLUMORA_IMPORT_AND_CREATOR_METADAT
 ### Latest verified increment: recorded-media lifecycle
 
 Completed actual synthetic recording completion/playback, future schedule cancellation, retained-file library removal/rescan and permission-checked physical deletion. Preserve the intermediate preview; the next DVR increment verifies active stop/partial files. Then continue source-aware local creator metadata/provider integration and safe importer, alongside remaining profile/admin gaps. Quotas, real devices and the full Phase 1.4 specification remain unfinished; refresh the downloadable preview after verified source milestones.
+
+Active DVR stop/retained partial playback is now verified. Next: separate source-aware local creator metadata provider, then secure importer queue and native administrator workflow, with remaining profile/admin gaps retained. Continue development beyond intermediate previews.
