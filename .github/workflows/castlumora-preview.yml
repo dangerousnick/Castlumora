@@ -1,0 +1,130 @@
+name: Castlumora Linux Development Preview
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+    paths-ignore: ['**.md', 'docs/**']
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: castlumora-preview-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: false
+jobs:
+  build-verify-deliver:
+    if: github.event_name == 'workflow_dispatch' || (github.event.pull_request.number == 3 && github.event.pull_request.head.repo.full_name == github.repository && github.event.pull_request.head.ref == 'development/castlumora-web-1.3')
+    runs-on: ubuntu-24.04
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          persist-credentials: false
+      - uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
+        with:
+          dotnet-version: 10.0.403
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        with:
+          node-version: '24'
+      - name: Native dependencies and source identity
+        id: identity
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y ffmpeg libfontconfig1 libfreetype6
+          echo "sha=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
+          df -h .
+      - name: Build complete clean-source Linux archive
+        run: packaging/linux/build-preview.sh
+      - name: Install isolated browser test runtime
+        working-directory: Castlumora.Web
+        run: |
+          npx playwright install --with-deps chromium
+          echo "CHROMIUM_PATH=$(node -p "require('@playwright/test').chromium.executablePath()")" >> "$GITHUB_ENV"
+      - name: Extract actual archive and launch fresh preview
+        run: |
+          cd dist/preview
+          sha256sum --check *.sha256
+          mkdir "$RUNNER_TEMP/castlumora-extracted"
+          tar -xzf *.tar.gz -C "$RUNNER_TEMP/castlumora-extracted"
+          package=$(find "$RUNNER_TEMP/castlumora-extracted" -mindepth 1 -maxdepth 1 -type d -name 'Castlumora-*')
+          echo "PREVIEW_PACKAGE=$package" >> "$GITHUB_ENV"
+          password=$(openssl rand -hex 24)
+          echo "::add-mask::$password"
+          echo "CASTLUMORA_PREVIEW_PASSWORD=$password" >> "$GITHUB_ENV"
+          echo "CASTLUMORA_PREVIEW_URL=http://127.0.0.1:28096/web/" >> "$GITHUB_ENV"
+          env -u DOTNET_ROOT -u DOTNET_ROOT_X64 CASTLUMORA_DATA_DIR=/tmp/castlumora-preview-fresh "$package/start-castlumora" > "$RUNNER_TEMP/castlumora-server.log" 2>&1 &
+          echo "PREVIEW_PID=$!" >> "$GITHUB_ENV"
+      - name: Verify packaged fresh setup and authentication
+        working-directory: Castlumora.Web
+        run: |
+          python3 ../packaging/linux/wait-preview.py
+          npm run test:browser -- browser/preview.spec.ts --grep 'fresh setup'
+      - name: Restart the same package and prepare synthetic media
+        run: |
+          kill -TERM "$PREVIEW_PID"
+          python3 - <<'PY'
+          import time, urllib.request
+          for _ in range(30):
+              try:
+                  urllib.request.urlopen('http://127.0.0.1:28096/health', timeout=1).close()
+              except Exception:
+                  break
+              time.sleep(1)
+          else:
+              raise SystemExit('Previous preview did not stop')
+          PY
+          mkdir /tmp/castlumora-preview-fresh-media
+          ffmpeg -nostdin -hide_banner -v error -f lavfi -i color=c=purple:s=640x360:r=24 -f lavfi -i sine=frequency=440:sample_rate=44100 -t 90 -c:v libx264 -pix_fmt yuv420p -c:a aac -movflags +faststart '/tmp/castlumora-preview-fresh-media/Castlumora Test (2026).mp4'
+          echo '<movie><title>Castlumora Test</title><plot>Synthetic packaged fixture.</plot><lockdata>true</lockdata></movie>' > '/tmp/castlumora-preview-fresh-media/Castlumora Test (2026).nfo'
+          env -u DOTNET_ROOT -u DOTNET_ROOT_X64 CASTLUMORA_DATA_DIR=/tmp/castlumora-preview-fresh "$PREVIEW_PACKAGE/start-castlumora" > "$RUNNER_TEMP/castlumora-restart.log" 2>&1 &
+          echo "PREVIEW_PID=$!" >> "$GITHUB_ENV"
+      - name: Verify restart, native library creation, scanning and playback
+        working-directory: Castlumora.Web
+        env:
+          CASTLUMORA_PREVIEW_RESTART: '1'
+        run: |
+          python3 ../packaging/linux/wait-preview.py
+          npm run test:browser -- browser/preview.spec.ts --grep restart
+      - name: Record actual CI verification
+        env:
+          SOURCE_SHA: ${{ steps.identity.outputs.sha }}
+        run: |
+          cp INSTALL_TEST_BUILD.md docs/TEST_BUILD_CHECKLIST.md dist/preview/
+          cp "$PREVIEW_PACKAGE/BUILD_INFO.json" dist/preview/
+          python3 - <<'PY'
+          import os, pathlib
+          sha=os.environ['SOURCE_SHA']
+          text=f'''# Castlumora 1.0 Development Preview — Linux x64
+
+          Exact source commit: {sha}. Development preview, not production-stable or complete Phase 1.4 parity.
+
+          This GitHub-hosted Ubuntu 24.04 build passed frontend typecheck/lint/build and tests, self-contained linux-x64 Release publish, archive checksum verification and two browser workflows on the extracted package: fresh setup/login/admin/logout/security; restart/account persistence/native library creation/scanning/actual movie playback. The server served the compiled web itself. .NET runtime is bundled; no Node/SDK/build is needed to run the preview. Native libraries and compatible FFmpeg remain external; see INSTALL_TEST_BUILD.md. No GPU or real tuner/Mint hardware certification is claimed.
+
+          Extract the archive, run ./start-castlumora, and open http://127.0.0.1:28096/web/. Preview state and temporary files are isolated. Check the accompanying SHA-256 file and BUILD_INFO.json. Source is the exact tested commit. No main merge or production/Coon Media deployment.
+
+          Prior local packaged-output tests at application commit 8d591a4d58cc705de1668fb7dc63a0b013cc35e4 verified all thirteen media/admin/skipper/invitation/music/photo/book/collection workflows across full and targeted runs; those broader workflows were not rerun in this CI job. See the repository verification report for exact evidence.
+
+          Missing: mandatory yt-dlp/YouTube creator metadata, full DVR lifecycle/quotas, linked profiles, recommendations/notifications, creator/business/cloud/offline/native clients and complete advanced admin parity. Compiled legacy Web is not bundled; compatible-assets attachment is documented. Native administration and inherited backend functionality are preserved. The source checkpoint's progress notes precede this post-build report.
+
+          GitHub Actions artifact is retained for 30 days and requires GitHub sign-in. Report issues with exact commit/environment and redacted logs, never credentials.
+          '''
+          pathlib.Path('dist/preview/CI_SMOKE_REPORT.md').write_text(text)
+          PY
+      - name: Upload verified downloadable archive artifact
+        id: artifact
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: Castlumora-linux-x64-${{ steps.identity.outputs.sha }}
+          path: |
+            dist/preview/*.tar.gz
+            dist/preview/*.sha256
+            dist/preview/INSTALL_TEST_BUILD.md
+            dist/preview/TEST_BUILD_CHECKLIST.md
+            dist/preview/BUILD_INFO.json
+            dist/preview/CI_SMOKE_REPORT.md
+          retention-days: 30
+          compression-level: 0
+          if-no-files-found: error
+      - name: Stop only this job's preview
+        if: always()
+        run: |
+          if [[ -n ${PREVIEW_PID:-} ]]; then kill -TERM "$PREVIEW_PID" 2>/dev/null || true; fi

@@ -49,3 +49,66 @@ test('packaged preview: fresh setup, login, administration and logout', async ({
   await expect(page.getByRole('heading', { name: 'Welcome home' })).toBeVisible();
   expect(errors).toEqual([]);
 });
+
+test('packaged preview: restart retains owner and creates/scans a library through native administration', async ({
+  page,
+  request,
+}) => {
+  test.skip(!preview || !password || process.env.CASTLUMORA_PREVIEW_RESTART !== '1');
+  const target = new URL(preview!);
+  if (target.hostname !== '127.0.0.1' || target.port !== '28096')
+    throw new Error('Dedicated loopback preview required.');
+  test.setTimeout(90000);
+  page.setDefaultTimeout(20000);
+  await page.goto(preview!);
+  await expect(page.getByRole('heading', { name: 'Welcome home' })).toBeVisible();
+  await page.getByLabel('Username', { exact: true }).fill('PreviewOwner');
+  await page.getByLabel('Password', { exact: true }).fill(password!);
+  await page.getByRole('button', { name: 'Sign in', exact: true }).click();
+  await expect(page.getByRole('link', { name: 'Browse', exact: true })).toBeVisible();
+  const session = await page.evaluate(() =>
+    JSON.parse(sessionStorage.getItem('castlumora-session')!),
+  );
+  const auth = { Authorization: `MediaBrowser Token="${session.token}"` };
+  const info = await request.get(new URL('../System/Info', preview!).href, { headers: auth });
+  expect((await info.json()).ProgramDataPath).toBe('/tmp/castlumora-preview-fresh/data');
+  await page.getByRole('link', { name: 'Administration', exact: true }).click();
+  await page
+    .getByRole('navigation', { name: 'Administration sections' })
+    .getByRole('link', { name: 'Libraries & metadata', exact: true })
+    .click();
+  await page.getByLabel('Name', { exact: true }).fill('Packaged Fixture Movies');
+  await page.getByRole('combobox', { name: /^Media type/ }).selectOption('movies');
+  await page
+    .getByLabel('Server folder path', { exact: true })
+    .fill('/tmp/castlumora-preview-fresh-media');
+  await page.getByRole('button', { name: 'Create library', exact: true }).click();
+  await expect(page.getByRole('button', { name: /Packaged Fixture Movies/ })).toBeVisible();
+  await page.getByRole('link', { name: 'Browse', exact: true }).click();
+  await expect
+    .poll(
+      async () => {
+        const response = await request.get(new URL('../Items', preview!).href, {
+          headers: auth,
+          params: {
+            UserId: session.user.Id,
+            Recursive: true,
+            IncludeItemTypes: 'Movie',
+            SearchTerm: 'Castlumora Test',
+          },
+        });
+        return (await response.json()).Items.length;
+      },
+      { timeout: 60000 },
+    )
+    .toBeGreaterThan(0);
+  await page.reload();
+  await page.getByRole('link', { name: 'Details for Castlumora Test', exact: true }).click();
+  await page.getByRole('link', { name: 'Watch now', exact: true }).click();
+  await expect
+    .poll(() => page.locator('video').evaluate((video: HTMLVideoElement) => video.currentTime), {
+      timeout: 20000,
+    })
+    .toBeGreaterThan(0);
+  await page.getByRole('link', { name: 'Back', exact: true }).click();
+});
