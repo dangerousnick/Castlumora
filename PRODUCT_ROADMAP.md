@@ -16,7 +16,7 @@ Extend implemented revision history/rollback with schema migrations, approved pe
 
 ## Users, pairing and access
 
-Maintain clear boundaries between accounts, viewing profiles, permissions and optional service tiers. Add secure paired-device refresh/revocation, kids/adult presets, admin-enabled registration and invitation lifecycle (creation/revocation, expiration, successful-signup caps, atomic counters, abuse protection). Never grant access merely because a public profile is selected. Device/session management and parental controls must remain enforced in the backend.
+Maintain clear boundaries between accounts, viewing profiles, permissions and optional service tiers. Add secure paired-device refresh/revocation, kids/adult presets, further registration ergonomics beyond the implemented administrator-enabled invitation lifecycle (expiry/revocation, durable successful-use reservations/caps, audit/recovery and abuse protection). See docs/CASTLUMORA_REGISTRATION.md. Never grant access merely because a public profile is selected. Device/session management and parental controls must remain enforced in the backend.
 
 ## Personalization and notifications
 

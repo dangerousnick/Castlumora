@@ -7,6 +7,7 @@ import type { Preferences, Session } from './api/types';
 import { defaultLayout, deviceClass } from './config/schema';
 import type { Layout } from './config/schema';
 import { AppContext, errorText } from './state';
+import Register from './registration/Register';
 import Login, { LinkBrand } from './pages/Login';
 import Home from './pages/Home';
 import Browse from './pages/Browse';
@@ -215,16 +216,24 @@ export default function App() {
   );
   return (
     <HashRouter>
-      {session && api ? (
-        <Shell api={api} session={session} logout={logout} />
-      ) : (
-        <Login
-          onLogin={(s) => {
-            sessionStorage.setItem('castlumora-session', JSON.stringify(s));
-            setSession(s);
-          }}
+      <Routes>
+        <Route path="/register" element={<Register />} />
+        <Route
+          path="*"
+          element={
+            session && api ? (
+              <Shell api={api} session={session} logout={logout} />
+            ) : (
+              <Login
+                onLogin={(s) => {
+                  sessionStorage.setItem('castlumora-session', JSON.stringify(s));
+                  setSession(s);
+                }}
+              />
+            )
+          }
         />
-      )}
+      </Routes>
     </HashRouter>
   );
 }

@@ -43,7 +43,8 @@ export function SettingsEditor({
   value: ObjectData;
   fields?: Field[];
   save: (value: ObjectData) => Promise<unknown>;
-  children?: ReactNode;
+  children?:
+    ReactNode | ((form: ObjectData, update: (key: string, value: unknown) => void) => ReactNode);
 }) {
   const [form, setForm] = useState(() => structuredClone(value));
   const [json, setJson] = useState(JSON.stringify(value, null, 2));
@@ -100,7 +101,7 @@ export function SettingsEditor({
           </label>
         ))}
       </div>
-      {children}
+      {typeof children === 'function' ? children(form, update) : children}
       <div className="actions">
         <button
           className="primary"

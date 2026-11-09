@@ -6,7 +6,7 @@ Permanent source of truth: [docs/CASTLUMORA_PRODUCT_REQUIREMENTS.md](docs/CASTLU
 
 ## Current continuation status
 
-The master specification is **not complete**. Tested continuation work now includes real HLS/track/quality controls, permission-filtered category pagination/folder names, layout revision rollback, native administration, Live TV/DVR schedules/channel switching and the native reviewed intro/outro skipper. Historical foundation limits below are superseded by the continuation checkpoints at the end of this file. See those checkpoints for the current exact next steps and unverified features.
+The master specification is **not complete**. Tested continuation work now includes real HLS/track/quality controls, permission-filtered category pagination/folder names, layout revision rollback, native administration, Live TV/DVR schedules/channel switching the native reviewed intro/outro skipper, and registration/invitation workflows. Historical foundation limits below are superseded by the continuation checkpoints at the end of this file. See those checkpoints for the current exact next steps and unverified features.
 
 ## Published milestones
 
@@ -17,6 +17,9 @@ The master specification is **not complete**. Tested continuation work now inclu
 5. Documentation merge incorporates concurrent main commit `7fae5086785978ac081113d364c5655e3f0b3a17`, preserving both complete requirement documents and explicitly tracking the built-in intro/outro skipper as planned. No runtime source changed in this merge. PR: https://github.com/dangerousnick/Castlumora/pull/3.
 
 Continuation publications:
+
+- `5ac61c1159eec98292a43d40f078f2f52ba09858`: built-in reviewed intro/outro detection and profile skip modes.
+- `45b81ca2dcc38fe9801f71a6e847a259b0359f7d`: tested initially-disabled account provisioning.
 
 - `e1786a8f7bedd074e493e43d5e2e2fdc2961e2ac`: real HLS and track/quality/source/chapter/seek controls.
 - `8541ce71c7568c1b1de7d2538fd26c4740405745`: permission-scoped category pages, layout rollback and native administration.
@@ -109,3 +112,13 @@ Next after publishing this milestone: complete remaining music/photos/books/coll
 Added an additive IUserManager overload for creating an initially disabled account. The existing method retains its behavior; custom managers without the new capability fail closed for disabled provisioning. The disabled permission is persisted before account creation is published. This supports safe public registration without a blank-password/initial-policy exposure window.
 
 Verification: all 64 user-manager tests pass, including persisted disabled state and unchanged legacy creation. Full Linux server/reference build with normal analyzers passes: 0 errors, the same 215 inherited warnings. Registration/invitation services, protected/public endpoints and frontend forms are being developed next; their working-tree code is not yet marked published or verified end to end. Continue that work rather than recreating the existing application.
+
+### Continuation checkpoint: registration and invitations
+
+Implemented admin-enabled closed/open/invite-only registration, expiring/revocable invitation links with successful-use caps, server-owned non-administrator policy snapshots, explicit library permission pickers, private audit/recovery and bounded signup attempts. Raw tokens are returned once and stored as digests; passwords stay in the existing account manager. Durable reservations and disabled provisioning prevent quota races and blank-password/policy exposure. Schedule templates are rebound to the new account. The public endpoint ignores supplied policy/administrator fields. Added native Users deletion (with confirmation/self guard) for normal account management/recovery.
+
+The signup frontend confirms the target server, strips the invitation from the URL, submits secrets only in the body and requires ordinary sign-in after creation. Paired addresses reconnect automatically without persisting passwords or bypassing authentication.
+
+Verified: 32 frontend tests plus typecheck/lint/build; 192 API tests pass with 3 Windows-only skips; all 64 user-manager tests pass. Full normal Linux server/reference build: 0 errors, the same 215 inherited warnings. Latest isolated normal API build: 0 warnings/errors. The real HTTP signup test passes, including blank-password denial, policy isolation, role boundaries, caps and throttling. Actual Chromium invitation → restricted signup → normal sign-in → remembered pairing passes and restores its disposable configuration. Full integration suite: 131 pass, 3 existing skips. All 8 actual-server browser cases and both editor/mobile fixture cases pass. Details and exact commands: docs/CASTLUMORA_REGISTRATION.md.
+
+This does not complete the master specification. Next: finish native music/photos/books/collections/playlists and recording lifecycle coverage, then linked account/viewing-profile presets, personalization/notifications and optional quotas/creator/cloud/offline/plugin/native-platform requirements. Continue from these commits; keep the full requirements, legacy functionality, GPL attribution and castle assets. Do not merge/deploy automatically or contact Coon Media.

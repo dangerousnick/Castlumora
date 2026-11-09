@@ -1,4 +1,5 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
+import { Link } from 'react-router-dom';
 import type { FormEvent } from 'react';
 import { ArrowRight, LockKeyhole, Server, ShieldCheck } from 'lucide-react';
 import { Api } from '../api/client';
@@ -6,12 +7,38 @@ import type { Session, User } from '../api/types';
 import { errorText } from '../state';
 export default function Login({ onLogin }: { onLogin: (s: Session) => void }) {
   const [server, setServer] = useState(localStorage.getItem('castlumora-server') ?? '');
+  const [autoConnect, setAutoConnect] = useState(Boolean(server));
   const [name, setName] = useState('');
   const [password, setPassword] = useState('');
   const [profiles, setProfiles] = useState<User[]>([]);
   const [connected, setConnected] = useState('');
   const [error, setError] = useState('');
   const [busy, setBusy] = useState(false);
+  useEffect(() => {
+    if (!autoConnect) return;
+    let active = true;
+    setBusy(true);
+    void Promise.resolve()
+      .then(() => {
+        const api = new Api(server);
+        return Promise.all([api.publicInfo(), api.profiles()]);
+      })
+      .then(([info, profiles]) => {
+        if (!active) return;
+        if (!info.StartupWizardCompleted) throw new Error('Finish server setup first.');
+        setConnected(info.ServerName);
+        setProfiles(profiles);
+      })
+      .catch((error) => {
+        if (active) setError(errorText(error));
+      })
+      .finally(() => {
+        if (active) setBusy(false);
+      });
+    return () => {
+      active = false;
+    };
+  }, [autoConnect, server]);
   async function submit(event: FormEvent) {
     event.preventDefault();
     setBusy(true);
@@ -81,7 +108,11 @@ export default function Login({ onLogin }: { onLogin: (s: Session) => void }) {
                 required
                 placeholder="https://media.example.com"
                 value={server}
-                onChange={(e) => setServer(e.target.value)}
+                onChange={(e) => {
+                  setAutoConnect(false);
+                  setBusy(false);
+                  setServer(e.target.value);
+                }}
                 autoComplete="url"
               />
             </label>
@@ -134,6 +165,7 @@ export default function Login({ onLogin }: { onLogin: (s: Session) => void }) {
               className="text-button"
               type="button"
               onClick={() => {
+                setAutoConnect(false);
                 setConnected('');
                 setProfiles([]);
                 setPassword('');
@@ -142,6 +174,7 @@ export default function Login({ onLogin }: { onLogin: (s: Session) => void }) {
               Change server
             </button>
           )}
+          <Link to="/register">Create an account / use an invitation</Link>
           <small>
             Free, open source, and made for your media.
             <br />

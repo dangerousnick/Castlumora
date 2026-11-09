@@ -2,6 +2,7 @@ import { lazy, Suspense } from 'react';
 import { NavLink, Route, Routes } from 'react-router-dom';
 import { useApp } from '../state';
 import { Feedback } from '../components/Media';
+const Registration = lazy(() => import('./Registration'));
 const Skipper = lazy(() => import('./Skipper'));
 const Presentation = lazy(() => import('../pages/Admin'));
 const Libraries = lazy(() => import('./Libraries'));
@@ -30,6 +31,7 @@ export default function Administration() {
             ['encoding', 'Playback & encoding'],
             ['skipper', 'Intro & outro skipper'],
             ['users', 'Users & devices'],
+            ['registration', 'Registration & invitations'],
             ['plugins', 'Plugins'],
             ['system', 'System & backups'],
           ].map(([path, name]) => (
@@ -51,6 +53,7 @@ export default function Administration() {
             <Route path="encoding" element={<Encoding />} />
             <Route path="skipper" element={<Skipper />} />
             <Route path="users" element={<Users />} />
+            <Route path="registration" element={<Registration />} />
             <Route path="plugins" element={<Plugins />} />
             <Route path="system" element={<System />} />
             <Route path="*" element={<Feedback error="Administration section not found." />} />

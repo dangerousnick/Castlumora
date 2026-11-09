@@ -3,6 +3,7 @@ import { sameId } from '../api/client';
 import type { User } from '../api/types';
 import { useApp, useLoad } from '../state';
 import { Feedback } from '../components/Media';
+import { PolicyEditor } from './PolicyEditor';
 import { adminApi } from './api';
 import type { ObjectData } from './api';
 import { ActionStatus, SettingsEditor, useAction } from './Controls';
@@ -56,37 +57,25 @@ export default function Users() {
       </div>
       {user.value && (
         <>
-          <SettingsEditor
+          <PolicyEditor
             key={selected + 'policy'}
             title={user.value.Name + ' permissions'}
             value={user.value.Policy}
-            fields={[
-              { key: 'IsAdministrator', label: 'Administrator', type: 'boolean' },
-              { key: 'IsDisabled', label: 'Disable account', type: 'boolean' },
-              { key: 'EnableMediaPlayback', label: 'Allow playback', type: 'boolean' },
-              { key: 'EnableLiveTvAccess', label: 'Live TV access', type: 'boolean' },
-              { key: 'EnableLiveTvManagement', label: 'DVR management', type: 'boolean' },
-              { key: 'EnableContentDownloading', label: 'Allow downloads', type: 'boolean' },
-              {
-                key: 'EnableVideoPlaybackTranscoding',
-                label: 'Video transcoding',
-                type: 'boolean',
-              },
-              {
-                key: 'EnableAudioPlaybackTranscoding',
-                label: 'Audio transcoding',
-                type: 'boolean',
-              },
-              { key: 'EnableAllFolders', label: 'All libraries', type: 'boolean' },
-              { key: 'MaxParentalRating', label: 'Maximum parental rating', type: 'number' },
-              {
-                key: 'MaxActiveSessions',
-                label: 'Maximum active sessions (0 = unrestricted)',
-                type: 'number',
-              },
-            ]}
             save={(value) => admin.savePolicy(selected, value)}
           />
+          <button
+            disabled={action.busy || sameId(selected, session.user.Id)}
+            onClick={() => {
+              if (window.confirm('Delete this viewing account and its server access?'))
+                void action.run(async () => {
+                  await admin.removeUser(selected);
+                  setSelected('');
+                  setRefresh((v) => v + 1);
+                }, 'Account removed.');
+            }}
+          >
+            Delete selected account
+          </button>
           <SettingsEditor
             title={user.value.Name + ' playback preferences'}
             value={user.value.Configuration}

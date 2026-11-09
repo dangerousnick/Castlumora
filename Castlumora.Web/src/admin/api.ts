@@ -54,6 +54,7 @@ export function adminApi(api: Api) {
         method: 'POST',
         body: JSON.stringify({ Name: name }),
       }),
+    removeUser: (id: string) => api.request<void>(`Users/${id}`, { method: 'DELETE' }),
     savePolicy: (id: string, policy: ObjectData) =>
       api.request<void>(`Users/${id}/Policy`, { method: 'POST', body: JSON.stringify(policy) }),
     setPassword: (id: string, password: string, currentPassword?: string) =>

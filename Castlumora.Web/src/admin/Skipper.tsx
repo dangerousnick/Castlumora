@@ -128,7 +128,8 @@ function IntervalEditor({
           onChange={(e) =>
             setState((v) => ({
               ...v,
-              protectedFromTicks: e.target.value === '' ? null : Math.round(Number(e.target.value) * 10000000),
+              protectedFromTicks:
+                e.target.value === '' ? null : Math.round(Number(e.target.value) * 10000000),
             }))
           }
         />

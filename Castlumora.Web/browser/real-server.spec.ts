@@ -1,5 +1,6 @@
 // Opt-in verification against a disposable LOOPBACK server. Never point at production.
 import { test, expect } from '@playwright/test';
+import { existsSync } from 'node:fs';
 const server = process.env.CASTLUMORA_TEST_SERVER;
 const username = process.env.CASTLUMORA_TEST_USER;
 const password = process.env.CASTLUMORA_TEST_PASSWORD;
@@ -411,4 +412,146 @@ test('real disposable server: native skipper administrator review persists', asy
   );
   await page.getByRole('button', { name: 'Save reviewed intervals', exact: true }).click();
   expect((await restored).ok()).toBe(true);
+});
+
+test('real disposable server: administrator invitation, restricted signup and persistent pairing', async ({
+  page,
+  browser,
+}) => {
+  test.setTimeout(90000);
+  test.skip(
+    !server ||
+      !username ||
+      password === undefined ||
+      process.env.CASTLUMORA_TEST_REGISTRATION !== '1',
+    'Requires the marked disposable registration fixture.',
+  );
+  if (!['127.0.0.1', 'localhost', '[::1]'].includes(new URL(server!).hostname))
+    throw new Error('Disposable loopback server required.');
+  const fixtureRoot = (
+    process.env.CASTLUMORA_TEST_FIXTURE_ROOT ?? '/tmp/castlumora-web-real-server'
+  ).replace(/\/$/, '');
+  if (!existsSync(fixtureRoot + '/.castlumora-disposable'))
+    throw new Error('Registration tests require the explicit disposable fixture marker.');
+  await page.goto('/');
+  await page.getByLabel('Server address').fill(server!);
+  await page.getByRole('button', { name: 'Connect', exact: true }).click();
+  await page.getByLabel('Username').fill(username!);
+  await page.getByLabel('Password', { exact: true }).fill(password!);
+  await page.getByRole('button', { name: 'Sign in', exact: true }).click();
+  await page.getByRole('link', { name: 'Administration', exact: true }).click();
+  const session = (await page.evaluate(() =>
+    JSON.parse(sessionStorage.getItem('castlumora-session')!),
+  )) as { token: string; deviceId: string };
+  const headers = {
+    Authorization: `MediaBrowser Client="Castlumora Web", Device="Browser", DeviceId="${session.deviceId}", Version="1.0", Token="${session.token}"`,
+  };
+  const info = await (
+    await page.request.get(server!.replace(/\/$/, '') + '/System/Info', { headers })
+  ).json();
+  if (info.ProgramDataPath !== fixtureRoot + '/data')
+    throw new Error('Server data path does not match the disposable registration fixture.');
+  const stateUrl = server!.replace(/\/$/, '') + '/Castlumora/Registration/Admin';
+  const original = (await (await page.request.get(stateUrl, { headers })).json()).settings;
+  const signupName = 'SyntheticSignup' + Date.now();
+  let invitationId: string | undefined;
+  page.setDefaultTimeout(15000);
+  const guest = await browser.newContext();
+  guest.setDefaultTimeout(15000);
+  try {
+    await page
+      .getByRole('navigation', { name: 'Administration sections' })
+      .getByRole('link', { name: 'Registration & invitations', exact: true })
+      .click();
+    await page.getByLabel('Enable self-registration', { exact: true }).check();
+    await page.getByLabel('Require an invitation', { exact: true }).check();
+    const saved = page.waitForResponse(
+      (r) =>
+        r.url().includes('/Castlumora/Registration/Settings') && r.request().method() === 'PUT',
+    );
+    await page.getByRole('button', { name: 'Save registration settings', exact: true }).click();
+    expect((await saved).ok()).toBe(true);
+    await page.getByRole('checkbox', { name: 'All libraries', exact: true }).uncheck();
+    await page.getByRole('checkbox', { name: 'Fixture Movies', exact: true }).check();
+    const policySaved = page.waitForResponse(
+      (r) =>
+        r.url().includes('/Castlumora/Registration/Settings') && r.request().method() === 'PUT',
+    );
+    await page
+      .getByRole('button', { name: 'Save default signup permissions', exact: true })
+      .click();
+    expect((await policySaved).ok()).toBe(true);
+    await page.getByLabel('Invitation label', { exact: true }).fill('Browser ' + signupName);
+    const invitation = page.waitForResponse(
+      (r) =>
+        r.url().includes('/Castlumora/Registration/Invitations') && r.request().method() === 'POST',
+    );
+    await page.getByRole('button', { name: 'Create invitation', exact: true }).click();
+    const inviteResponse = await invitation;
+    expect(inviteResponse.ok()).toBe(true);
+    invitationId = (await inviteResponse.json()).id;
+    const invitationLink = await page
+      .getByRole('textbox', { name: 'One-time invitation link', exact: true })
+      .inputValue();
+    const visitor = await guest.newPage();
+    await visitor.goto(invitationLink);
+    await expect.poll(() => visitor.url()).not.toContain('invite=');
+    await visitor.getByRole('button', { name: 'Check registration', exact: true }).click();
+    await visitor.getByLabel('New username', { exact: true }).fill(signupName);
+    await visitor.getByLabel('New password', { exact: true }).fill('Synthetic-signup-password-1');
+    await visitor
+      .getByLabel('Confirm new password', { exact: true })
+      .fill('Synthetic-signup-password-1');
+    await visitor.getByRole('button', { name: 'Create account', exact: true }).click();
+    await expect(
+      visitor.getByRole('heading', { name: 'Your account is ready', exact: true }),
+    ).toBeVisible();
+    await visitor.getByRole('link', { name: 'Go to sign in', exact: true }).click();
+    await visitor.getByLabel('Username', { exact: true }).fill(signupName);
+    await expect(visitor.getByLabel('Server address', { exact: true })).toHaveCount(0);
+    await visitor.getByLabel('Password', { exact: true }).fill('Synthetic-signup-password-1');
+    await visitor.getByRole('button', { name: 'Sign in', exact: true }).click();
+    await visitor.getByRole('link', { name: 'Browse', exact: true }).click();
+    await expect(
+      visitor.getByRole('link', { name: 'Details for Castlumora Test', exact: true }),
+    ).toBeVisible();
+    await expect(
+      visitor.getByRole('link', { name: 'Details for Castlumora Skipper', exact: true }),
+    ).toHaveCount(0);
+    await expect(visitor.getByRole('link', { name: 'Administration', exact: true })).toHaveCount(0);
+    await visitor.evaluate(() => sessionStorage.removeItem('castlumora-session'));
+    await visitor.reload();
+    await expect(visitor.getByLabel('Username', { exact: true })).toBeVisible();
+    await expect(visitor.getByLabel('Server address', { exact: true })).toHaveCount(0);
+    await expect(visitor.getByLabel('Password', { exact: true })).toHaveValue('');
+  } finally {
+    await guest.close();
+    const base = server!.replace(/\/$/, '');
+    const users = (await (await page.request.get(base + '/Users', { headers })).json()) as {
+      Id: string;
+      Name: string;
+    }[];
+    const created = users.find((user) => user.Name === signupName);
+    if (created)
+      expect((await page.request.delete(base + '/Users/' + created.Id, { headers })).ok()).toBe(
+        true,
+      );
+    if (invitationId)
+      expect(
+        (
+          await page.request.delete(base + '/Castlumora/Registration/Invitations/' + invitationId, {
+            headers,
+          })
+        ).ok(),
+      ).toBe(true);
+    const current = (await (await page.request.get(stateUrl, { headers })).json()).settings;
+    expect(
+      (
+        await page.request.put(base + '/Castlumora/Registration/Settings', {
+          headers,
+          data: { ...original, revision: current.revision },
+        })
+      ).ok(),
+    ).toBe(true);
+  }
 });
