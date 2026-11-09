@@ -8,7 +8,7 @@ permissions:
   contents: read
 concurrency:
   group: castlumora-preview-${{ github.event.pull_request.number || github.ref }}
-  cancel-in-progress: false
+  cancel-in-progress: true
 jobs:
   build-verify-deliver:
     if: github.event_name == 'workflow_dispatch' || (github.event.pull_request.number == 3 && github.event.pull_request.head.repo.full_name == github.repository && github.event.pull_request.head.ref == 'development/castlumora-web-1.3')

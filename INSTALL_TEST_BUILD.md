@@ -4,8 +4,11 @@ This is a hands-on development preview, not a stable release or full feature par
 
 ## Download and verify
 
-Open https://github.com/dangerousnick/Castlumora/releases and select **Castlumora 1.0 Development Preview**. Download the `Castlumora-1.0-dev-<commit>-linux-x64.tar.gz` archive and its `.sha256` companion from the same release. The release notes and `BUILD_INFO.json` identify the exact source commit. A release is available only after assets appear there; this document is also included in reproducible source builds before publication.
+The primary delivery is a **GitHub Actions artifact**: open https://github.com/dangerousnick/Castlumora/actions/workflows/castlumora-preview.yml, select a successful **Castlumora Linux Development Preview** run, and scroll to **Artifacts**. Sign in to GitHub, then download `Castlumora-linux-x64-<full-source-commit>`. Actions artifacts expire after 30 days; rebuild the documented source if an older artifact expires. The PR and progress file link the exact verified run/artifact.
 
+The downloaded outer ZIP contains `Castlumora-1.0-dev-<commit>-linux-x64.tar.gz`, its `.sha256`, `BUILD_INFO.json`, this guide, the feature checklist and `CI_SMOKE_REPORT.md`. Extract that ZIP first through Linux Mint's archive manager; then verify and extract the inner `.tar.gz` as described below. The manifest, archive name and CI report identify the exact tested source commit.
+
+If a public prerelease is separately published at https://github.com/dangerousnick/Castlumora/releases, its archive/checksum may be downloaded directly. Do not assume an empty draft release is a delivered build: the workspace upload host rejected its credential, so the GitHub-hosted read-only artifact workflow is used instead.
 In a terminal in Downloads, use the actual downloaded filename:
 
 ```bash
