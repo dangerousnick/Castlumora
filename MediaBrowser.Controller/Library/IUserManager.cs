@@ -89,6 +89,14 @@ namespace MediaBrowser.Controller.Library
         /// <exception cref="ArgumentException"><paramref name="name"/> already exists.</exception>
         Task<User> CreateUserAsync(string name);
 
+        /// <summary>Creates a user whose disabled state is saved before the account is exposed.</summary>
+        /// <param name="name">The username.</param>
+        /// <param name="initiallyDisabled">Whether sign-in must remain disabled during account provisioning.</param>
+        /// <returns>The created user.</returns>
+        /// <exception cref="NotSupportedException">A custom manager does not support safe disabled provisioning.</exception>
+        Task<User> CreateUserAsync(string name, bool initiallyDisabled)
+            => initiallyDisabled ? throw new NotSupportedException("Disabled account provisioning is not supported by this user manager.") : CreateUserAsync(name);
+
         /// <summary>
         /// Deletes the specified user.
         /// </summary>

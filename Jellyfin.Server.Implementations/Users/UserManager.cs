@@ -336,7 +336,10 @@ namespace Jellyfin.Server.Implementations.Users
         }
 
         /// <inheritdoc/>
-        public async Task<User> CreateUserAsync(string name)
+        public Task<User> CreateUserAsync(string name) => CreateUserAsync(name, false);
+
+        /// <inheritdoc/>
+        public async Task<User> CreateUserAsync(string name, bool initiallyDisabled)
         {
             ThrowIfInvalidUsername(name);
 
@@ -357,6 +360,7 @@ namespace Jellyfin.Server.Implementations.Users
 #pragma warning restore CA1862 // Use the 'StringComparison' method overloads to perform case-insensitive string comparisons
 
                 newUser = await CreateUserInternalAsync(name, dbContext).ConfigureAwait(false);
+                newUser.SetPermission(PermissionKind.IsDisabled, initiallyDisabled);
 
                 dbContext.Users.Add(newUser);
                 await dbContext.SaveChangesAsync().ConfigureAwait(false);
