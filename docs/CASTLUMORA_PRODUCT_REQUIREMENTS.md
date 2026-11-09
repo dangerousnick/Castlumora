@@ -121,6 +121,30 @@
 - Do not require merging a development PR into `main` just to distribute a test artifact. Build from an explicitly identified tested branch/commit and leave merge decisions for human review.
 - Produce this usable build **before declaring the coding task complete**. If usage is low, first save/push a tested checkpoint and make packaging/release the next clearly documented milestone. Do not falsely promise autonomous continuation or invisible work after limits interrupt the session.
 
+## L. Castlumora 2.0 — marketplaces (future release, NOT part of version 1.0)
+
+**Version assignment is explicit: do not implement marketplace commerce in the Castlumora 1.0 / Phase 1.4 feature scope.** Preserve these as planned Castlumora **2.0** requirements; focus version 1.0 on the functioning self-hosted streaming/reading experience, features, security, testing, and deliverable preview.
+
+### Server-side plugin marketplace (2.0)
+
+- Server dashboard marketplace for browsing/installing free and paid plugins, visual themes, metadata providers and other authorized extensions.
+- Third-party developers can publish and sell compatible extensions, or distribute them free, with optional donations; Castlumora may collect a disclosed marketplace service fee.
+- Review/security controls, developer verification, permissions and supply-chain checks; version/compatibility validation, update support, abandonment/outdated-version warnings and prevention of sales of known-incompatible extensions.
+- Preserve open-source licensing obligations and security isolation; marketplace participation never becomes a prerequisite for using core Castlumora features.
+
+### User-side ebook marketplace (2.0)
+
+- Integrated reader-facing bookstore for catalog discovery, previews and purchasing books from authorized rights holders, independent authors, publishers or legitimate sellers. Purchased items become available in the purchaser's Castlumora reading experience subject to the license terms.
+- The server dashboard may optionally support administrator discovery/purchasing of ebooks for shared or organization libraries **only where appropriate multi-user/library licensing exists**.
+- Distinguish personal purchases from server-shared rights, preserve privacy and license-aware entitlements, and plan DRM/format limitations without bypassing access controls.
+- Consider first-party listings for authorized DRM-free books and public-domain material, plus eligible retailer/author integrations. Publisher/distributor agreements and payment, tax, refund and licensing systems are separate prerequisites.
+
+### Scope boundary
+
+- **Castlumora 1.0:** Core reader for owned/authorized EPUB/PDF and other supported content; local bookshelves and reading progress; secure plugin compatibility and administration. No paid marketplace required to finish or ship a 1.0 preview.
+- **Castlumora 2.0:** The optional server plugin marketplace and user ebook marketplace, with developer/seller tools, purchasing/entitlements, version checks, marketplace fee handling and applicable compliance.
+- Keep these 2.0 ideas in the product backlog and roadmap but **do not divert current Codex tasks into building marketplace infrastructure** unless the owner explicitly approves a scope change.
+
 ## Requirement retention rule
 
 **Do not silently remove a feature in this file when narrowing scope for a development phase.** Mark it `planned` or `deferred`, record constraints and dependencies, and preserve it for future work. Any deliberate removal or changed product requirement should be recorded explicitly in Git history with rationale and owner approval.
