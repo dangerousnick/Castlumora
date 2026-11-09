@@ -29,6 +29,9 @@ export interface Item {
   Chapters?: { Name?: string; StartPositionTicks: number; ImageTag?: string }[];
   MediaType?: string;
   Album?: string;
+  AlbumId?: string;
+  PlaylistItemId?: string;
+  CanDelete?: boolean;
   Artists?: string[];
   CurrentProgram?: Item;
   StartDate?: string;

@@ -5,11 +5,16 @@ import Hls from 'hls.js';
 import type { MediaSource } from '../api/types';
 import { errorText, useApp, useLoad } from '../state';
 import { Feedback } from '../components/Media';
+import { useMusic } from '../music/MusicProvider';
 import { SkipControls } from '../skipper/SkipControls';
 import { authenticatedMediaUrl, browserProfile, ticks } from './profile';
 export default function Player() {
   const { id = '' } = useParams();
   const { api } = useApp();
+  const stopMusic = useMusic()?.stop;
+  useEffect(() => {
+    stopMusic?.();
+  }, [stopMusic, id]);
   const videoRef = useRef<HTMLVideoElement>(null);
   const position = useRef<number | null>(null);
   const directMode = useRef(true);

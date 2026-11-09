@@ -49,6 +49,9 @@ export default function Browse() {
                 : 'Pick a story. Make it a night.'}
           </p>
         </div>
+        <Link to="/music" className="button secondary">
+          Music & playlists
+        </Link>
         <Link to="/live" className="button secondary">
           Live TV & guide
         </Link>

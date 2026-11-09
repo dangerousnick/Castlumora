@@ -7,6 +7,8 @@ import type { Preferences, Session } from './api/types';
 import { defaultLayout, deviceClass } from './config/schema';
 import type { Layout } from './config/schema';
 import { AppContext, errorText } from './state';
+import { MusicProvider } from './music/MusicProvider';
+import Music from './music/Music';
 import Register from './registration/Register';
 import Login, { LinkBrand } from './pages/Login';
 import Home from './pages/Home';
@@ -100,103 +102,107 @@ function Shell({
     <AppContext.Provider
       value={{ api, session, layout, preferences, setPreferences, refreshLayout, logout, notice }}
     >
-      <div className="app" style={style}>
-        <a className="skip-link" href="#content">
-          Skip to content
-        </a>
-        <header className="topbar">
-          <Link to="/" aria-label="Castlumora home">
-            <LinkBrand />
-          </Link>
-          <nav aria-label="Primary">
-            {layout.navigation.map((n) => (
-              <NavLink
-                key={n.id}
-                to={{ home: '/', browse: '/browse', list: '/list', search: '/search' }[n.id]}
-                end
-              >
-                {n.label}
-              </NavLink>
-            ))}
-          </nav>
-          <div className="header-actions">
-            <button
-              className="icon-button"
-              onClick={() => void surprise()}
-              title="Surprise Me"
-              aria-label="Surprise Me"
-            >
-              <Dices size={20} />
-            </button>
-            {session.user.Policy?.IsAdministrator && (
-              <Link className="icon-button" to="/admin" aria-label="Administration">
-                <Settings size={20} />
-              </Link>
-            )}
-            <details className="profile-menu">
-              <summary>
-                <span className="avatar">{session.user.Name.slice(0, 1)}</span>
-                <span>{session.user.Name}</span>
-              </summary>
-              <div className="menu">
-                <Link to="/live">
-                  <Radio size={15} />
-                  Live TV
-                </Link>
-                <a href={api.legacy()} target="_blank" rel="noopener noreferrer">
-                  Existing client ↗
-                </a>
-                <button onClick={() => void logout()}>
-                  <LogOut size={15} />
-                  Sign out / switch profile
-                </button>
-              </div>
-            </details>
-          </div>
-        </header>
-        {notice && (
-          <p role="status" className="notice global-notice">
-            {notice}
-          </p>
-        )}
-        <div id="content" tabIndex={-1}>
-          <Feedback busy={!ready && !error} error={error} />
-          {ready && (
-            <Suspense fallback={<Feedback busy />}>
-              <Routes>
-                <Route path="/" element={<Home />} />
-                <Route path="/browse" element={<Browse />} />
-                <Route path="/search" element={<Browse />} />
-                <Route path="/list" element={<Browse />} />
-                <Route path="/item/:id" element={<Detail />} />
-                <Route path="/play/:id" element={<PlayerRoute />} />
-                <Route path="/live" element={<Live />} />
-                <Route path="/admin/*" element={<Administration />} />
-                <Route
-                  path="*"
-                  element={
-                    <main className="page">
-                      <h1>Page not found</h1>
-                      <Link to="/">Return home</Link>
-                    </main>
-                  }
-                />
-              </Routes>
-            </Suspense>
-          )}
-        </div>
-        <footer>
-          <LinkBrand />
-          <span>Your media. Your world.</span>
-          <a href={api.legacy()} target="_blank" rel="noopener noreferrer">
-            Existing client ↗
+      <MusicProvider>
+        <div className="app" style={style}>
+          <a className="skip-link" href="#content">
+            Skip to content
           </a>
-          <small>
-            Castlumora · Free &amp; open source · Built on Jellyfin ·{' '}
-            <a href="./LICENSE.txt">GPL</a> · <a href="./THIRD_PARTY_NOTICES.txt">Notices</a>
-          </small>
-        </footer>
-      </div>
+          <header className="topbar">
+            <Link to="/" aria-label="Castlumora home">
+              <LinkBrand />
+            </Link>
+            <nav aria-label="Primary">
+              {layout.navigation.map((n) => (
+                <NavLink
+                  key={n.id}
+                  to={{ home: '/', browse: '/browse', list: '/list', search: '/search' }[n.id]}
+                  end
+                >
+                  {n.label}
+                </NavLink>
+              ))}
+            </nav>
+            <div className="header-actions">
+              <button
+                className="icon-button"
+                onClick={() => void surprise()}
+                title="Surprise Me"
+                aria-label="Surprise Me"
+              >
+                <Dices size={20} />
+              </button>
+              {session.user.Policy?.IsAdministrator && (
+                <Link className="icon-button" to="/admin" aria-label="Administration">
+                  <Settings size={20} />
+                </Link>
+              )}
+              <details className="profile-menu">
+                <summary>
+                  <span className="avatar">{session.user.Name.slice(0, 1)}</span>
+                  <span>{session.user.Name}</span>
+                </summary>
+                <div className="menu">
+                  <Link to="/music">Music & playlists</Link>
+                  <Link to="/live">
+                    <Radio size={15} />
+                    Live TV
+                  </Link>
+                  <a href={api.legacy()} target="_blank" rel="noopener noreferrer">
+                    Existing client ↗
+                  </a>
+                  <button onClick={() => void logout()}>
+                    <LogOut size={15} />
+                    Sign out / switch profile
+                  </button>
+                </div>
+              </details>
+            </div>
+          </header>
+          {notice && (
+            <p role="status" className="notice global-notice">
+              {notice}
+            </p>
+          )}
+          <div id="content" tabIndex={-1}>
+            <Feedback busy={!ready && !error} error={error} />
+            {ready && (
+              <Suspense fallback={<Feedback busy />}>
+                <Routes>
+                  <Route path="/" element={<Home />} />
+                  <Route path="/browse" element={<Browse />} />
+                  <Route path="/search" element={<Browse />} />
+                  <Route path="/list" element={<Browse />} />
+                  <Route path="/item/:id" element={<Detail />} />
+                  <Route path="/play/:id" element={<PlayerRoute />} />
+                  <Route path="/live" element={<Live />} />
+                  <Route path="/music" element={<Music />} />
+                  <Route path="/admin/*" element={<Administration />} />
+                  <Route
+                    path="*"
+                    element={
+                      <main className="page">
+                        <h1>Page not found</h1>
+                        <Link to="/">Return home</Link>
+                      </main>
+                    }
+                  />
+                </Routes>
+              </Suspense>
+            )}
+          </div>
+          <footer>
+            <LinkBrand />
+            <span>Your media. Your world.</span>
+            <a href={api.legacy()} target="_blank" rel="noopener noreferrer">
+              Existing client ↗
+            </a>
+            <small>
+              Castlumora · Free &amp; open source · Built on Jellyfin ·{' '}
+              <a href="./LICENSE.txt">GPL</a> · <a href="./THIRD_PARTY_NOTICES.txt">Notices</a>
+            </small>
+          </footer>
+        </div>
+      </MusicProvider>
     </AppContext.Provider>
   );
 }

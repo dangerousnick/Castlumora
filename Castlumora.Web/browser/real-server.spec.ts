@@ -555,3 +555,149 @@ test('real disposable server: administrator invitation, restricted signup and pe
     ).toBe(true);
   }
 });
+
+test('real disposable server: native music queue, compatible audio and private playlist editing', async ({
+  page,
+}) => {
+  test.setTimeout(90000);
+  test.skip(
+    !server || !username || password === undefined || process.env.CASTLUMORA_TEST_MUSIC !== '1',
+    'Requires synthetic music in the disposable server.',
+  );
+  if (!['127.0.0.1', 'localhost', '[::1]'].includes(new URL(server!).hostname))
+    throw new Error('Disposable loopback server required.');
+  page.setDefaultTimeout(15000);
+  page.setDefaultNavigationTimeout(30000);
+  await page.goto('/');
+  await page.getByLabel('Server address').fill(server!);
+  await page.getByRole('button', { name: 'Connect', exact: true }).click();
+  await page.getByLabel('Username').fill(username!);
+  await page.getByLabel('Password', { exact: true }).fill(password!);
+  await page.getByRole('button', { name: 'Sign in', exact: true }).click();
+  await page.getByRole('link', { name: 'Browse', exact: true }).click();
+  await page.getByRole('link', { name: 'Music & playlists', exact: true }).click();
+  await page.getByRole('button', { name: 'Artists', exact: true }).click();
+  await page.getByRole('link', { name: 'Details for Castle Artist', exact: true }).click();
+  await page.getByRole('link', { name: 'Details for Castle Album', exact: true }).click();
+  await expect(page.locator('.track-list article')).toHaveCount(2);
+  const started = page.waitForResponse(
+    (r) =>
+      new URL(r.url()).pathname.endsWith('/Sessions/Playing') && r.request().method() === 'POST',
+  );
+  await page.getByRole('button', { name: 'Play these tracks', exact: true }).click();
+  expect((await started).ok()).toBe(true);
+  await expect
+    .poll(() => page.locator('audio').evaluate((audio: HTMLAudioElement) => audio.currentTime), {
+      timeout: 20000,
+    })
+    .toBeGreaterThan(0);
+  await page.getByRole('slider', { name: 'Music position', exact: true }).press('Home');
+  for (let n = 0; n < 10; n++)
+    await page.getByRole('slider', { name: 'Music position', exact: true }).press('ArrowRight');
+  await expect
+    .poll(() => page.locator('audio').evaluate((audio: HTMLAudioElement) => audio.currentTime))
+    .toBeGreaterThanOrEqual(10);
+  await page.getByRole('link', { name: '← Back to music', exact: true }).click();
+  await expect(page.getByRole('region', { name: 'Music player', exact: true })).toBeVisible();
+  await page.getByRole('button', { name: 'Next track', exact: true }).click();
+  await expect(page.locator('.audio-title a')).toHaveText('Moonlit Reprise');
+  await expect
+    .poll(() => page.locator('audio').evaluate((audio: HTMLAudioElement) => audio.currentTime))
+    .toBeGreaterThan(0);
+  const negotiated = page.waitForResponse(
+    (r) =>
+      r.url().includes('/PlaybackInfo') &&
+      r.request().method() === 'POST' &&
+      r.request().postDataJSON()?.EnableDirectPlay === false,
+  );
+  await page.getByRole('button', { name: 'Compatible audio', exact: true }).click();
+  expect((await negotiated).ok()).toBe(true);
+  await expect
+    .poll(() => page.locator('audio').evaluate((audio: HTMLAudioElement) => audio.currentTime), {
+      timeout: 20000,
+    })
+    .toBeGreaterThan(0);
+  const progress = page.waitForResponse(
+    (r) => r.url().includes('/Sessions/Playing/Progress') && r.request().method() === 'POST',
+  );
+  await page.getByRole('button', { name: 'Pause music', exact: true }).click();
+  expect((await progress).ok()).toBe(true);
+  const stopped = page.waitForResponse(
+    (r) => r.url().includes('/Sessions/Playing/Stopped') && r.request().method() === 'POST',
+  );
+  await page.getByRole('button', { name: 'Close music', exact: true }).click();
+  expect((await stopped).ok()).toBe(true);
+  await page.getByRole('button', { name: 'Playlists', exact: true }).click();
+  const name = 'Synthetic Music ' + Date.now();
+  await page.getByLabel('New playlist name', { exact: true }).fill(name);
+  await page.getByRole('button', { name: 'Create music playlist', exact: true }).click();
+  await expect(page.getByRole('heading', { name, exact: true })).toBeVisible();
+  await page.getByText('Add tracks to playlist', { exact: true }).click();
+  const picker = page.locator('.media-picker');
+  for (const track of ['Violet Overture', 'Moonlit Reprise']) {
+    await picker.getByLabel('Add tracks to playlist search', { exact: true }).fill(track);
+    await picker.getByRole('button', { name: 'Search', exact: true }).click();
+    await picker
+      .locator('.picker-results')
+      .getByRole('button', { name: new RegExp(track) })
+      .click();
+    await expect(
+      page.locator('.track-list').getByRole('link', { name: track, exact: true }),
+    ).toBeVisible();
+  }
+  await page.getByRole('button', { name: 'Move Moonlit Reprise up', exact: true }).click();
+  await expect(page.locator('.track-list article').first()).toContainText('Moonlit Reprise');
+  await page
+    .getByRole('button', { name: 'Remove Violet Overture from playlist', exact: true })
+    .click();
+  await expect(page.locator('.track-list article')).toHaveCount(1);
+  await page.getByLabel('Playlist name', { exact: true }).fill(name + ' renamed');
+  await page.getByRole('button', { name: 'Rename playlist', exact: true }).click();
+  await expect(page.getByRole('heading', { name: name + ' renamed', exact: true })).toBeVisible();
+  page.on('dialog', (dialog) => void dialog.accept());
+  await page.getByRole('button', { name: 'Delete playlist', exact: true }).click();
+  await expect(
+    page.getByRole('heading', { name: 'Your music, your rhythm', exact: true }),
+  ).toBeVisible();
+});
+
+test('real disposable server: starting video closes background music', async ({ page }) => {
+  test.skip(
+    !server || !username || password === undefined || process.env.CASTLUMORA_TEST_MUSIC !== '1',
+    'Requires synthetic music/movie fixtures.',
+  );
+  if (!['127.0.0.1', 'localhost', '[::1]'].includes(new URL(server!).hostname))
+    throw new Error('Disposable loopback server required.');
+  await page.goto('/');
+  await page.getByLabel('Server address').fill(server!);
+  await page.getByRole('button', { name: 'Connect', exact: true }).click();
+  await page.getByLabel('Username').fill(username!);
+  await page.getByLabel('Password', { exact: true }).fill(password!);
+  await page.getByRole('button', { name: 'Sign in', exact: true }).click();
+  await page.getByRole('link', { name: 'Browse', exact: true }).click();
+  await page.getByRole('link', { name: 'Music & playlists', exact: true }).click();
+  await page.getByRole('link', { name: 'Details for Castle Album', exact: true }).click();
+  await page.getByRole('button', { name: 'Play these tracks', exact: true }).click();
+  await expect
+    .poll(() => page.locator('audio').evaluate((audio: HTMLAudioElement) => audio.currentTime))
+    .toBeGreaterThan(0);
+  await page.getByRole('link', { name: '← Back to music', exact: true }).click();
+  await page.getByRole('link', { name: 'Movies & series', exact: true }).click();
+  await page.getByRole('link', { name: 'Details for Castlumora Test', exact: true }).click();
+  const stoppedMusic = page.waitForResponse(
+    (r) => r.url().includes('/Sessions/Playing/Stopped') && r.request().method() === 'POST',
+  );
+  await page.getByRole('link', { name: /^(Watch now|Resume)$/ }).click();
+  expect((await stoppedMusic).ok()).toBe(true);
+  await expect(page.getByRole('region', { name: 'Music player', exact: true })).toHaveCount(0);
+  await expect
+    .poll(() => page.locator('video').evaluate((video: HTMLVideoElement) => video.currentTime), {
+      timeout: 20000,
+    })
+    .toBeGreaterThan(0);
+  const stoppedVideo = page.waitForResponse(
+    (r) => r.url().includes('/Sessions/Playing/Stopped') && r.request().method() === 'POST',
+  );
+  await page.getByRole('link', { name: 'Back', exact: true }).click();
+  expect((await stoppedVideo).ok()).toBe(true);
+});
