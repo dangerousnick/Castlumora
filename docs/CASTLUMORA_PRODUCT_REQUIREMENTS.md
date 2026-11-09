@@ -160,6 +160,19 @@
 - **All 1.0 capabilities in the prior requirements remain required**, even if individual previews do not yet include them. Use explicit progress, parity and release-acceptance checklists rather than pretending that an early preview equals stable 1.0.
 - Preserve this 2.0 vision in the roadmap for later architecture planning. Scope changes require the owner's explicit direction.
 
+## M. Cross-platform separation — shared engine, OS-specific implementations (1.0 onward)
+
+**Owner requirement:** Do not assume Windows and Linux behave identically. Preserve one shared Castlumora server feature set while implementing and testing OS-specific behavior behind clear platform interfaces. This is particularly important for FFmpeg, IPTV channel switching, child process cleanup, resource management, drivers and background services.
+
+- Common code defines media sessions, playback/transcoding state, authorization, settings, API contracts, cleanup policies and telemetry.
+- Windows adapters handle process launch/termination (including child process trees / Job Objects where appropriate), Windows Service lifecycle, Win32 process/resource monitoring, path/file locking, driver discovery and supported hardware encoders.
+- Linux adapters handle process groups and appropriate signals, systemd/service lifecycle where applicable, permissions and file ownership, /proc/cgroup monitoring, mounted paths and Linux hardware encoder discovery.
+- Channel switching must request shutdown of abandoned FFmpeg sessions, allow configurable grace periods and enforce orphan cleanup safely without disrupting streams still in use; test scenarios separately on Windows and Linux.
+- Maintain platform-specific integration tests for FFmpeg startup, stop, cancellation, channel hop, unexpected client disconnect, crash recovery, simultaneous streams, transcoder selection, process leaks and media locks.
+- Installation and dependency detection should choose verified packages for the detected OS; do not assume binaries produced on newer Ubuntu releases will work on older Mint/Ubuntu-based systems. First Linux preview targets Mint 22.3 Cinnamon / Ubuntu 24.04 base; eventual support aims for Jellyfin's server platform breadth.
+- Avoid duplicated application/business logic and needless platform forks. Abstract only the genuinely OS-dependent operations and keep existing reliable backend behavior until replacements are verified.
+- This architectural separation is **in scope for Castlumora 1.0 where needed for reliable functionality**; a wholesale replacement of inherited Jellyfin core source remains a separate **2.0** goal.
+
 ## Requirement retention rule
 
 **Do not silently remove a feature in this file when narrowing scope for a development phase.** Mark it `planned` or `deferred`, record constraints and dependencies, and preserve it for future work. Any deliberate removal or changed product requirement should be recorded explicitly in Git history with rationale and owner approval.
