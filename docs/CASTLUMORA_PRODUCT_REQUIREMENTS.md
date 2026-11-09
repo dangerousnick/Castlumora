@@ -99,6 +99,16 @@
 - Avoid fake functionality and mock data presented as production. Require build, automated tests and manual integration tests as feasible, disclose untested behavior, create reviewable PRs.
 - Future design should accommodate both a dedicated home server and creators/business-scale scenarios without making them mandatory for ordinary families.
 
+## J. Built-in yt-dlp ingestion and YouTube/creator metadata — mandatory production feature
+
+- First-class, production-supported **yt-dlp import module** and **separate core YouTube-aware metadata provider**, without mandatory third-party plugins. Metadata identification must work for pre-existing files without downloading again.
+- Three use cases: carefully curated child-safe local media libraries, creator-authorized archives/migrations, and business-use licensed trailers/promos. Same modules in Family/Friends, Creator and Business setup presets.
+- One-shot/bulk URL/video/playlist/channel ingest where authorized; opt-in sync, job queue, retries, storage/quality limits, configurable destinations, provenance, deduplication and safe resource use.
+- Preserve canonical video IDs, stable creator/channel IDs, original titles, descriptions, artwork, upload dates, playlists and available captions when rights/policies permit. No more matching named creators such as **Unspeakable** or **MrBeast** to unrelated movies/shows just because fuzzy titles match.
+- Strong matching precedence, explicit video IDs, confidence display, manual fixes/locks, metadata provider priorities and safe refresh; maintain accurate creator pages and curated kid-accessible collections.
+- A full Castlumora Web admin workflow for importing and repairing creator metadata; privileges, security and legal-source checks, history and verification. Use only lawful/authorized acquisition and rights-compliant metadata access; no DRM/security-circumvention features.
+- Full specification and test acceptance criteria: **[Built-in imports and YouTube/creator metadata](CASTLUMORA_IMPORT_AND_CREATOR_METADATA.md)**. Future Codex tasks **must read this document** alongside this master specification. Do not leave these as optional add-ons or mark them complete without testing.
+
 ## Requirement retention rule
 
 **Do not silently remove a feature in this file when narrowing scope for a development phase.** Mark it `planned` or `deferred`, record constraints and dependencies, and preserve it for future work. Any deliberate removal or changed product requirement should be recorded explicitly in Git history with rationale and owner approval.
