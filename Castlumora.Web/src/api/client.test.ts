@@ -92,3 +92,22 @@ it('opens the installed legacy client without assuming a Web router version', ()
     'https://example.test/media/web/',
   );
 });
+it('passes source, track, bitrate and exact zero resume selection to playback negotiation', async () => {
+  const fetcher = vi
+    .fn()
+    .mockResolvedValue(Response.json({ MediaSources: [], PlaySessionId: 'p' }));
+  vi.stubGlobal('fetch', fetcher);
+  await new Api(session.server, session).playback(id, {}, 0, 2, -1, true, {
+    mediaSourceId: 'source-version',
+    maxBitrate: 2000000,
+  });
+  const body = JSON.parse(fetcher.mock.calls[0][1].body);
+  expect(body).toMatchObject({
+    StartTimeTicks: 0,
+    AudioStreamIndex: 2,
+    SubtitleStreamIndex: -1,
+    MediaSourceId: 'source-version',
+    MaxStreamingBitrate: 2000000,
+    EnableDirectPlay: false,
+  });
+});

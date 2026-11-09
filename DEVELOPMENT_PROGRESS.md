@@ -53,3 +53,13 @@ Publishing uses the connected GitHub API because the terminal GH_TOKEN is invali
 3. Run `npm ci`, typecheck/lint/test/build under Castlumora.Web. For browser tests run Vite on loopback and follow documented synthetic/disposable-server instructions. Never use Coon Media.
 4. Prioritize real HLS/remux/transcode seek/resume, multiple track and Live TV fixtures, then category pagination/folder-name rules and admin editor usability. Add tests for each supported claim and update parity/report accordingly.
 5. Build future features in tested milestones on this branch or a separately authorized follow-up branch, commit/publish regularly, and update this file at each checkpoint. Preserve backend namespaces, APIs, databases, plugins, licenses and upstream history.
+
+## Active continuation: complete the master specification
+
+The owner requested completion beyond the initial vertical slice. Continue the existing branch and PR; the retained full specification remains authoritative. Do not call the platform complete while parity rows or product requirements remain unfinished. Publish tested milestones and update this checkpoint throughout.
+
+Current milestone: real HLS/remux/seek/resume and track/quality controls, then server-backed category pagination/layout revision history, full administration and Live TV/DVR controls, built-in skipper, and remaining account/personalization/platform requirements. Hardware/native-device and real-tuner claims still require their corresponding fixtures/devices. No Coon Media access, automatic merge or deployment.
+
+### Continuation checkpoint: playback controls
+
+Real HLS, seeking, bitrate negotiation, English/French audio switching and external subtitle loading now pass against the disposable server using a 90-second synthetic multi-track/chapter fixture. Added quality/source/chapter/absolute-timeline/next-episode controls and corrected exact-zero resume handling. See docs/verification-web-continuation.md. Layout history/rollback and server-side paginated folder-name category rules are being implemented next; those backend changes are not yet marked verified.

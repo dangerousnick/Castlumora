@@ -1441,3 +1441,19 @@ footer > small {
     transition: none !important;
   }
 }
+.playback-timeline {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  margin-top: 16px;
+}
+.playback-timeline label {
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+  color: #c4b4d8;
+}
+.playback-timeline input {
+  accent-color: var(--accent);
+  padding: 0;
+  min-height: 32px;
+}

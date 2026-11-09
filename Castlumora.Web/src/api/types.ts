@@ -22,6 +22,10 @@ export interface Item {
   UserData?: { PlaybackPositionTicks?: number; PlayedPercentage?: number; Played?: boolean };
   Genres?: string[];
   MediaSources?: MediaSource[];
+  Chapters?: { Name?: string; StartPositionTicks: number; ImageTag?: string }[];
+  MediaType?: string;
+  Album?: string;
+  Artists?: string[];
   CurrentProgram?: Item;
   StartDate?: string;
   EndDate?: string;
@@ -38,6 +42,7 @@ export interface MediaStream {
 }
 export interface MediaSource {
   Id: string;
+  Name?: string;
   Container?: string;
   SupportsDirectPlay?: boolean;
   SupportsDirectStream?: boolean;

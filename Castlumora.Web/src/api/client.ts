@@ -254,12 +254,14 @@ export class Api {
     audio?: number,
     subtitle?: number,
     forceTranscode = false,
+    options: { mediaSourceId?: string; maxBitrate?: number } = {},
   ) {
     return this.request<PlaybackInfo>(`Items/${id}/PlaybackInfo`, {
       method: 'POST',
       body: JSON.stringify({
         UserId: this.session?.user.Id,
         DeviceProfile: profile,
+        MediaSourceId: options.mediaSourceId,
         StartTimeTicks: position,
         AudioStreamIndex: audio,
         SubtitleStreamIndex: subtitle,
@@ -267,9 +269,24 @@ export class Api {
         EnableDirectPlay: !forceTranscode,
         EnableDirectStream: !forceTranscode,
         EnableTranscoding: true,
-        MaxStreamingBitrate: 20000000,
+        MaxStreamingBitrate: options.maxBitrate ?? 20000000,
       }),
     });
+  }
+  async nextEpisode(item: Item) {
+    if (!item.SeriesId) return undefined;
+    const result = await this.request<QueryResult>(
+      `Shows/${item.SeriesId}/Episodes`,
+      {},
+      {
+        UserId: this.session?.user.Id,
+        StartItemId: item.Id,
+        Limit: 2,
+        IsMissing: false,
+        Fields: 'Overview',
+      },
+    );
+    return result.Items[1];
   }
   report(kind: 'Playing' | 'Playing/Progress' | 'Playing/Stopped', body: object) {
     return this.request<void>(`Sessions/${kind}`, { method: 'POST', body: JSON.stringify(body) });
