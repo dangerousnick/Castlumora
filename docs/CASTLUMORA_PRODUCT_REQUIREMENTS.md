@@ -109,6 +109,18 @@
 - A full Castlumora Web admin workflow for importing and repairing creator metadata; privileges, security and legal-source checks, history and verification. Use only lawful/authorized acquisition and rights-compliant metadata access; no DRM/security-circumvention features.
 - Full specification and test acceptance criteria: **[Built-in imports and YouTube/creator metadata](CASTLUMORA_IMPORT_AND_CREATOR_METADATA.md)**. Future Codex tasks **must read this document** alongside this master specification. Do not leave these as optional add-ons or mark them complete without testing.
 
+## K. Installable end-to-end test build — mandatory delivery milestone
+
+- **After the assigned development work and verification, build an actual runnable Castlumora release candidate for the owner to install and evaluate**, not merely a development server, mockup, CI log, or source archive.
+- Target **Linux Mint 22.3 / Ubuntu-compatible x86_64** first; provide a self-contained or clearly dependency-documented server with the **new Castlumora Web UI packaged and served**, branding/assets, built-in native features, and correct backend API integration. Include startup/service instructions and a safe isolated data-directory approach.
+- Provide a **GitHub Actions build artifact or GitHub prerelease asset** downloadable through GitHub, with SHA-256 checksum and exact version/commit ID. If upload or release tooling is unavailable, do not claim an artifact was delivered; report the blocker and provide verified local build instructions.
+- Support a **fresh install** without relying on existing Jellyfin Web assets, except explicitly documented legacy administration fallbacks. Preserve access to essential Live TV, encoding, plugins, libraries, users and server settings.
+- Include concise **INSTALL_TEST_BUILD.md**, an explicit feature checklist, known gaps, test media and optional test credentials instructions that do not commit secrets, log/diagnostics collection, and an easy way to report defects.
+- Exercise a **smoke test on the actual packaged output**: launch server, open integrated Castlumora Web in a browser, initial setup, login, browse, playback (direct/HLS/transcoding when available), live TV/DVR if fixtures exist, administration navigation, profile permissions, layout persistence and intro/outro controls. Only mark functions verified when actually exercised; distinguish untested hardware-dependent items.
+- Version the build as **Castlumora 1.0 development preview / prerelease** until the full release criteria are met. Do not misrepresent a partial feature set as a production-stable 1.0 release.
+- Do not require merging a development PR into `main` just to distribute a test artifact. Build from an explicitly identified tested branch/commit and leave merge decisions for human review.
+- Produce this usable build **before declaring the coding task complete**. If usage is low, first save/push a tested checkpoint and make packaging/release the next clearly documented milestone. Do not falsely promise autonomous continuation or invisible work after limits interrupt the session.
+
 ## Requirement retention rule
 
 **Do not silently remove a feature in this file when narrowing scope for a development phase.** Mark it `planned` or `deferred`, record constraints and dependencies, and preserve it for future work. Any deliberate removal or changed product requirement should be recorded explicitly in Git history with rationale and owner approval.
