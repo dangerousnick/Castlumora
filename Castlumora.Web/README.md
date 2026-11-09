@@ -32,3 +32,5 @@ See root `DEVELOPMENT_PROGRESS.md` for current validation, known limitations and
 ## Distribution notices
 
 The static build includes the unchanged project GPL text as `LICENSE.txt` and runtime dependency license texts as `THIRD_PARTY_NOTICES.txt`. Keep both files with distributions; update the notices when updating runtime dependencies. Server copyright and contributor files remain unchanged.
+
+Native media guides: [music and private playlists](../docs/CASTLUMORA_MUSIC.md), [photos/books/collections and reader state](../docs/CASTLUMORA_READER_AND_SHELVES.md). The complete requirements and progress files distinguish implemented workflows from remaining work.

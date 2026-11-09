@@ -49,6 +49,11 @@ export default function Libraries() {
           value={library.LibraryOptions}
           fields={[
             { key: 'EnableRealtimeMonitor', label: 'Monitor folder changes', type: 'boolean' },
+            {
+              key: 'EnablePhotos',
+              label: 'Include photos in home video libraries',
+              type: 'boolean',
+            },
             { key: 'PreferredMetadataLanguage', label: 'Metadata language' },
             { key: 'MetadataCountryCode', label: 'Metadata country' },
             { key: 'SaveLocalMetadata', label: 'Save metadata beside media', type: 'boolean' },

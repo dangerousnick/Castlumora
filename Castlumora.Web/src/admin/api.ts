@@ -38,10 +38,14 @@ export function adminApi(api: Api) {
         {
           method: 'POST',
           body: JSON.stringify({
-            LibraryOptions: { PathInfos: [{ Path: path }], EnableRealtimeMonitor: true },
+            LibraryOptions: {
+              PathInfos: [{ Path: path }],
+              EnableRealtimeMonitor: true,
+              ...(type === 'photos' ? { EnablePhotos: true } : {}),
+            },
           }),
         },
-        { name, collectionType: type, refreshLibrary: true },
+        { name, collectionType: type === 'photos' ? 'homevideos' : type, refreshLibrary: true },
       ),
     saveLibrary: (id: string, options: ObjectData) =>
       api.request<void>('Library/VirtualFolders/LibraryOptions', {

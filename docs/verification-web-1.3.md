@@ -75,3 +75,12 @@ Real tuners/M3U/XMLTV/group filtering/DVR, hardware acceleration, Windows/macOS/
 - [Mobile editor — fixture layout](screenshots/web-editor-mobile-fixture.png)
 
 Screenshots show UI layout, not real catalog/tuner/admin parity. Their fixtures exist only under `Castlumora.Web/browser/`. The GPL and runtime dependency notices are included with the static build.
+
+
+## Native shelf and reader continuation
+
+Frontend typecheck/lint/build pass, with 41 passing unit/API/component tests. Normal isolated API and Linux executable builds pass with zero warnings/errors. API regression suite: 195 pass, 3 Windows-specific skips. Added claims-owned reader-store/controller tests cover persisted state isolation, inaccessible/non-book denial and ignored foreign profile IDs. EPUB tests cover executable/remote content removal and metadata-resource/traversal/size rejection.
+
+Actual disposable-server Chromium: all three shelf workflows pass (synthetic photos/navigation/rotation; authenticated PDF page/theme resume and EPUB chapters/CFI resume; create/add/remove/delete collection with original movie retained). The guarded fixture script verifies loopback, a local disposable marker and the server's actual data path before creating data. Unsupported/encrypted/large books, additional ebook/comic formats, annotation/full-text/offline, real-library scale and broad assistive/native-device support remain unverified or unimplemented. PDF/EPUB code is lazy loaded; the EPUB/player bundles retain Vite's size advisory. No production/Coon Media access or deployment.
+
+Full browser regression after this milestone: **15 passed in one run** (2 editor/mobile API fixtures plus 13 actual disposable-server cases covering movie/HLS, administration, DVR schedules, live switching, skipper, signup/pairing, music/private playlists, video/audio coexistence and shelves/reader/collections).

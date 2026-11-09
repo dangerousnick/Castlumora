@@ -55,6 +55,7 @@ namespace Jellyfin.Server.Extensions
             // The default handler must be first so that it is evaluated first
             serviceCollection.AddSingleton<Jellyfin.Api.Castlumora.PresentationStore>();
             serviceCollection.AddSingleton<Jellyfin.Api.Castlumora.RegistrationService>();
+            serviceCollection.AddSingleton<Jellyfin.Api.Castlumora.ReaderStore>();
             serviceCollection.AddTransient(provider => new Lazy<MediaBrowser.Controller.Session.ISessionManager>(provider.GetRequiredService<MediaBrowser.Controller.Session.ISessionManager>));
             serviceCollection.AddSingleton<Jellyfin.Api.Castlumora.SkipperService>();
             serviceCollection.AddSingleton<MediaBrowser.Controller.MediaSegments.IMediaSegmentProvider>(provider => provider.GetRequiredService<Jellyfin.Api.Castlumora.SkipperService>());

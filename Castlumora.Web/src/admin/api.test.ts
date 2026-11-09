@@ -47,3 +47,12 @@ it('uses existing administrator policy endpoints for permissions and task comman
     ['ScheduledTasks/Running/task-id', 'DELETE'],
   ]);
 });
+
+it('maps photo library creation to supported homevideos with photo indexing enabled', async () => {
+  const request = vi.spyOn(api, 'request').mockResolvedValue(undefined);
+  await adminApi(api).createLibrary('Photos', 'photos', '/media/photos');
+  expect(request.mock.calls[0][2]).toMatchObject({ collectionType: 'homevideos' });
+  expect(JSON.parse(request.mock.calls[0][1]!.body as string).LibraryOptions.EnablePhotos).toBe(
+    true,
+  );
+});

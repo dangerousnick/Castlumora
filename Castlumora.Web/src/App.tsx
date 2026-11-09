@@ -17,6 +17,9 @@ import Detail from './pages/Detail';
 import Live from './pages/Live';
 import Administration from './admin/Administration';
 import { Feedback } from './components/Media';
+const Shelf = lazy(() => import('./shelf/Shelf'));
+const PhotoViewer = lazy(() => import('./shelf/PhotoViewer'));
+const Reader = lazy(() => import('./reader/Reader'));
 const Player = lazy(() => import('./player/Player'));
 function PlayerRoute() {
   const { id } = useParams();
@@ -143,6 +146,9 @@ function Shell({
                 </summary>
                 <div className="menu">
                   <Link to="/music">Music & playlists</Link>
+                  <Link to="/shelf/photos">Photos</Link>
+                  <Link to="/shelf/books">Books</Link>
+                  <Link to="/shelf/collections">Collections</Link>
                   <Link to="/live">
                     <Radio size={15} />
                     Live TV
@@ -176,6 +182,9 @@ function Shell({
                   <Route path="/play/:id" element={<PlayerRoute />} />
                   <Route path="/live" element={<Live />} />
                   <Route path="/music" element={<Music />} />
+                  <Route path="/shelf/:kind" element={<Shelf />} />
+                  <Route path="/photo/:id" element={<PhotoViewer />} />
+                  <Route path="/read/:id" element={<Reader />} />
                   <Route path="/admin/*" element={<Administration />} />
                   <Route
                     path="*"

@@ -5,6 +5,8 @@ export interface User {
     IsAdministrator: boolean;
     EnableLiveTvAccess?: boolean;
     EnableLiveTvManagement?: boolean;
+    EnableContentDownloading?: boolean;
+    EnableCollectionManagement?: boolean;
   };
   PrimaryImageTag?: string;
 }
@@ -19,6 +21,8 @@ export interface Item {
   RunTimeTicks?: number;
   SeriesId?: string;
   SeriesName?: string;
+  ParentId?: string;
+  CanDownload?: boolean;
   ParentIndexNumber?: number;
   IndexNumber?: number;
   ImageTags?: Record<string, string>;

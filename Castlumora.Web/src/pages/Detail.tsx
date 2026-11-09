@@ -3,6 +3,7 @@ import { Link, useParams } from 'react-router-dom';
 import { Play, Plus, Check, ArrowLeft } from 'lucide-react';
 import { sameId } from '../api/client';
 import { errorText, useApp, useLoad } from '../state';
+import { ShelfDetail } from '../shelf/Shelf';
 import { MusicDetail } from '../music/Music';
 import { Feedback } from '../components/Media';
 function Episodes({ seriesId, seasonId }: { seriesId: string; seasonId: string }) {
@@ -49,6 +50,8 @@ export default function Detail() {
       setError(errorText(e));
     }
   }
+  if (item && ['Book', 'PhotoAlbum', 'BoxSet'].includes(item.Type))
+    return <ShelfDetail key={item.Id} item={item} />;
   if (item && ['Audio', 'MusicAlbum', 'MusicArtist', 'Playlist'].includes(item.Type))
     return <MusicDetail key={item.Id} item={item} />;
   return (

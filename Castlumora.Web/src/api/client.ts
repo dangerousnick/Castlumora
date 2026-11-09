@@ -36,18 +36,21 @@ export class Api {
       if (v !== undefined) url.searchParams.set(k, String(v));
     return url;
   }
-  async request<T>(
-    path: string,
-    options: RequestInit = {},
-    params: Record<string, string | number | boolean | undefined> = {},
-  ): Promise<T> {
+  requestHeaders(): Record<string, string> {
     const device =
       this.session?.deviceId ?? localStorage.getItem('castlumora-device') ?? crypto.randomUUID();
     localStorage.setItem('castlumora-device', device);
     const auth = `MediaBrowser Client="Castlumora Web", Device="Browser", DeviceId="${device}", Version="1.0.0"${this.session ? `, Token="${this.session.token}"` : ''}`;
+    return { 'Content-Type': 'application/json', Authorization: auth };
+  }
+  async response(
+    path: string,
+    options: RequestInit = {},
+    params: Record<string, string | number | boolean | undefined> = {},
+  ): Promise<Response> {
     const response = await fetch(this.url(path, params), {
       ...options,
-      headers: { 'Content-Type': 'application/json', Authorization: auth, ...options.headers },
+      headers: { ...this.requestHeaders(), ...options.headers },
       referrerPolicy: 'no-referrer',
     });
     if (!response.ok)
@@ -59,6 +62,14 @@ export class Api {
             ? 'Your profile cannot access this feature.'
             : `Server returned ${response.status}. Please try again.`,
       );
+    return response;
+  }
+  async request<T>(
+    path: string,
+    options: RequestInit = {},
+    params: Record<string, string | number | boolean | undefined> = {},
+  ): Promise<T> {
+    const response = await this.response(path, options, params);
     return response.status === 204
       ? (undefined as T)
       : response.headers.get('content-type')?.includes('json')

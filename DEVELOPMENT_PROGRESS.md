@@ -6,7 +6,7 @@ Permanent source of truth: [docs/CASTLUMORA_PRODUCT_REQUIREMENTS.md](docs/CASTLU
 
 ## Current continuation status
 
-The master specification is **not complete**. Tested continuation work now includes real HLS/track/quality controls, permission-filtered category pagination/folder names, layout revision rollback, native administration, Live TV/DVR schedules/channel switching the native reviewed intro/outro skipper, and registration/invitation workflows. Historical foundation limits below are superseded by the continuation checkpoints at the end of this file. See those checkpoints for the current exact next steps and unverified features.
+The master specification is **not complete**. Tested continuation work now includes real HLS/track/quality controls, permission-filtered category pagination/folder names, layout revision rollback, native administration, Live TV/DVR schedules/channel switching the native reviewed intro/outro skipper, registration/invitation workflows, native music/private playlists, and native photo/book/collection workflows. Historical foundation limits below are superseded by the continuation checkpoints at the end of this file. See those checkpoints for the current exact next steps and unverified features.
 
 ## Published milestones
 
@@ -20,6 +20,8 @@ Continuation publications:
 
 - `5ac61c1159eec98292a43d40f078f2f52ba09858`: built-in reviewed intro/outro detection and profile skip modes.
 - `45b81ca2dcc38fe9801f71a6e847a259b0359f7d`: tested initially-disabled account provisioning.
+- `559bcb95566bf3f8777a2958ae47a6714cb15e04`: invitation registration and pairing.
+- `6206b4e5c4f7bfe102135bf57892baaad068ba6c`: native music/background queue/private playlists.
 
 - `e1786a8f7bedd074e493e43d5e2e2fdc2961e2ac`: real HLS and track/quality/source/chapter/seek controls.
 - `8541ce71c7568c1b1de7d2538fd26c4740405745`: permission-scoped category pages, layout rollback and native administration.
@@ -130,3 +132,14 @@ Added native albums/artists/tracks/search/paging, artist/album details, a queue 
 Frontend typecheck/lint/build and 37 tests pass. Actual disposable-server music workflow passes: artist → album, playback/seek/background navigation/next track, compatible MP3, pause/stop and complete private playlist editing. Retained a guarded synthetic tagged-MP3 generator/indexer. Video coexistence passes: starting the movie stops only the background music session. All 10 actual-server browser cases and both editor/mobile fixture cases pass. See docs/CASTLUMORA_MUSIC.md.
 
 Remaining: photo/book/collection screens and recording lifecycle, richer music metadata/lyrics/sharing/scale coverage, linked profile/preset and personalization requirements, optional resource/creator/cloud/offline/plugin/native-platform work. Continue existing code; no main merge or production/Coon Media deployment.
+
+
+### Continuation checkpoint: photos, books and collections
+
+Added native photo/album shelves, image navigation/zoom/rotation/slideshow; books and authenticated PDF/EPUB reading; profile-specific atomic reading positions/themes/font preferences; native collection creation, media add/remove and deletion retaining media. Fixed native administrator photo-library creation to use supported `homevideos` plus `EnablePhotos`. EPUB is sanitized before rendering, scripting disabled, archive sizes/path traversal bounded and external metadata resources rejected. PDF uses a bundled local worker. Extended distributed dependency notices without changing GPL/upstream attribution.
+
+Frontend typecheck/lint/build and 41 tests pass. Normal API/executable builds pass with zero warnings/errors. API suite: 195 pass, 3 Windows-specific skips, including inaccessible/non-book denial, claims-owned persistence and submitted foreign profile-ID isolation. All three actual-server shelf cases pass on synthetic photos/two-page PDF/two-chapter EPUB and collections; reader positions survive reload and collection deletion retains its movie. See docs/CASTLUMORA_READER_AND_SHELVES.md and browser/setup-shelf-fixture.py. The latter requires loopback, a disposable marker and matching actual server data directory. A failed initial synthetic photo library retained its invalid identity when recreated with the same name; the final uniquely named fixture is created with the correct supported type from the start. No source workaround or production data change was needed.
+
+Exact next steps: complete actual DVR recording lifecycle/playback/deletion and duration coverage; finish linked account/viewing-profile and editable kids/adult presets; implement interests/follows/local recommendations and profile notifications; then editable onboarding/resource presets, optional $0 quotas, creator/OBS, private cloud/offline, declarative plugin UI and native device requirements from the permanent specification. Rich music lyrics/metadata/sharing, comics/other book conversion, annotations/search/offline reading and broader real-library/device compatibility remain unfinished. Keep the existing implementation and castle assets, preserve GPL and legacy behavior, publish tested milestones and do not merge/deploy automatically or contact Coon Media.
+
+Full browser regression after this milestone: **15 passed in one run** (2 editor/mobile API fixtures plus 13 actual disposable-server cases covering movie/HLS, administration, DVR schedules, live switching, skipper, signup/pairing, music/private playlists, video/audio coexistence and shelves/reader/collections).

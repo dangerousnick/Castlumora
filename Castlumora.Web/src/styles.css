@@ -1780,3 +1780,106 @@ input[type='checkbox'] {
 .music-card small {
   color: var(--muted);
 }
+.shelf-card {
+  display: block;
+}
+.shelf-card > div {
+  aspect-ratio: 1;
+  background: linear-gradient(135deg, #362647, #14101c);
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  border-radius: 12px;
+  margin-bottom: 8px;
+}
+.shelf-card img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.shelf-card span {
+  font-size: 60px;
+  color: #c2a4e7;
+}
+.shelf-card.book-card > div {
+  aspect-ratio: 2/3;
+}
+.photo-canvas {
+  height: 70vh;
+  overflow: auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #08060d;
+  border-radius: 16px;
+  margin-top: 16px;
+}
+.photo-canvas img {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+  transition: transform 0.2s;
+}
+.reader-shell {
+  border-radius: 18px;
+  padding: 20px;
+  margin-top: 20px;
+  background: #17121e;
+  color: #f4edff;
+}
+.reader-light {
+  background: #fff;
+  color: #17121e;
+}
+.reader-sepia {
+  background: #f4ebd5;
+  color: #3c3225;
+}
+.reader-toolbar {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  flex-wrap: wrap;
+  padding: 14px 0;
+}
+.reader-toolbar label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.reader-toolbar input {
+  max-width: 90px;
+}
+.pdf-canvas {
+  overflow: auto;
+  max-height: 80vh;
+  text-align: center;
+}
+.pdf-canvas canvas {
+  display: block;
+  margin: auto;
+  max-width: none;
+}
+.epub-canvas {
+  min-height: 440px;
+}
+.reader-shell .page-heading {
+  flex-wrap: wrap;
+}
+.reader-shell select,
+.reader-shell input {
+  color: #efe7fa;
+  background: #23182f;
+}
+@media (max-width: 600px) {
+  .reader-shell {
+    padding: 10px;
+  }
+  .reader-toolbar {
+    gap: 6px;
+  }
+  .reader-toolbar button {
+    font-size: 12px;
+    padding: 8px;
+  }
+}

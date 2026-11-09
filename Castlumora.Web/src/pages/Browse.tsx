@@ -49,6 +49,15 @@ export default function Browse() {
                 : 'Pick a story. Make it a night.'}
           </p>
         </div>
+        <Link to="/shelf/photos" className="button secondary">
+          Photos
+        </Link>
+        <Link to="/shelf/books" className="button secondary">
+          Books
+        </Link>
+        <Link to="/shelf/collections" className="button secondary">
+          Collections
+        </Link>
         <Link to="/music" className="button secondary">
           Music & playlists
         </Link>
