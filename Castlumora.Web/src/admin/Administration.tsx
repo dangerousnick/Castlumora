@@ -2,6 +2,7 @@ import { lazy, Suspense } from 'react';
 import { NavLink, Route, Routes } from 'react-router-dom';
 import { useApp } from '../state';
 import { Feedback } from '../components/Media';
+const Skipper = lazy(() => import('./Skipper'));
 const Presentation = lazy(() => import('../pages/Admin'));
 const Libraries = lazy(() => import('./Libraries'));
 const Users = lazy(() => import('./Users'));
@@ -27,6 +28,7 @@ export default function Administration() {
             ['libraries', 'Libraries & metadata'],
             ['live', 'Live TV & DVR'],
             ['encoding', 'Playback & encoding'],
+            ['skipper', 'Intro & outro skipper'],
             ['users', 'Users & devices'],
             ['plugins', 'Plugins'],
             ['system', 'System & backups'],
@@ -47,6 +49,7 @@ export default function Administration() {
             <Route path="libraries" element={<Libraries />} />
             <Route path="live" element={<LiveSetup />} />
             <Route path="encoding" element={<Encoding />} />
+            <Route path="skipper" element={<Skipper />} />
             <Route path="users" element={<Users />} />
             <Route path="plugins" element={<Plugins />} />
             <Route path="system" element={<System />} />

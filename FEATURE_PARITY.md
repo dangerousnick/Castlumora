@@ -47,3 +47,5 @@ The initial table records the foundation baseline. The following changes superse
 All other unfinished product groups remain unfinished; this checkpoint does not establish full master-spec parity.
 
 - Live TV/DVR continuation: native six-hour guide/channel/date filtering, paginated programs/recordings, single/series record options, schedule edit/cancel and player channel switching implemented. Actual synthetic schedule persistence/cancellation and two-channel playback/cleanup pass. Completed recording lifecycle, long-duration timeshift, physical tuners and channel groups remain pending.
+
+- Native skipper continuation: optional built-in same-season repeated-audio detection, scheduled extraction integration, central review/correction/approval, post-credit guard and per-profile manual/automatic/disabled browser modes implemented. Real synthetic detection and browser skipping pass. Suggestions require review; real-series accuracy, TV/mobile renderers and device verification remain unfinished. See docs/CASTLUMORA_SKIPPER.md.

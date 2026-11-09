@@ -46,6 +46,16 @@ public sealed class CastlumoraPresentationControllerTests : IClassFixture<Jellyf
         var authentication = await login.Content.ReadFromJsonAsync<JsonObject>(TestContext.Current.CancellationToken);
         viewer.DefaultRequestHeaders.Remove("Authorization");
         viewer.DefaultRequestHeaders.AddAuthHeader(authentication!["AccessToken"]!.GetValue<string>());
+        using var skipperDenied = await viewer.PutAsJsonAsync("Castlumora/Skipper/Settings", new { analysisEnabled = true, defaultMode = "automatic" }, TestContext.Current.CancellationToken);
+        Assert.Equal(HttpStatusCode.Forbidden, skipperDenied.StatusCode);
+        using var intervalDenied = await viewer.GetAsync("Castlumora/Skipper/Items/11111111111111111111111111111111", TestContext.Current.CancellationToken);
+        Assert.Equal(HttpStatusCode.Forbidden, intervalDenied.StatusCode);
+        using var skipPreference = await viewer.PutAsJsonAsync("Castlumora/Skipper/Profile", new { mode = "disabled" }, TestContext.Current.CancellationToken);
+        skipPreference.EnsureSuccessStatusCode();
+        var viewerSkip = await viewer.GetFromJsonAsync<JsonObject>("Castlumora/Skipper/Profile", TestContext.Current.CancellationToken);
+        Assert.Equal("disabled", viewerSkip!["mode"]!.GetValue<string>());
+        var adminSkip = await admin.GetFromJsonAsync<JsonObject>("Castlumora/Skipper/Profile", TestContext.Current.CancellationToken);
+        Assert.Equal("default", adminSkip!["mode"]!.GetValue<string>());
         using var historyDenied = await viewer.GetAsync("Castlumora/Presentation/History", TestContext.Current.CancellationToken);
         Assert.Equal(HttpStatusCode.Forbidden, historyDenied.StatusCode);
         var history = await admin.GetFromJsonAsync<JsonArray>("Castlumora/Presentation/History", TestContext.Current.CancellationToken);

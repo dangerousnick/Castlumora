@@ -4,6 +4,10 @@ Branch: `development/castlumora-web-1.3`; PR targets `main`. Base main: `b06078b
 
 Permanent source of truth: [docs/CASTLUMORA_PRODUCT_REQUIREMENTS.md](docs/CASTLUMORA_PRODUCT_REQUIREMENTS.md). Remaining product vision: [PRODUCT_ROADMAP.md](PRODUCT_ROADMAP.md). Actual coverage: [FEATURE_PARITY.md](FEATURE_PARITY.md).
 
+## Current continuation status
+
+The master specification is **not complete**. Tested continuation work now includes real HLS/track/quality controls, permission-filtered category pagination/folder names, layout revision rollback, native administration, Live TV/DVR schedules/channel switching and the native reviewed intro/outro skipper. Historical foundation limits below are superseded by the continuation checkpoints at the end of this file. See those checkpoints for the current exact next steps and unverified features.
+
 ## Published milestones
 
 1. `b30674348ab61176bc1193a819522e11177b5e3f`: independent React/TypeScript frontend, real API adapter, primary screens/player, permanent requirements and progress checkpoint; frontend checks and 15 tests passed.
@@ -11,6 +15,12 @@ Permanent source of truth: [docs/CASTLUMORA_PRODUCT_REQUIREMENTS.md](docs/CASTLU
 3. `7204fcfa248a8b1c9cbcb1aa131613dbe7b2411e`: HTTP test cancellation-token fix, verified authorization, legacy-root fallback and 16 passing frontend tests.
 4. `f46230b5d738a227f286661e7805fbb640b0dbe9`: actual-server playback verification results, final reports/screenshots and bundled GPL/dependency notices.
 5. Documentation merge incorporates concurrent main commit `7fae5086785978ac081113d364c5655e3f0b3a17`, preserving both complete requirement documents and explicitly tracking the built-in intro/outro skipper as planned. No runtime source changed in this merge. PR: https://github.com/dangerousnick/Castlumora/pull/3.
+
+Continuation publications:
+
+- `e1786a8f7bedd074e493e43d5e2e2fdc2961e2ac`: real HLS and track/quality/source/chapter/seek controls.
+- `8541ce71c7568c1b1de7d2538fd26c4740405745`: permission-scoped category pages, layout rollback and native administration.
+- `9f4bcb6be4091b2e08a3670d21d7abdd67346f08`: native guide, DVR schedules and live channel switching.
 
 Publishing uses the connected GitHub API because the terminal GH_TOKEN is invalid. Connector-created commits have different metadata/SHAs from local checkpoints; each uploaded Git tree is verified against the corresponding local committed tree. The code is not regenerated during publication. Local/remote history is synchronized after publication.
 
@@ -83,3 +93,13 @@ Added six-hour guide date/channel selection and program pagination, recording op
 Verified on the disposable loopback server with synthetic two-channel M3U and six-program-per-channel XMLTV: create single schedule, persist/edit padding, cancel; create/cancel series rule; play Castle One, switch to Castle Two and confirm own live-stream cleanup on switch/exit. Two actual-server Chromium tests pass. Frontend 25 tests, typecheck/lint/build pass. Latest normal API analyzer build: 0 warnings/errors. No production deployment or access.
 
 Recording completion/files/deletion, long-duration DVR/timeshift, physical tuners, large channel catalogs/groups and hardware compatibility still need verification/work. browser/setup-live-fixture.py retains a guarded fixture setup helper (loopback, explicit disposable marker, refuses existing tuner/providers). Next: complete recording lifecycle fixture and the retained native skipper requirements, then other media/account/platform features. Full specification remains unfinished; do not merge automatically.
+
+### Continuation checkpoint: native skipper
+
+Implemented a built-in optional repeated-audio provider using configured FFmpeg, same-season corroboration and silence/flat-fingerprint guards. Detection yields review-only suggestions. Added central revisioned review state, manual correction/approval/removal, protected post-credit boundary, file-signature checks and profile default/manual/automatic/disabled modes. The existing scheduled extraction task includes the native provider; bounded single-process decoding defers during playback and kills only its own process on cancellation. Existing providers and the MediaSegments API remain intact. Deferred session-manager resolution avoids a startup dependency cycle caught by actual-server testing.
+
+Native admin review/settings and player controls are implemented. Actual synthetic FFmpeg detection found intro 10–40s/outro 145–169.5s; suggestions were absent from central intervals until approval, and protected post-credit content remained outside the outro. Chromium manual/automatic/disabled playback modes pass. Guarded generator/verifier scripts are retained. See docs/CASTLUMORA_SKIPPER.md for exact limits, contracts and reproduction.
+
+Latest verified checks before this checkpoint: 28 frontend tests; typecheck/lint/build; 177 API tests with 3 Windows-only skips; normal API build 0 warnings/errors; isolated executable build 0 errors; HTTP authorization/profile-isolation test passes. Complete integration suite: 130 pass, 3 existing skips. Actual-server browser cases for movie/HLS, administration, DVR, live transitions and native skipping pass; administrator review UI also passes. Both editor/mobile fixture browser cases pass. Native TV/mobile renderers/device behavior and broad real-series detection accuracy remain unverified. Stale sessions from abruptly terminated clients conservatively defer analysis until cleared. Replacing media requires existing metadata/segment refresh to update central intervals.
+
+Next after publishing this milestone: complete remaining music/photos/books/collection/playlist and recording lifecycle coverage; invitations/registration/profile/preset requirements; personalization and notification workflows; optional quotas/business/creator/cloud/offline/plugin/native-platform requirements. Preserve this work and the full requirements; do not claim complete master-spec parity or merge/deploy automatically.

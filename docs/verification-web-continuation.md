@@ -47,3 +47,11 @@ CASTLUMORA_TEST_LIVE=1 npm run test:browser -- browser/real-server.spec.ts -g sy
 The helper refuses non-loopback hosts, missing disposable markers and any existing tuner/listing sources. Schedules are for a future synthetic guide program and are cancelled by the successful test. A failed/interrupted test may leave synthetic schedules: inspect/cancel them in the disposable server before repeating. Recreate the disposable configuration when the guide dates become stale. Do not use this against production.
 
 These checks do not yet certify completed recording files, deletion, long-duration playback/timeshift, physical tuners or a large grouped channel catalog.
+
+## Native skipper milestone
+
+Implemented native optional repeated-audio analysis and central review/correction/approval, post-credit protection, existing scheduled extraction integration and per-profile browser manual/automatic/disabled behavior. Actual synthetic detection found 10–40s intro and 145–169.5s outro; unreviewed suggestions were absent from MediaSegments. Approval exposed exact bounded intervals; actual Chromium skip modes and administrator interval correction/restoration pass. The guarded verifier also passed on a second untouched synthetic episode. See CASTLUMORA_SKIPPER.md for algorithms, limits and commands.
+
+Final checks for this milestone: frontend typecheck/lint/build and 28 tests pass; 2 editor/mobile fixture cases pass; all 7 actual-server browser cases pass across the complete run and targeted reruns. The expanded series fixture exposed an old test assumption that the first title was a movie; movie tests now select their explicit synthetic movie. API suite: 177 pass, 3 Windows-specific skips. Full integration suite: 130 pass, 3 existing skips. Normal API analyzer build: 0 warnings/errors. Isolated executable build succeeds. The native provider's session dependency is deferred; actual startup and HTTP tests verify the registration.
+
+No real-series accuracy, physical tuner/TV/mobile or long-duration DVR certification. A stale session from an interrupted test conservatively postpones analysis; no production sessions were affected. API build outputs were refreshed only for the stopped disposable server. No production access, merge or deployment.

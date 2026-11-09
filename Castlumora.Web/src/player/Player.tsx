@@ -5,6 +5,7 @@ import Hls from 'hls.js';
 import type { MediaSource } from '../api/types';
 import { errorText, useApp, useLoad } from '../state';
 import { Feedback } from '../components/Media';
+import { SkipControls } from '../skipper/SkipControls';
 import { authenticatedMediaUrl, browserProfile, ticks } from './profile';
 export default function Player() {
   const { id = '' } = useParams();
@@ -281,6 +282,9 @@ export default function Player() {
         crossOrigin="anonymous"
         aria-label={item.value?.Name ?? 'Video player'}
       />
+      {item.value?.Type === 'Episode' && (
+        <SkipControls id={id} positionTicks={ticks(clock)} onSeek={seek} />
+      )}
       {item.value?.Type !== 'TvChannel' && duration > 0 && (
         <div className="playback-timeline">
           <label htmlFor="playback-position">

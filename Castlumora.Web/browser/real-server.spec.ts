@@ -22,10 +22,7 @@ test('real disposable server: authenticate, browse, details, stream and report p
   await page.getByRole('button', { name: 'Sign in', exact: true }).click();
   await expect(page.getByRole('link', { name: 'Browse', exact: true })).toBeVisible();
   await page.getByRole('link', { name: 'Browse', exact: true }).click();
-  await page
-    .getByRole('link', { name: /Details for / })
-    .first()
-    .click();
+  await page.getByRole('link', { name: 'Details for Castlumora Test', exact: true }).click();
   await expect(page.locator('.detail-copy h1')).toBeVisible();
   const started = page.waitForResponse(
     (r) =>
@@ -77,10 +74,7 @@ test('real disposable server: compatible HLS playback and cleanup', async ({ pag
   await page.getByLabel('Password', { exact: true }).fill(password!);
   await page.getByRole('button', { name: 'Sign in', exact: true }).click();
   await page.getByRole('link', { name: 'Browse', exact: true }).click();
-  await page
-    .getByRole('link', { name: /Details for / })
-    .first()
-    .click();
+  await page.getByRole('link', { name: 'Details for Castlumora Test', exact: true }).click();
   await page.getByRole('link', { name: /^(Watch now|Resume)$/ }).click();
   await expect
     .poll(() => page.locator('video').evaluate((v: HTMLVideoElement) => v.currentTime))
@@ -216,11 +210,24 @@ test('real disposable server: synthetic guide, DVR schedules and series rules', 
   await page.getByLabel('Username').fill(username!);
   await page.getByLabel('Password', { exact: true }).fill(password!);
   await page.getByRole('button', { name: 'Sign in', exact: true }).click();
+  const guide = page.waitForResponse(
+    (r) => new URL(r.url()).pathname.endsWith('/LiveTv/Programs') && r.request().method() === 'GET',
+  );
   await page.getByRole('link', { name: 'Live TV & guide', exact: true }).click();
+  const programs = (await (await guide).json()).Items as { Name: string; StartDate: string }[];
+  const upcoming = programs.find(
+    (p) =>
+      p.Name.startsWith('Synthetic Castle Show') && +new Date(p.StartDate) > Date.now() + 60000,
+  );
+  if (!upcoming)
+    throw new Error(
+      'Regenerate the disposable XMLTV fixture: no future synthetic program remains.',
+    );
+  const name = upcoming.Name;
   await page
     .getByRole('combobox', { name: 'Channel', exact: true })
     .selectOption({ label: 'Castle One' });
-  const program = page.locator('.programs details').filter({ hasText: 'Synthetic Castle Show 1' });
+  const program = page.locator('.programs details').filter({ hasText: name });
   await program.locator('summary').click();
   await program.getByRole('button', { name: 'Record options', exact: true }).click();
   await page.getByLabel('Padding before (seconds)').fill('15');
@@ -230,9 +237,7 @@ test('real disposable server: synthetic guide, DVR schedules and series rules', 
   await page.getByRole('button', { name: 'Save single recording', exact: true }).click();
   expect((await created).status()).toBe(204);
   await page.getByRole('button', { name: 'Scheduled', exact: true }).click();
-  await expect(
-    page.getByRole('heading', { name: 'Synthetic Castle Show 1', exact: true }),
-  ).toBeVisible();
+  await expect(page.getByRole('heading', { name, exact: true })).toBeVisible();
   await page.getByRole('button', { name: 'Edit recording', exact: true }).click();
   await expect(page.getByLabel('Padding before (seconds)')).toHaveValue('15');
   await page.getByLabel('Padding before (seconds)').fill('20');
@@ -259,9 +264,7 @@ test('real disposable server: synthetic guide, DVR schedules and series rules', 
   await page.getByRole('button', { name: 'Save series recording', exact: true }).click();
   expect((await series).status()).toBe(204);
   await page.getByRole('button', { name: 'Series', exact: true }).click();
-  await expect(
-    page.getByRole('heading', { name: 'Synthetic Castle Show 1', exact: true }),
-  ).toBeVisible();
+  await expect(page.getByRole('heading', { name, exact: true })).toBeVisible();
   await page.getByRole('button', { name: 'Cancel recording', exact: true }).click();
   await expect(page.getByText('No series available.', { exact: true })).toBeVisible();
   await page.getByRole('button', { name: 'Recordings', exact: true }).click();
@@ -309,4 +312,103 @@ test('real disposable server: synthetic live playback, channel switching and ses
   );
   await page.getByRole('link', { name: 'Back', exact: true }).click();
   expect((await stopped).ok()).toBe(true);
+});
+
+test('real disposable server: approved intro manual/automatic/disabled playback modes', async ({
+  page,
+}) => {
+  const episode = process.env.CASTLUMORA_TEST_EPISODE;
+  test.skip(
+    !server || !username || password === undefined || !episode,
+    'Requires reviewed synthetic skipper episodes.',
+  );
+  if (!['127.0.0.1', 'localhost', '[::1]'].includes(new URL(server!).hostname))
+    throw new Error('Disposable loopback server required.');
+  await page.goto('/');
+  await page.getByLabel('Server address').fill(server!);
+  await page.getByRole('button', { name: 'Connect', exact: true }).click();
+  await page.getByLabel('Username').fill(username!);
+  await page.getByLabel('Password', { exact: true }).fill(password!);
+  await page.getByRole('button', { name: 'Sign in', exact: true }).click();
+  await expect(page.getByRole('link', { name: 'Browse', exact: true })).toBeVisible();
+  await page.goto('/#/play/' + episode);
+  const mode = page.getByRole('combobox', { name: 'Episode skipping', exact: true });
+  await mode.selectOption('manual');
+  await expect
+    .poll(() => page.locator('video').evaluate((v: HTMLVideoElement) => v.currentTime), {
+      timeout: 20000,
+    })
+    .toBeGreaterThan(0);
+  const timeline = page.getByRole('slider', { name: /Playback position/ });
+  await timeline.press('Home');
+  for (let i = 0; i < 15; i++) await timeline.press('ArrowRight');
+  await page.getByRole('button', { name: 'Skip Intro', exact: true }).click();
+  await expect
+    .poll(() => page.locator('video').evaluate((v: HTMLVideoElement) => v.currentTime))
+    .toBeGreaterThanOrEqual(40);
+  await mode.selectOption('automatic');
+  await timeline.press('Home');
+  for (let i = 0; i < 15; i++) await timeline.press('ArrowRight');
+  await expect
+    .poll(() => page.locator('video').evaluate((v: HTMLVideoElement) => v.currentTime))
+    .toBeGreaterThanOrEqual(40);
+  await mode.selectOption('disabled');
+  await timeline.press('Home');
+  for (let i = 0; i < 15; i++) await timeline.press('ArrowRight');
+  await expect(page.getByRole('button', { name: 'Skip Intro', exact: true })).toHaveCount(0);
+  const time = await page.locator('video').evaluate((v: HTMLVideoElement) => v.currentTime);
+  expect(time).toBeGreaterThanOrEqual(10);
+  expect(time).toBeLessThan(30);
+  await mode.selectOption('default');
+  const stopped = page.waitForResponse(
+    (r) => r.url().includes('/Sessions/Playing/Stopped') && r.request().method() === 'POST',
+  );
+  await page.getByRole('link', { name: 'Back', exact: true }).click();
+  expect((await stopped).ok()).toBe(true);
+});
+
+test('real disposable server: native skipper administrator review persists', async ({ page }) => {
+  test.skip(
+    !server || !username || password === undefined || !process.env.CASTLUMORA_TEST_EPISODE,
+    'Requires reviewed synthetic episodes.',
+  );
+  if (!['127.0.0.1', 'localhost', '[::1]'].includes(new URL(server!).hostname))
+    throw new Error('Disposable loopback server required.');
+  await page.goto('/');
+  await page.getByLabel('Server address').fill(server!);
+  await page.getByRole('button', { name: 'Connect', exact: true }).click();
+  await page.getByLabel('Username').fill(username!);
+  await page.getByLabel('Password', { exact: true }).fill(password!);
+  await page.getByRole('button', { name: 'Sign in', exact: true }).click();
+  await page.getByRole('link', { name: 'Administration', exact: true }).click();
+  await page
+    .getByRole('navigation', { name: 'Administration sections' })
+    .getByRole('link', { name: 'Intro & outro skipper', exact: true })
+    .click();
+  await page.getByText('Choose episode to review', { exact: true }).click();
+  await page
+    .getByLabel('Choose episode to review search', { exact: true })
+    .fill('Synthetic Skipper Episode 1');
+  await page.getByRole('button', { name: 'Search', exact: true }).click();
+  await page.getByRole('button', { name: /Synthetic Skipper Episode 1/ }).click();
+  const protectedFrom = page.getByLabel('Protect content from this second (optional)', {
+    exact: true,
+  });
+  await expect(protectedFrom).toHaveValue('170');
+  const intro = page.getByRole('group', { name: 'Intro interval 1', exact: true });
+  await expect(intro.getByLabel('Reviewed and approved for skipping')).toBeChecked();
+  const original = await intro.getByLabel('End (seconds)').inputValue();
+  await intro.getByLabel('End (seconds)').fill('41');
+  const saved = page.waitForResponse(
+    (r) => r.url().includes('/Castlumora/Skipper/Items/') && r.request().method() === 'PUT',
+  );
+  await page.getByRole('button', { name: 'Save reviewed intervals', exact: true }).click();
+  expect((await saved).ok()).toBe(true);
+  await expect(intro.getByLabel('End (seconds)')).toHaveValue('41');
+  await intro.getByLabel('End (seconds)').fill(original);
+  const restored = page.waitForResponse(
+    (r) => r.url().includes('/Castlumora/Skipper/Items/') && r.request().method() === 'PUT',
+  );
+  await page.getByRole('button', { name: 'Save reviewed intervals', exact: true }).click();
+  expect((await restored).ok()).toBe(true);
 });

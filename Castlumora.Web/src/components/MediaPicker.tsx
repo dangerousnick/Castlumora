@@ -5,8 +5,10 @@ import { Feedback } from './Media';
 export function MediaPicker({
   label,
   onChoose,
+  types = 'Movie,Series',
 }: {
   label: string;
+  types?: string;
   onChoose: (item: Item) => void;
 }) {
   const { api } = useApp();
@@ -15,9 +17,9 @@ export function MediaPicker({
   const result = useLoad(
     () =>
       search
-        ? api.items({ SearchTerm: search, Limit: 12 })
+        ? api.items({ SearchTerm: search, Limit: 12, IncludeItemTypes: types })
         : Promise.resolve({ Items: [], TotalRecordCount: 0 }),
-    [api, search],
+    [api, search, types],
   );
   return (
     <details className="media-picker">
