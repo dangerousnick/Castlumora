@@ -4,15 +4,15 @@
 
 | Feature group | Backend availability | Castlumora Web | Legacy fallback | Automated coverage | Manual/real verification and outstanding work |
 | --- | --- | --- | --- | --- | --- |
-| Server connection, base URL | Preserved | Pair once; retain address/device | Existing server setup | URL/base-path adapter tests | Real reverse-proxy deployment pending |
+| Server connection, base URL | Preserved | Pair once; retain address/device | Existing server setup | URL/base-path adapter tests | Loopback connection/authentication verified; real reverse-proxy deployment pending |
 | Accounts/passwords/auth/sessions | Preserved | Sign in/out; public profile suggestions; tab-scoped token | Full account/device management | API fixtures + server auth integration tests | No passwordless profile bypass; refresh/revocation UI pending |
 | Parental controls and permissions | Preserved | User-specific existing media endpoints; admin UI guard | Full policies | Server global-write denial tests | Full kids/adult policy matrix pending |
-| Movies and series | Preserved | Search, libraries, paging, details, seasons/episodes | Existing client | Adapter, component, browser flows | Large library/performance validation pending |
+| Movies and series | Preserved | Search, libraries, paging, details, seasons/episodes | Existing client | Adapter, component, browser flows | Real loopback movie browse/detail verified; large library/performance validation pending |
 | Music, photos, books, other types | Preserved | Existing-client link | Full inherited interfaces | Existing backend suites, not newly covered here | Native Castlumora screens pending |
 | Continue Watching | Preserved | Resume playback; independent server-backed hide preference | Existing resume remains unchanged | Filtering, isolation/persistence, menu tests | Legacy clients do not consume exclusions |
 | Up Next | Preserved | Existing NextUp API row | Full inherited interface | Adapter/fixture coverage | New-season notification/follows distinct and pending |
 | Watchlists/follows/interests | Additive watchlist file; inherited favorites unchanged | Separate My List | Existing favorites/collections | Adapter, preference and browser checks | Follows/interests/notifications not implemented |
-| Direct Play | Preserved | Browser H264/AAC MP4 profile and native video | Existing client | Negotiation/URL/unit + browser MP4 fixture | See verification report for actual-server test results |
+| Direct Play | Preserved | Browser H264/AAC MP4 profile and native video | Existing client | Negotiation/URL/unit + browser MP4 fixture | Actual loopback server + synthetic H264/AAC playback passed; see verification report |
 | Direct Stream/remux/transcoding | Preserved FFmpeg pipeline | Server-negotiated HLS via hls.js/native HLS; explicit compatible retry | Full player/quality settings | Fixture negotiation; inherited backend tests | Full remux/transcode/browser codec matrix pending |
 | Audio/subtitle selection | Preserved | Re-negotiate selected tracks; external VTT and server burn-in paths | Full inherited player | API/profile contracts | Multilingual/image/ASS fixtures and cross-browser validation pending |
 | Playback state/progress/resume | Preserved | Start/progress/pause/stop; cleanup only own stream IDs | Full inherited player | Browser event flow; inherited API tests | HLS timeline/seek edge cases require broader testing |

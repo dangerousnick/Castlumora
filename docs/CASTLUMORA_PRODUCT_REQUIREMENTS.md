@@ -542,3 +542,16 @@ Phase 1.3 is successful when:
 - A pull request is ready for review without removing existing server functionality.
 
 **Guiding principle: Build on everything Jellyfin already does well, then make Castlumora substantially more customizable, easier to navigate, and more capable.**
+
+
+# Execution continuity requirements (user follow-up)
+
+1. Commit completed, working changes regularly to the development branch.
+2. Publish each substantial tested milestone to GitHub.
+3. Maintain DEVELOPMENT_PROGRESS.md with completed features, unfinished work, known problems and exact next steps.
+4. Keep this complete product specification as the permanent source of truth.
+5. Never discard completed work or restart implementation unnecessarily.
+6. Leave a recoverable repository checkpoint if a session is interrupted or reaches usage limits.
+7. Do not merge into main until implementation has been tested and reviewed; do not merge automatically.
+
+No running Coon Media service or official Jellyfin repository is part of this development environment or deployment scope.

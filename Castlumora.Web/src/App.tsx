@@ -190,7 +190,10 @@ function Shell({
           <a href={api.legacy()} target="_blank" rel="noopener noreferrer">
             Existing client ↗
           </a>
-          <small>Castlumora · Free & open source · Built on Jellyfin · GPL</small>
+          <small>
+            Castlumora · Free &amp; open source · Built on Jellyfin ·{' '}
+            <a href="./LICENSE.txt">GPL</a> · <a href="./THIRD_PARTY_NOTICES.txt">Notices</a>
+          </small>
         </footer>
       </div>
     </AppContext.Provider>

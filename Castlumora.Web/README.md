@@ -28,3 +28,7 @@ Login/logout, existing user profiles, movie/series browsing/search, details/seas
 Music/photos/books, library setup, tuners/XMLTV, DVR scheduling, hardware encoding, plugins, networking, backups and advanced user administration remain accessible through **Existing client** / **Full server administration** links. Legacy links open the installed client root to avoid assuming its router version. Sign in there and choose Dashboard or Live TV as needed. Its configured Web distribution must remain installed.
 
 See root `DEVELOPMENT_PROGRESS.md` for current validation, known limitations and continuation instructions. Root `docs/CASTLUMORA_PRODUCT_REQUIREMENTS.md` is the permanent product specification.
+
+## Distribution notices
+
+The static build includes the unchanged project GPL text as `LICENSE.txt` and runtime dependency license texts as `THIRD_PARTY_NOTICES.txt`. Keep both files with distributions; update the notices when updating runtime dependencies. Server copyright and contributor files remain unchanged.
