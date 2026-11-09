@@ -41,3 +41,7 @@ Build on server recording libraries; add private per-user recordings and quotas,
 ## Release gates
 
 No automatic merge or production deployment. Require passing tests and human review, real playback and tuner fixtures for supported claims, permission/security review, reversible configuration migrations, licensing review and an updated feature inventory. Preserve upstream source history, attribution, namespace/API/database compatibility and the legacy fallback until tested feature parity is achieved.
+
+## Built-in intro/outro skipper (retained requirement from main)
+
+Native Castlumora capability, not a mandatory external plugin. Plan server-side repeated intro/outro detection with per-series/season safeguards, centrally stored timestamp intervals and administrator correction. Preserve inherited media-segment APIs while defining built-in scheduled analysis with resource limits. Add unobtrusive Skip Intro/Skip Outro controls, profile manual/automatic/disabled modes and admin defaults; respect post-credit scenes and unique content. Track detection, interval persistence, manual correction, player actions, auto-skip, Next Episode transitions and native-client support separately. **Not implemented or verified by Phase 1.3.**
