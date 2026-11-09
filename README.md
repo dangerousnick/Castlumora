@@ -40,7 +40,7 @@ This repository contains **Castlumora's server/backend**. Web, television and mo
 The imported server currently uses the .NET 10 SDK. The compatible web client and FFmpeg build are separate dependencies. These instructions are for developers and do not represent a packaged Castlumora installer.
 
 ```bash
-git clone --branch development/castlumora-phase-1-1 https://github.com/dangerousnick/Castlumora.git
+git clone https://github.com/dangerousnick/Castlumora.git
 cd Castlumora
 dotnet build Jellyfin.sln
 ```
