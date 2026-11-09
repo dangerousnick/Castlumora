@@ -28,7 +28,7 @@ namespace Jellyfin.Server
         /// Gets or sets the path to the web directory.
         /// </summary>
         /// <value>The path to the web directory.</value>
-        [Option('w', "webdir", Required = false, HelpText = "Path to the Jellyfin web UI resources.")]
+        [Option('w', "webdir", Required = false, HelpText = "Path to the Castlumora web UI resources.")]
         public string? WebDir { get; set; }
 
         /// <summary>
@@ -61,11 +61,11 @@ namespace Jellyfin.Server
         public bool IsService { get; set; }
 
         /// <inheritdoc />
-        [Option("package-name", Required = false, HelpText = "Used when packaging Jellyfin (example, synology).")]
+        [Option("package-name", Required = false, HelpText = "Used when packaging Castlumora (example, synology).")]
         public string? PackageName { get; set; }
 
         /// <inheritdoc />
-        [Option("published-server-url", Required = false, HelpText = "Jellyfin Server URL to publish via auto discover process")]
+        [Option("published-server-url", Required = false, HelpText = "Castlumora Server URL to publish via auto discover process")]
         public string? PublishedServerUrl { get; set; }
 
         /// <summary>
@@ -77,7 +77,7 @@ namespace Jellyfin.Server
         /// <summary>
         /// Gets or sets the path to an jellyfin backup archive to restore the application to.
         /// </summary>
-        [Option("restore-archive", Required = false, HelpText = "Path to a Jellyfin backup archive to restore from")]
+        [Option("restore-archive", Required = false, HelpText = "Path to a Castlumora backup archive to restore from")]
         public string? RestoreArchive { get; set; }
 
         /// <summary>

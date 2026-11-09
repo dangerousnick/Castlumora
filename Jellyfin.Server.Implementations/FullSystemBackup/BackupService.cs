@@ -168,7 +168,7 @@ public class BackupService : IBackupService
                     var historyEntry = zipArchive.GetEntry(NormalizePathSeparator(Path.Combine("Database", $"{nameof(HistoryRow)}.json")));
                     if (historyEntry is null)
                     {
-                        _logger.LogInformation("No backup of the history table in archive. This is required for Jellyfin operation");
+                        _logger.LogInformation("No backup of the history table in archive. This is required for Castlumora operation");
                         throw new InvalidOperationException("Cannot restore backup that has no History data.");
                     }
 
@@ -251,7 +251,7 @@ public class BackupService : IBackupService
                 }
             }
 
-            _logger.LogInformation("Restored Jellyfin system from {Date}", manifest.DateCreated);
+            _logger.LogInformation("Restored Castlumora system from {Date}", manifest.DateCreated);
         }
     }
 

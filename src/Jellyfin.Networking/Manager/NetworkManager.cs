@@ -884,12 +884,12 @@ public class NetworkManager : INetworkManager, IDisposable
         {
             if (IsIPv4Enabled && !IsIPv6Enabled && source.AddressFamily == AddressFamily.InterNetworkV6)
             {
-                _logger.LogWarning("IPv6 is disabled in Jellyfin, but enabled in the OS. This may affect how the interface is selected.");
+                _logger.LogWarning("IPv6 is disabled in Castlumora, but enabled in the OS. This may affect how the interface is selected.");
             }
 
             if (!IsIPv4Enabled && IsIPv6Enabled && source.AddressFamily == AddressFamily.InterNetwork)
             {
-                _logger.LogWarning("IPv4 is disabled in Jellyfin, but enabled in the OS. This may affect how the interface is selected.");
+                _logger.LogWarning("IPv4 is disabled in Castlumora, but enabled in the OS. This may affect how the interface is selected.");
             }
 
             bool isExternal = !IsInLocalNetwork(source);
