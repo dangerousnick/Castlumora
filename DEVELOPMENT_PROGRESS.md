@@ -4,6 +4,16 @@ Branch: `development/castlumora-web-1.3`; PR targets `main`. Base main: `b06078b
 
 Permanent source of truth: [docs/CASTLUMORA_PRODUCT_REQUIREMENTS.md](docs/CASTLUMORA_PRODUCT_REQUIREMENTS.md). Remaining product vision: [PRODUCT_ROADMAP.md](PRODUCT_ROADMAP.md). Actual coverage: [FEATURE_PARITY.md](FEATURE_PARITY.md).
 
+## Current checkpoint — native DVR recorded-media lifecycle (Phase 1.4)
+
+- **Last completed milestone:** native recording refresh and distinct library-only removal/permanent file deletion; recordings API retains the requested server-calculated CanDelete field. Expected FFmpeg stop/duration exits follow the normal cancellation path after the owned process exits; unsolicited failures remain errors.
+- **Branch:** `development/castlumora-web-1.3`, PR #3 targeting main. This section belongs to the DVR implementation commit; the exact published SHA is recorded in the next checkpoint entry after push. Previous published checkpoint: `ec93b8d86ad53c1d931bc01b2767ea4305355801`.
+- **Verification:** Frontend typecheck/lint/production build and 48/48 tests passed. Release LiveTV library build passed with zero warnings/errors; LiveTV suite 81/81 passed on Linux. Real Chromium workflow passed against an isolated actual backend and local owned M3U/XMLTV media: schedule, cancel future recording, record to completion, play output, deny ordinary-viewer mutations, retain file on library-only removal, rediscover on scan, physically delete with per-item permission, preserve original source. Fixture settings/policy restored afterwards. Initial failures exposed an unindexed new library, XMLTV cache and stripped permission field; corrected and rerun. See docs/CASTLUMORA_DVR.md.
+- **Unfinished:** active-recording stop needs its own browser coverage; real tuners/GPU/long-duration recording, channel groups and DVR storage quotas remain unverified or unimplemented. The master specification remains incomplete; metadata provider/importer, account/profile separation, personalization and extended platform work remain required.
+- **Next development task:** add and verify explicit active-recording Stop behavior and partial-file retention using the owned real-time synthetic source; publish before moving to source-aware local creator metadata integration. Preserve all existing preview assets.
+- **Usage status:** Not accessible. No reliable remaining five-hour/reset data is exposed.
+- **Recovery:** inspect status/log before fetching and fast-forwarding this branch; preserve unfinished work. Use the guarded DVR fixture helpers only on the explicitly marked disposable loopback root. Do not target production. Existing read-only Actions workflow generates intermediate previews after source pushes; a preview does not complete Phase 1.4. Continue milestones and rebuild the final preview from the final tested commit. No main merge or deployment.
+
 ## Latest recoverable checkpoint — Phase 1.4 runnable preview delivered
 
 - **Last completed milestone:** self-contained Linux x64 package with compiled integrated Castlumora Web, native fresh setup, isolated launcher/temp storage, licenses/install checklist and read-only GitHub Actions build/extract/browser/artifact delivery.

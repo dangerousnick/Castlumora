@@ -36,6 +36,7 @@ export function liveApi(api: Api, userId: string) {
           StartIndex: offset,
           Limit: 48,
           EnableTotalRecordCount: true,
+          Fields: 'CanDelete',
         },
       ),
     timers: (series = false) =>
@@ -54,6 +55,8 @@ export function liveApi(api: Api, userId: string) {
       api.request<void>(`LiveTv/${series ? 'SeriesTimers' : 'Timers'}/${encodeURIComponent(id)}`, {
         method: 'DELETE',
       }),
+    deleteRecordingFile: (id: string) =>
+      api.request<void>(`Items/${encodeURIComponent(id)}`, { method: 'DELETE' }),
     removeRecording: (id: string) =>
       api.request<void>(`LiveTv/Recordings/${id}`, { method: 'DELETE' }),
   };

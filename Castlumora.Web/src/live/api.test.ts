@@ -54,3 +54,16 @@ it('treats server defaults as a new schedule even when the server includes a der
     PrePaddingSeconds: 30,
   });
 });
+
+it('requests server deletion permission and keeps destructive media deletion distinct from library-only removal', async () => {
+  const request = vi.spyOn(api, 'request').mockResolvedValue(undefined);
+  const live = liveApi(api, 'viewer');
+  await live.recordings(0);
+  await live.removeRecording('recording');
+  await live.deleteRecordingFile('recording');
+  expect(request.mock.calls[0][2]).toMatchObject({ Fields: 'CanDelete', UserId: 'viewer' });
+  expect(request.mock.calls.slice(1).map(([path, options]) => [path, options?.method])).toEqual([
+    ['LiveTv/Recordings/recording', 'DELETE'],
+    ['Items/recording', 'DELETE'],
+  ]);
+});

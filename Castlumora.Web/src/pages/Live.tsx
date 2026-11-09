@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Radio, Play } from 'lucide-react';
 import { useApp, useLoad } from '../state';
@@ -6,6 +6,7 @@ import { Feedback, Poster } from '../components/Media';
 import { ActionStatus, SettingsEditor, useAction } from '../admin/Controls';
 import { liveApi } from '../live/api';
 import type { Timer } from '../live/api';
+import { RecordingControls } from '../live/RecordingControls';
 type Tab = 'Guide' | 'Recordings' | 'Scheduled' | 'Series';
 export default function Live() {
   const { api, session } = useApp();
@@ -39,6 +40,13 @@ export default function Live() {
     [api, session.user.Id, tab, refresh],
   );
   const reload = () => setRefresh((v) => v + 1);
+  useEffect(() => {
+    if (tab === 'Guide') return;
+    const timer = window.setInterval(() => {
+      if (!document.hidden) setRefresh((value) => value + 1);
+    }, 10000);
+    return () => window.clearInterval(timer);
+  }, [tab]);
   return (
     <main className="page">
       <div className="page-heading">
@@ -70,6 +78,7 @@ export default function Live() {
           </button>
         ))}
       </nav>
+      <button onClick={reload}>Refresh guide & recordings</button>
       <ActionStatus message={action.message} />
       <Feedback
         busy={result.busy || timers.busy}
@@ -168,20 +177,7 @@ export default function Live() {
           {result.value?.Items.map((item) => (
             <div key={item.Id}>
               <Poster item={item} />
-              {canManage && (
-                <button
-                  disabled={action.busy}
-                  onClick={() => {
-                    if (window.confirm('Remove this recording from the library?'))
-                      void action.run(async () => {
-                        await live.removeRecording(item.Id);
-                        reload();
-                      }, 'Recording removed.');
-                  }}
-                >
-                  Remove recording
-                </button>
-              )}
+              <RecordingControls item={item} changed={reload} />
             </div>
           ))}
         </div>
