@@ -1,7 +1,11 @@
 export interface User {
   Id: string;
   Name: string;
-  Policy?: { IsAdministrator: boolean; EnableLiveTvAccess?: boolean };
+  Policy?: {
+    IsAdministrator: boolean;
+    EnableLiveTvAccess?: boolean;
+    EnableLiveTvManagement?: boolean;
+  };
   PrimaryImageTag?: string;
 }
 export interface Item {

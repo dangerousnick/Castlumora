@@ -26,3 +26,24 @@ Published snapshots retain the latest 100 revisions. Administrator restoration c
 Native administrator screens use authenticated server APIs for libraries, policies/devices, encoding, network/general settings, tasks/logs, plugins/repositories, backup actions and tuner/listing configuration. Existing config fields are retained when changing known settings. Real-server Chromium verification changed an encoding CRF, reloaded to verify persistence, restored it, and loaded libraries/users/logs. Frontend: 22 tests pass; typecheck, lint and production build pass; 2 fixture browser cases pass. API: 168 pass, 3 Windows-only skips. Extended HTTP presentation test passes.
 
 Plugin installation, backup restoration, restart/shutdown, real tuner/channel mapping, hardware acceleration and complete parental-policy combinations are not certified by these checks. Those require additional fixtures. No production server was contacted.
+
+## Native Live TV/DVR milestone
+
+Actual synthetic two-channel M3U/XMLTV checks now pass for single timer creation, padding persistence and update, cancellation, series-rule creation/cancellation, live playback/channel switching and successful own-stream closure on switch and exit. Two Chromium cases require CASTLUMORA_TEST_LIVE=1; they remain opt-in so an unrelated server is never assumed to have tuners. The suite enforces a loopback URL. All 25 frontend tests, typecheck/lint/build pass. Latest normal API analyzer build: 0 warnings/errors.
+
+To recreate the guide fixture after the documented disposable server/movie setup, set the same CASTLUMORA_TEST_SERVER/USER/PASSWORD environment variables used by real-server.spec.ts. Create a .castlumora-disposable marker in the temporary fixture root, then run:
+
+```bash
+python3 browser/setup-live-fixture.py --fixture-root /tmp/castlumora-web-real-server
+python3 -m http.server 18097 --bind 127.0.0.1 --directory /tmp/castlumora-web-real-server/media
+```
+
+Serve **only media**, never the configuration/credential directory. Wait for the Refresh Guide task to complete, then in another terminal with the same test credentials and Vite running:
+
+```bash
+CASTLUMORA_TEST_LIVE=1 npm run test:browser -- browser/real-server.spec.ts -g synthetic
+```
+
+The helper refuses non-loopback hosts, missing disposable markers and any existing tuner/listing sources. Schedules are for a future synthetic guide program and are cancelled by the successful test. A failed/interrupted test may leave synthetic schedules: inspect/cancel them in the disposable server before repeating. Recreate the disposable configuration when the guide dates become stale. Do not use this against production.
+
+These checks do not yet certify completed recording files, deletion, long-duration playback/timeshift, physical tuners or a large grouped channel catalog.

@@ -33,6 +33,10 @@ export default function Player() {
     () => (item.value ? api.nextEpisode(item.value) : Promise.resolve(undefined)),
     [api, item.value],
   );
+  const channels = useLoad(
+    () => (item.value?.Type === 'TvChannel' ? api.channels() : Promise.resolve(undefined)),
+    [api, item.value?.Type],
+  );
   const duration = (item.value?.RunTimeTicks ?? 0) / 10000000;
   function changing() {
     if (videoRef.current?.readyState) resumeAfterChange.current = !videoRef.current.paused;
@@ -256,6 +260,18 @@ export default function Player() {
           Back
         </Link>
         <h1>{item.value?.Name ?? 'Your screening room'}</h1>
+        {item.value?.Type === 'TvChannel' && (
+          <label>
+            Switch channel
+            <select value={id} onChange={(e) => navigate('/play/' + e.target.value)}>
+              {channels.value?.Items.map((channel) => (
+                <option key={channel.Id} value={channel.Id}>
+                  {channel.Name}
+                </option>
+              ))}
+            </select>
+          </label>
+        )}
       </div>
       <Feedback busy={item.busy} error={item.error} />
       <video

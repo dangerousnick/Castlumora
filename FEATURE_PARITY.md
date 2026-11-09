@@ -45,3 +45,5 @@ The initial table records the foundation baseline. The following changes superse
 - Administration: native library/options/scan, users/policies/passwords/devices, encoding, network/general settings, tasks/triggers/logs, plugin/repository/catalog, backup and tuner/listing/channel-mapping screens implemented. Real encoding persistence and library/user/log loading verified. Plugin installation, backup restoration, tuner hardware and destructive system actions remain unverified.
 
 All other unfinished product groups remain unfinished; this checkpoint does not establish full master-spec parity.
+
+- Live TV/DVR continuation: native six-hour guide/channel/date filtering, paginated programs/recordings, single/series record options, schedule edit/cancel and player channel switching implemented. Actual synthetic schedule persistence/cancellation and two-channel playback/cleanup pass. Completed recording lifecycle, long-duration timeshift, physical tuners and channel groups remain pending.
