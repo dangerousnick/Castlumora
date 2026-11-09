@@ -50,7 +50,7 @@ export const layoutSchema = z
     featured: z.array(z.object({ itemId: mediaId, ...visibility })).max(20),
     rows: z.array(rowSchema).max(40),
     categories: z.array(categorySchema).max(100),
-    devices: z.record(
+    devices: z.partialRecord(
       z.enum(['desktop', 'tablet', 'mobile', 'tv']),
       z.object({
         posterWidth: z.number().int().min(100).max(320).optional(),

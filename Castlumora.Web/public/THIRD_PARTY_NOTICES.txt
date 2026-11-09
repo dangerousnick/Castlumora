@@ -137,7 +137,7 @@ SOFTWARE.
 
 
 ========================================================================
-zod 3.25.76 — MIT
+zod 4.6.7 — MIT
 MIT License
 
 Copyright (c) 2025 Colin McDonnell
@@ -159,8 +159,6 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
-
-
 
 ========================================================================
 scheduler 0.28.0 — MIT

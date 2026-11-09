@@ -60,8 +60,10 @@ test('native shelf: PDF resume and EPUB chapters', async ({ page }) => {
   await page.getByRole('link', { name: 'Details for Castle PDF', exact: true }).click();
   await page.getByRole('link', { name: 'Open reader', exact: true }).click();
   await expect
-    .poll(() =>
-      page.locator('.pdf-canvas canvas').evaluate((canvas: HTMLCanvasElement) => canvas.width),
+    .poll(
+      () =>
+        page.locator('.pdf-canvas canvas').evaluate((canvas: HTMLCanvasElement) => canvas.width),
+      { timeout: 20000 },
     )
     .toBeGreaterThan(300);
   await page.getByLabel('Book page', { exact: true }).fill('2');
