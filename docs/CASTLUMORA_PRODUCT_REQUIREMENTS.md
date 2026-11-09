@@ -121,29 +121,44 @@
 - Do not require merging a development PR into `main` just to distribute a test artifact. Build from an explicitly identified tested branch/commit and leave merge decisions for human review.
 - Produce this usable build **before declaring the coding task complete**. If usage is low, first save/push a tested checkpoint and make packaging/release the next clearly documented milestone. Do not falsely promise autonomous continuation or invisible work after limits interrupt the session.
 
-## L. Castlumora 2.0 — marketplaces (future release, NOT part of version 1.0)
+## L. Version strategy — Complete 1.0 feature platform; independent architecture in 2.0
 
-**Version assignment is explicit: do not implement marketplace commerce in the Castlumora 1.0 / Phase 1.4 feature scope.** Preserve these as planned Castlumora **2.0** requirements; focus version 1.0 on the functioning self-hosted streaming/reading experience, features, security, testing, and deliverable preview.
+**OWNER'S EXPLICIT VERSION BOUNDARY (2026-11-09):**
 
-### Server-side plugin marketplace (2.0)
+- **Castlumora 1.0 is ALL previously agreed streaming-platform functionality** in Sections A–K and the accompanying import/creator metadata specification: mature backend capability parity, custom Castlumora Web, full administration, Live TV/DVR/FFmpeg/transcoding, server-controlled responsive UI and category editor, profiles/invitations and resource tiers (including free $0 tiers), built-in intro/outro skipper, creator and business modes/tools, authorized yt-dlp import and YouTube metadata, ebook/media reading, notifications/recommendations, cloud/offline options, native TV/mobile architecture and other features in the permanent spec. Do not silently defer a previously agreed feature to 2.0 simply because implementation is difficult. Track incomplete 1.0 work honestly and complete it across development milestones.
+- **Castlumora 2.0 is the deeper redesign and replacement of inherited Jellyfin implementation code so the platform has a genuinely independently maintained Castlumora codebase and architecture**, while preserving useful capabilities and data migration. It also introduces the **server-side plugin marketplace** and **user/server ebook marketplace** described below.
+- A **1.0 Development Preview** is a test build, NOT a declaration that full version 1.0 feature completeness has been achieved. Preview releases are iterative checkpoints; the eventual stable 1.0 acceptance criteria remain the complete 1.0 feature requirements.
+- For **1.0**, retain the proven inherited Jellyfin/MediaBrowser/Emby backend components, protocols and namespaces whenever needed for functionality. Cosmetic user-facing rebranding and independently built Castlumora Web are in scope; a risky mass rewrite of the core engine is **NOT** a 1.0 requirement.
+- For **2.0**, undertake deliberate module-by-module clean-room or independently authored replacements/refactors where lawful and practical, with compatibility tests, new Castlumora-owned APIs/services/packaging, migration tooling, and a plan to eventually no longer require inherited Jellyfin implementation modules as dependencies. Avoid an untested big-bang rewrite.
 
-- Server dashboard marketplace for browsing/installing free and paid plugins, visual themes, metadata providers and other authorized extensions.
-- Third-party developers can publish and sell compatible extensions, or distribute them free, with optional donations; Castlumora may collect a disclosed marketplace service fee.
-- Review/security controls, developer verification, permissions and supply-chain checks; version/compatibility validation, update support, abandonment/outdated-version warnings and prevention of sales of known-incompatible extensions.
-- Preserve open-source licensing obligations and security isolation; marketplace participation never becomes a prerequisite for using core Castlumora features.
+### 2.0 — Independence and code redesign
 
-### User-side ebook marketplace (2.0)
+- Audit every inherited server component: media scanning/library model, catalog/data layer, metadata providers, authentication/users, API routing, playback and streaming negotiation, FFmpeg transcoding, Live TV/EPG/DVR, plugin infrastructure, device discovery, configuration, deployment and update services.
+- Design Castlumora-native equivalents with explicit APIs, test coverage, documentation, strong security and operational support. Replace inherited implementation gradually while keeping the user-facing features fully functional.
+- Preserve media files, playback/watch history, account/profile permissions, metadata, library categories, recordings and server configuration through reversible/verified migration paths where feasible.
+- Build independent release engineering, package/update distribution, extension contracts and supported device clients; protect compatibility during transitions, with documented deprecation/migration for old identifiers.
+- Never mistake renamed symbols for rewritten independent implementation; proof is an actually maintainable Castlumora-owned architecture and functioning replacement code.
+- **Legal note:** Rewriting code does not retroactively erase GPL and other licensing obligations on inherited or adapted code or its distribution. Keep required notices, copyright attribution and license compliance. Do not promise that refactoring alone makes derivative code proprietary or allows removal of upstream legal notices. Evaluate the provenance and licenses of each replaced module.
 
-- Integrated reader-facing bookstore for catalog discovery, previews and purchasing books from authorized rights holders, independent authors, publishers or legitimate sellers. Purchased items become available in the purchaser's Castlumora reading experience subject to the license terms.
-- The server dashboard may optionally support administrator discovery/purchasing of ebooks for shared or organization libraries **only where appropriate multi-user/library licensing exists**.
-- Distinguish personal purchases from server-shared rights, preserve privacy and license-aware entitlements, and plan DRM/format limitations without bypassing access controls.
-- Consider first-party listings for authorized DRM-free books and public-domain material, plus eligible retailer/author integrations. Publisher/distributor agreements and payment, tax, refund and licensing systems are separate prerequisites.
+### 2.0 — Server-side plugin marketplace
 
-### Scope boundary
+- Integrated server dashboard marketplace for free and paid plugins, visual themes, metadata providers and other authorized extensions.
+- Third-party developers can publish, sell and maintain their extensions, optionally receive donations, and Castlumora may collect a disclosed service fee.
+- Developer verification, security/permission review, supply-chain checks, compatibility/version enforcement, automatic updates, abandonment/incompatibility notices and safeguards against selling known-broken plugins.
+- The core platform remains free; marketplace purchases are optional, never required for existing core functionality.
 
-- **Castlumora 1.0:** Core reader for owned/authorized EPUB/PDF and other supported content; local bookshelves and reading progress; secure plugin compatibility and administration. No paid marketplace required to finish or ship a 1.0 preview.
-- **Castlumora 2.0:** The optional server plugin marketplace and user ebook marketplace, with developer/seller tools, purchasing/entitlements, version checks, marketplace fee handling and applicable compliance.
-- Keep these 2.0 ideas in the product backlog and roadmap but **do not divert current Codex tasks into building marketplace infrastructure** unless the owner explicitly approves a scope change.
+### 2.0 — User-side and server-side ebook marketplace
+
+- User-facing ebook discovery, previews, purchases and entitlement-controlled reading from authorized authors, publishers, distributors and sellers.
+- Optional administrator/server-side discovery and purchase of appropriate multi-user/library-licensed books for shared collections. Personal purchases alone do not grant shared or commercial redistribution rights.
+- Rights tracking, secure checkout, payment/refund/tax integrations where applicable, account entitlements and DRM/format support within authorized limits. Launch with properly licensed DRM-free/public-domain or authorized seller content where practical.
+- Keep locally owned EPUB/PDF/other supported book reading in **1.0**; commercial ebook storefront, marketplace purchases and seller infrastructure in **2.0**.
+
+### Developer scope rule
+
+- Current Phase 1.4 Codex work is building **1.0**. Do not divert it into 2.0 core-engine replacement or marketplace checkout systems.
+- **All 1.0 capabilities in the prior requirements remain required**, even if individual previews do not yet include them. Use explicit progress, parity and release-acceptance checklists rather than pretending that an early preview equals stable 1.0.
+- Preserve this 2.0 vision in the roadmap for later architecture planning. Scope changes require the owner's explicit direction.
 
 ## Requirement retention rule
 
