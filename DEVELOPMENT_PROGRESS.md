@@ -235,3 +235,9 @@ Read-only artifact workflow published successfully as `255b7616d9d53dc7da720db7b
 ### CI style follow-up
 
 GitHub Format and ABI HEAD on 269d4c5b3909dad3fb1c47491e3a3bd8f50a1b71 both identified SA1513 at LiveTvManager.cs:1267 (missing blank line following the new permission-field guard). Added the required blank line without behavior changes; local targeted formatting passes. Its current preview run 42740145240 completed successfully before this fix was pushed, so it was not canceled. Await the new commit's CI before claiming Format/ABI success; cross-platform full suites were still running at this checkpoint.
+
+### Updated preview packaging checklist
+
+On 8e489b965dd38fd833bede3f4372e18e36594040 GitHub Format, ABI HEAD/BASE/Difference, OpenAPI head/base/report generation and the complete preview build/extracted-package smoke/artifact delivery all passed. Full cross-platform test jobs were still running when recorded. The old default-branch OpenAPI Report comment workflow remains a separate rollout limitation; no automatic merge.
+
+Updated owner install/checklist text to distinguish implemented native local-sidecar/selected-item metadata and synthetic DVR verification from unfinished online provider/importer/quotas. BUILD_INFO now records metadataManagementStage=selected-item-local. This packaging/documentation follow-up starts only after the previous preview finished, preserving earlier artifacts. Verify its exact new source/archive/checksum before delivery.
