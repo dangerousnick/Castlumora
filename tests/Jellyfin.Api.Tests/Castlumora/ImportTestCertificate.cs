@@ -7,10 +7,10 @@ namespace Jellyfin.Api.Tests.Castlumora;
 /// <summary>Owned TLS fixture key usable by OpenSSL and Windows Schannel; never installed in OS trust.</summary>
 internal static class ImportTestCertificate
 {
-    internal static X509Certificate2 Create()
+    internal static X509Certificate2 Create(string hostname = "example.org")
     {
         using var key = RSA.Create(2048);
-        var request = new CertificateRequest("CN=example.org", key, HashAlgorithmName.SHA256, RSASignaturePadding.Pkcs1);
+        var request = new CertificateRequest("CN=" + hostname, key, HashAlgorithmName.SHA256, RSASignaturePadding.Pkcs1);
         request.CertificateExtensions.Add(new X509BasicConstraintsExtension(true, false, 0, true));
         request.CertificateExtensions.Add(new X509KeyUsageExtension(
             X509KeyUsageFlags.DigitalSignature | X509KeyUsageFlags.KeyEncipherment | X509KeyUsageFlags.KeyCertSign,
@@ -18,7 +18,7 @@ internal static class ImportTestCertificate
         var usages = new OidCollection { new("1.3.6.1.5.5.7.3.1") };
         request.CertificateExtensions.Add(new X509EnhancedKeyUsageExtension(usages, false));
         var names = new SubjectAlternativeNameBuilder();
-        names.AddDnsName("example.org");
+        names.AddDnsName(hostname);
         request.CertificateExtensions.Add(names.Build());
         using var generated = request.CreateSelfSigned(DateTimeOffset.UtcNow.AddMinutes(-1), DateTimeOffset.UtcNow.AddHours(1));
         var pfx = generated.Export(X509ContentType.Pfx);

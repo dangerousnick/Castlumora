@@ -35,6 +35,19 @@
 | Tiers/payments/creator/cloud/offline/notifications | Existing server permissions/downloads preserved | Not implemented | Existing applicable server tools | None for proposed platform features | Optional/$0 tiers and full roadmap in PRODUCT_ROADMAP.md |
 | Built-in intro/outro skipper | Inherited media-segment API retained; native repeated-segment analysis not added | Skip controls/auto-skip not implemented | Existing configured plugin/client behavior is unchanged; no mandatory plugin chosen | No new detection/skip tests | Planned: built-in scheduled detection, central intervals, correction, profile modes, post-credit safeguards and cross-client verification |
 
+
+## Latest local importer increment (not published)
+
+Internal direct-HTTPS MP4 staging now has verified-runtime leasing, a fixed native
+subprocess contract, mandatory validating tunnel, private fixed-name outputs,
+resource checks, cancellation and owned cleanup. Complete API tests:295 passed,
+3 existing skips; no public URL jobs or production importer readiness. It does not
+validate playable containers, sanitize/publish metadata, promote media or scan a
+library. Full mandatory validation/publishing remains blocked by disk capacity.
+See [staging boundary](docs/CASTLUMORA_IMPORT_STAGING.md) and the current progress
+checkpoint; existing inventory below includes historical stages, not final parity.
+
+
 ## Continuation checkpoint overrides
 
 The initial table records the foundation baseline. The following changes supersede its corresponding pending entries:

@@ -73,29 +73,33 @@ public sealed class YtDlpRuntime : IDisposable
             try
             {
                 // A partial/canceled install cannot replace the current executable.
-                await using (var source = new FileStream(bundle, FileMode.Open, FileAccess.Read, FileShare.Read, 65536, FileOptions.Asynchronous))
-                await using (var target = new FileStream(temporary, FileMode.CreateNew, FileAccess.Write, FileShare.None, 65536, FileOptions.Asynchronous))
+                var source = new FileStream(bundle, FileMode.Open, FileAccess.Read, FileShare.Read, 65536, FileOptions.Asynchronous);
+                await using (source.ConfigureAwait(false))
                 {
-                    var buffer = new byte[65536];
-                    long copied = 0;
-                    while (true)
+                    var target = new FileStream(temporary, FileMode.CreateNew, FileAccess.Write, FileShare.None, 65536, FileOptions.Asynchronous);
+                    await using (target.ConfigureAwait(false))
                     {
-                        var count = await source.ReadAsync(buffer.AsMemory(), cancellationToken).ConfigureAwait(false);
-                        if (count == 0)
+                        var buffer = new byte[65536];
+                        long copied = 0;
+                        while (true)
                         {
-                            break;
+                            var count = await source.ReadAsync(buffer.AsMemory(), cancellationToken).ConfigureAwait(false);
+                            if (count == 0)
+                            {
+                                break;
+                            }
+
+                            copied += count;
+                            if (copied > platform.Size)
+                            {
+                                throw new InvalidDataException("Bundled executable exceeded its pinned size during installation.");
+                            }
+
+                            await target.WriteAsync(buffer.AsMemory(0, count), cancellationToken).ConfigureAwait(false);
                         }
 
-                        copied += count;
-                        if (copied > platform.Size)
-                        {
-                            throw new InvalidDataException("Bundled executable exceeded its pinned size during installation.");
-                        }
-
-                        await target.WriteAsync(buffer.AsMemory(0, count), cancellationToken).ConfigureAwait(false);
+                        await target.FlushAsync(cancellationToken).ConfigureAwait(false);
                     }
-
-                    await target.FlushAsync(cancellationToken).ConfigureAwait(false);
                 }
 
                 await VerifyAsync(temporary, platform, cancellationToken).ConfigureAwait(false);
@@ -249,7 +253,8 @@ public sealed class YtDlpRuntime : IDisposable
             throw new InvalidDataException("Bundled or installed runtime is missing or has an unexpected size.");
         }
 
-        await using var stream = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read, 65536, FileOptions.Asynchronous | FileOptions.SequentialScan);
+        var stream = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read, 65536, FileOptions.Asynchronous | FileOptions.SequentialScan);
+        await using var streamScope = stream.ConfigureAwait(false);
         var actual = Convert.ToHexStringLower(await SHA256.HashDataAsync(stream, cancellationToken).ConfigureAwait(false));
         if (!string.Equals(actual, platform.Sha256, StringComparison.Ordinal))
         {

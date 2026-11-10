@@ -4,6 +4,48 @@ Branch: `development/castlumora-web-1.3`; PR targets `main`. Base main: `b06078b
 
 Permanent source of truth: [docs/CASTLUMORA_PRODUCT_REQUIREMENTS.md](docs/CASTLUMORA_PRODUCT_REQUIREMENTS.md). Remaining product vision: [PRODUCT_ROADMAP.md](PRODUCT_ROADMAP.md). Actual coverage: [FEATURE_PARITY.md](FEATURE_PARITY.md).
 
+## Latest local milestone — supervised direct-HTTPS import staging
+
+- **Completed scope:** internal verified yt-dlp process supervision and private
+  direct-HTTPS MP4 staging, fixed arguments, validating authenticated tunnel,
+  output/resource bounds, cancellation, redacted failures and owned cleanup.
+  No public queue/URL jobs, media promotion or UI enablement. See
+  [staging contract and limitations](docs/CASTLUMORA_IMPORT_STAGING.md).
+- **Verification:** .NET10 standalone API Debug and API-test Release builds passed
+  with zero warnings/errors; complete API suite 295 passed/3 existing skips.
+  Fourteen staging cases include actual pinned executable and owned TLS fixtures.
+  Initial focused run was 11/12 because the existing runtime health probe timed out
+  during fixture installation; isolated probe 4.44 seconds and subsequent full API
+  suite passed without relaxing deadlines. Final full-solution formatting passed:
+  2,416 files, zero changes, no workspace-load warnings; no full-gate pass is claimed.
+  Logs: /tmp/castlumora-import-runner-format-final.log,
+  /tmp/castlumora-import-runner-debug.log,
+  /tmp/castlumora-import-runner-tests-build.log and
+  /tmp/castlumora-import-runner-api-tests.log.
+- **Current branch:** development/castlumora-web-1.3. Local milestone commit is the
+  commit introducing this section (find with `git log -1 --format=%H --
+  docs/CASTLUMORA_IMPORT_STAGING.md`). Preserved ancestors include 0ad2f94608 and
+  storage audit4606f8e976. **Latest published commit remains exactly
+  2b79ffb136f2c46dca52b1a8562c38f37da2f94e.** PR3 is unchanged.
+- **Publishing blocker:** about3.95GiB free after rebuilding, below the unchanged
+  5GiB backup-test/full-gate preflight. The latest continuation request was used
+  for this bounded local importer task only, not as permission to bypass validation
+  or publish. No gate weakening, push, production deployment or main merge.
+- **Unfinished work:** production import queue, rights/provenance, playable-container
+  validation, destination permission checks, sanitized metadata, promotion/scanning,
+  recovery, global quotas and full creator sources remain unavailable. Windows,
+  real-media/Mint and full regression verification remain unverified for this source.
+- **Exact next task:** obtain at least5GiB free plus build headroom; keep these local
+  commits; install hooks with `./scripts/install-git-hooks.sh`; set PATH to .NET10
+  and Node24 and CASTLUMORA_TEST_YTDLP_BUNDLE=/tmp/castlumora-ytdlp-runtime-bundle;
+  run `./scripts/validate-before-push.sh` on clean committed HEAD. Fix all failures,
+  then publish through the hook and inspect exact-source CI before exposing jobs.
+  After that complete the single-source persistent queue slice in the staging doc.
+- **Usage status:** Not accessible. No automatic reset/resume mechanism is claimed.
+  The earlier recovery bundle remains preserved; current working Git history is
+  authoritative for the new local checkpoint. Existing downloadablecafc preview
+  remains an intermediate older build and does not contain this new staging work.
+
 ## Storage cleanup investigation — validation still blocked
 
 Preserved0ad2f94608 and all completed application work. Safe cleanup reclaimed

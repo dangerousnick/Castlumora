@@ -2,6 +2,21 @@
 
 Castlumora 1.0 (development) is free, open source and self-hosted. [The complete product requirements](docs/CASTLUMORA_PRODUCT_REQUIREMENTS.md) are the source of truth. This roadmap separates working Phase 1.3 foundations from future milestones; a type or preview is not feature completion.
 
+
+## Current recovery priority and next importer slice
+
+Supervised direct-HTTPS staging is implemented locally and API-tested, with no
+public jobs enabled. Restore sufficient disk for the unchanged full validation
+gate, pass all required checks, then publish the existing checkpoint. Do not bypass
+the gate or recreate completed work. Next implement one authorized persistent
+single-source import lifecycle including rights/provenance, destination checks,
+playable-container inspection, sanitized metadata, deduplication, durable history,
+cancellation/retry/recovery and promotion/scanning before exposing URL jobs.
+See [internal staging contract](docs/CASTLUMORA_IMPORT_STAGING.md). YouTube/channel
+metadata, bulk sources and all other Phase1.4 requirements remain mandatory;
+this local transport milestone and the older preview do not complete Phase1.4.
+
+
 ## Phase 1.3: independent streaming vertical slice
 
 Implement and verify a separate React/TypeScript client using inherited authentication/media/playback APIs. Preserve all server capabilities and legacy Web access. Add a central, versioned presentation configuration with draft/publish, reusable categories, user visibility and responsive overrides. Verification and limitations are tracked in DEVELOPMENT_PROGRESS.md and FEATURE_PARITY.md.

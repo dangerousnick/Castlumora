@@ -27,10 +27,7 @@ internal sealed class ImportTunnel : IAsyncDisposable
 
     internal ImportTunnel(ImportNetworkPolicy policy, CancellationToken cancellationToken, long byteLimit = 67108864)
     {
-        if (byteLimit <= 0)
-        {
-            throw new ArgumentOutOfRangeException(nameof(byteLimit));
-        }
+        ArgumentOutOfRangeException.ThrowIfNegativeOrZero(byteLimit);
 
         _policy = policy;
         _remaining = byteLimit;
@@ -51,10 +48,17 @@ internal sealed class ImportTunnel : IAsyncDisposable
     {
         await _stop.CancelAsync().ConfigureAwait(false);
         _listener.Stop();
-        await _accept.ConfigureAwait(false);
-        await Task.WhenAll(_clients).ConfigureAwait(false);
-        _slots.Dispose();
-        _stop.Dispose();
+        try
+        {
+            await _accept.ConfigureAwait(false);
+            await Task.WhenAll(_clients).ConfigureAwait(false);
+        }
+        finally
+        {
+            _listener.Dispose();
+            _slots.Dispose();
+            _stop.Dispose();
+        }
     }
 
     private async Task AcceptAsync()
@@ -96,7 +100,8 @@ internal sealed class ImportTunnel : IAsyncDisposable
                 var downstream = client.GetStream();
                 var header = await ReadHeaderAsync(downstream, headerTimeout.Token).ConfigureAwait(false);
                 var target = ParseHeader(header);
-                await using var upstream = await _policy.ConnectAsync(target, _stop.Token).ConfigureAwait(false);
+                var upstream = await _policy.ConnectAsync(target, _stop.Token).ConfigureAwait(false);
+                await using var upstreamScope = upstream.ConfigureAwait(false);
                 await downstream.WriteAsync("HTTP/1.1 200 Connection Established\r\n\r\n"u8.ToArray(), headerTimeout.Token).ConfigureAwait(false);
                 using var tunnel = CancellationTokenSource.CreateLinkedTokenSource(_stop.Token);
                 var send = PumpAsync(downstream, upstream, tunnel.Token);
