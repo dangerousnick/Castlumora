@@ -88,3 +88,32 @@ unexpected invalid operations are not silently hidden. The complete API suite
 passes279 tests with3 existing skips after this correction. The broad formatter's
 compiler-process failure was resolved with scoped project loads and single-worker
 builds. Actual yt-dlp invocation through the tunnel is still unverified/unimplemented.
+
+## Actual pinned executable transport verification
+
+ImportExecutableTests now installs/acquires the real pinned platform executable,
+then runs it with fixed native/generic HTTPS arguments against an owned loopback
+TLS fixture behind ImportTunnel. The fixture's DNS/connector injection is test-only;
+no external media is contacted. Trusted fixture CA: exact payload and info sidecar
+arrive. Without that trust: CERTIFICATE_VERIFY_FAILED and no completed media file.
+The tool has no --cacert switch; the test uses supported no-certifi plus SSL_CERT_FILE
+for its private CA, never --no-check-certificates. Credentials are redacted from
+bounded failure diagnostics. Payload is transport bytes, not playable-media proof.
+
+Full local Linux API suite:281 passed/3 existing skips, including both real-executable
+cases, real health checks and all prior network/tunnel tests. Test build zero
+warnings/errors; scoped whitespace formatter passed. Windows execution of these
+new executable cases awaits CI; the existing Linux/Windows pinned health tests are
+separate. Production job supervision, staging, persistence and native controls are
+still unfinished, and no endpoint enables downloads.
+
+Intermediate preview source cafc4590a804631a30399eb4d76c8b881ef72cba passed the
+existing packaged-output CI smoke workflow42853221613. Uploaded artifact13781693082
+was independently downloaded and checked, including archive checksum/manifest and
+compiled server/web/bundled runtime. Archive:
+Castlumora-1.0-dev-cafc4590a804-linux-x64.tar.gz
+SHA256:33f3a924efa5557985f4d3ff4ac99f350bac87b4f98a2ea9dd643bdd35c5a67f
+Download:https://github.com/dangerousnick/Castlumora/actions/runs/42853221613/artifacts/13781693082
+Expires2026-12-10T16:22:39Z; GitHub sign-in required. Local retained copy:
+/tmp/castlumora-preview-cafc-artifact. Later test-only commits are not in that source
+manifest. This is an intermediate preview, not full Phase1.4 acceptance.

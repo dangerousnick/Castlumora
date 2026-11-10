@@ -101,3 +101,7 @@ Internal authenticated loopback CONNECT adapter now enforces per-target public-a
 ## Managed execution reservation and tunnel lifecycle
 
 Runtime leases now reverify executable integrity/version and prevent replacement during active execution, with idempotent release and administrator409 conflict. Tunnel listener stop/accept cancellation race corrected. Full API279 pass/3 existing skips. No actual download runner yet; downloading remains disabled. Next is bounded fixed-argument subprocess supervision through the authenticated tunnel, actual pinned-executable owned-HTTPS tests, then the complete persistent authorized queue and native controls. No1.0 requirement removed.
+
+## Actual downloader transport verification checkpoint
+
+The real pinned Linux yt-dlp executable now passes owned-HTTPS transfer and untrusted-certificate rejection through the authenticated tunnel in tests; full API281 pass/3 existing skips. This is transport verification, not a production job runner or enabled importer. Intermediate cafc Linux preview uploaded/downloaded/checksummed and packaged smoke passed; link and exact SHA in DEVELOPMENT_PROGRESS.md. Next: bounded production subprocess supervisor using leases/tunnel, then persistent authorized queue/destination/scan/native controls. Full1.0 scope retained.
