@@ -13,6 +13,7 @@ stage="$output/$name"
 mkdir -p "$stage/server" "$stage/web" "$stage/licenses"
 export DOTNET_CLI_TELEMETRY_OPTOUT=1
 export DOTNET_NOLOGO=1
+node --test .github/scripts/*.test.cjs
 (cd Castlumora.Web; npm ci; npm run typecheck; npm run lint; npm test; VITE_LEGACY_WEB_PATH=web/legacy/ npm run build)
 dotnet publish Jellyfin.Server/Jellyfin.Server.csproj --configuration Release --runtime linux-x64 --self-contained true --nologo -m:1 -p:PublishSingleFile=false -p:ContinuousIntegrationBuild=true -o "$stage/server"
 cp -a Castlumora.Web/dist/. "$stage/web/"

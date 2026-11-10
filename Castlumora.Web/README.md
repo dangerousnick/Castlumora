@@ -4,7 +4,7 @@ Independent React + TypeScript + Vite client for the existing server. No mandato
 
 ## Development
 
-Requires Node 22.12+ (tested with Node 24) and npm. From this directory:
+Requires Node.js 24 LTS and npm. The repository `.nvmrc` selects Node 24 (`nvm use` from the repository root); the frontend package declares the same supported major. From this directory:
 
 ```sh
 npm ci

@@ -4,6 +4,16 @@ Branch: `development/castlumora-web-1.3`; PR targets `main`. Base main: `b06078b
 
 Permanent source of truth: [docs/CASTLUMORA_PRODUCT_REQUIREMENTS.md](docs/CASTLUMORA_PRODUCT_REQUIREMENTS.md). Remaining product vision: [PRODUCT_ROADMAP.md](PRODUCT_ROADMAP.md). Actual coverage: [FEATURE_PARITY.md](FEATURE_PARITY.md).
 
+## Current milestone — Node.js 24 LTS and OpenAPI reporting
+
+- **Completed:** repository `.nvmrc` selects 24; frontend/lockfile require Node >=24 <25; preview setup-node reads that file. Existing official checkout/setup/artifact actions were already Node24-compatible. Replaced Node20 OpenAPI comment action and Node12 release helpers with pinned Node24 github-script and pinned digest-backed Docker yq. No application/server code or preview artifact was discarded.
+- **Authentication fix:** OpenAPI Report uses the built-in github.token instead of missing JF_BOT_TOKEN, with job-scoped PR write and artifact/content read. Metadata discovery has PR-read permission, skips non-PR runs and emits no fake null PR. Posting skips closed/superseded PRs, updates only its own marked bot comment, bounds untrusted artifact text and never executes it. The privileged job checks out only the trusted workflow SHA, never PR code.
+- **Verification:** Node v24.22.1 clean npm ci, typecheck, lint, 48 frontend tests and production build passed. All workflow files passed actionlint v1.7.12. Five report-handler tests passed (create/update, stale/closed, invalid PR/oversized artifact, bounded text); preview packaging runs those tests before compiling. Actual GitHub workflow validation/build evidence is recorded after publication. Release publishing/version bump was not triggered; its existing upstream build.yaml dependency is absent in this fork and release redesign remains separate unfinished work.
+- **Important rollout limit:** workflow_run executes from the default branch. The old main workflow can still emit missing-bot-token failure emails until this fix is reviewed/merged there. Do not merge automatically or claim that the new default-branch reporting run has already passed. Branch workflow and handler validation are distinct from that future live run.
+- **Latest published application:** `56e8e83b5a6e0743fab040e63cb428d30fa33bca` on `development/castlumora-web-1.3`, open PR #3. Active-stop preview run 42709255805 succeeded; artifact https://github.com/dangerousnick/Castlumora/actions/runs/42709255805/artifacts/13715686059 remains available. This Node/CI checkpoint follows it; inspect git log for exact SHA. New previews are intermediate, not Phase 1.4 completion.
+- **Next exact development task:** resume the native source-aware local creator metadata/provider increment described below, retaining all importer/profile/admin requirements. No implementation has been regenerated.
+- **Usage:** Not accessible. **Recovery:** read permanent requirements/progress; inspect Git status and remote SHA before fast-forwarding this existing branch. Preserve unfinished work. No production/Coon access, deployment, main merge or automatic background resume.
+
 ## Latest milestone — active DVR stop and partial playback
 
 - **Completed:** InProgress single timers offer Stop recording with retained-media/empty-file confirmation; future and series cancellation remain distinct. Stop request wording does not imply synchronous process completion.

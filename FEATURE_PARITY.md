@@ -67,3 +67,7 @@ Owner install guide: INSTALL_TEST_BUILD.md; systematic feature/limitations check
 Native Recordings now refreshes automatically while visible and separates retained-file library removal from confirmed physical file deletion using server CanDelete. The recordings API preserves that explicitly requested field; no deletion authorization is broadened. Real synthetic M3U/XMLTV schedule/cancel/complete/file/play/remove/rescan/delete and denied-viewer checks pass; 81 LiveTV regression tests pass. Active-stop browser coverage, physical tuners, long duration, groups and per-user quotas remain pending. See docs/CASTLUMORA_DVR.md.
 
 - Active DVR stop continuation: explicit Stop recording for InProgress single timers, permission-denied viewer stop, retained nonempty partial file and actual partial playback verified in a separate Chromium/real-backend synthetic case. Frontend 48 tests/typecheck/lint/build pass. This does not certify quotas, real tuners or long-running DVR.
+
+### Node.js 24 development/CI continuation
+
+Node 24 LTS is declared in .nvmrc and frontend engines and consumed by preview CI. Clean install/typecheck/lint/48 tests/build pass; workflow lint and five OpenAPI handler tests pass. Missing upstream JF_BOT_TOKEN replaced with built-in github.token for OpenAPI comments. Live workflow_run rollout requires reviewed default-branch changes; old main notifications can continue until then. Release version-bump execution remains untested and has an existing missing build.yaml dependency. No application feature or license changes.

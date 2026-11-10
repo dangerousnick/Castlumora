@@ -49,5 +49,8 @@
     "epubjs": {
       "@xmldom/xmldom": "0.9.12"
     }
+  },
+  "engines": {
+    "node": ">=24 <25"
   }
 }
