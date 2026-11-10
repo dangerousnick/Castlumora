@@ -103,3 +103,5 @@ The real pinned Linux yt-dlp executable now passes owned-HTTPS transfer and untr
 SA1508 closing-brace whitespace corrected. Mandatory full pre-push validation and tracked hook added; initial enforcement tests pass, real full formatting/Debug/Release/CI-equivalent test checks remain pending. No publishing after failed or incomplete checks; no CI weakening. Complete this correction before further feature pushes; importer runner remains the next feature.
 
 Complete-publishing gate: full format and Debug build passed; Release was blocked by workspace ENOSPC, so nothing was pushed. Supported dependency hard-link copies and disk preflights added without skipping assets/tests. Full frozen-source validation and Windows fixture CI confirmation remain required before further feature publication.
+
+Publishing remains blocked: complete format and Debug/Release builds pass; full server suite4,341 pass/19 existing skips/1 environmental failure (unchanged backup requires5GiB free, executor has2.8GiB). No guard/test weakened or skipped; no new commits pushed. Need larger executor and full successful gate before publishing or resuming importer feature work.

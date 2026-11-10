@@ -71,7 +71,31 @@ The gate now uses MSBuild's supported CreateHardLinksForCopyLocalIfPossible=true
 storage optimization for identical dependency copies. No source fixture content
 is hard-linked, no runtime assets are excluded, and checks/assertions are unchanged.
 The filesystem was probed for hard-link support. Disk headroom is checked before
-builds and tests (minimum2GiB); failure still blocks publication. Nine isolated
+builds and tests (minimum5GiB, required by the existing backup test); failure still blocks publication. Nine isolated
 bare-remote tests include disk failure and preservation of existing hook settings.
 Final frozen-source validation must still pass in full; earlier partial runs are
 not a substitute. Windows TLS fixture confirmation still requires Windows CI.
+
+## Final local blocker
+
+After recovering storage, full format (2,413 files) and both Debug server/Release
+solution builds passed with zero warnings/errors. The full17-project CI-equivalent
+suite ran:4,341 passed,19 existing skips,1 failure. The sole failure was
+BackupServiceTests.CreateBackupAsync_WithCorruptKeyframeDataRow_SkipsRowAndCompletesBackup:
+its unchanged production StorageHelper requires5GiB free; the workspace has2.8GiB.
+BackupService calls that helper statically. No backup threshold/test was changed,
+mocked, skipped or excluded to force success. Required publication remains blocked.
+
+The preflight now requires5GiB before starting and before tests, so a constrained
+workspace fails early instead of repeating a known impossible full run. This is
+not a passed gate. Use a larger workspace with5GiB free plus build headroom; rerun
+the entire gate. Never use --no-verify or publish only the partially checked fix.
+Logs:/tmp/castlumora-prepush.anj2jNud. All new commits remain local until the gate passes.
+
+Independent remaining checks also passed:58 frontend tests/typecheck/lint/build,
+5 workflow-handler tests,5 bundler tests and9 hook tests. They do not make the
+failed full gate a success. No GitHub push was made. Local unpublished recovery
+bundle:/workspace/Castlumora-ci-validation-unpublished.bundle (requires existing
+published base2b79ffb136f2c46dca52b1a8562c38f37da2f94e). From the existing clean
+development branch use git fetch <bundle> HEAD, then git merge --ff-only FETCH_HEAD.
+Install the hooks and obtain adequate free space before rerunning the gate.
