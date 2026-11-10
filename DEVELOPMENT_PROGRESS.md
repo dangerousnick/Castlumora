@@ -23,12 +23,15 @@ Permanent source of truth: [docs/CASTLUMORA_PRODUCT_REQUIREMENTS.md](docs/CASTLU
   /tmp/castlumora-import-runner-tests-build.log and
   /tmp/castlumora-import-runner-api-tests.log.
 - **Current branch:** development/castlumora-web-1.3. Local milestone commit is the
-  commit introducing this section (find with `git log -1 --format=%H --
-  docs/CASTLUMORA_IMPORT_STAGING.md`). Preserved ancestors include 0ad2f94608 and
+  896b5fe4dca7b550839f763873376319ce2a7f4c. Preserved ancestors include 0ad2f94608 and
   storage audit4606f8e976. **Latest published commit remains exactly
   2b79ffb136f2c46dca52b1a8562c38f37da2f94e.** PR3 is unchanged.
 - **Publishing blocker:** about3.95GiB free after rebuilding, below the unchanged
-  5GiB backup-test/full-gate preflight. The latest continuation request was used
+  5GiB backup-test/full-gate preflight. Gate on896b5fe4dc passed all nine hook
+  enforcement tests, then exited1 at disk preflight:4,243,009,536 bytes free versus
+  5,368,709,120 required. Logs:/tmp/castlumora-prepush.vHF7854G and
+  /tmp/castlumora-staging-final-gate.log. It did not retry the backup test.
+  The latest continuation request was used
   for this bounded local importer task only, not as permission to bypass validation
   or publish. No gate weakening, push, production deployment or main merge.
 - **Unfinished work:** production import queue, rights/provenance, playable-container
