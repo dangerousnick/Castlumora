@@ -46,3 +46,27 @@ fixtures, then destination/path policy and durable job transitions, owned-proces
 cancel/retry/restart, provenance/deduplication, native admin controls and scan after
 an authorized successful import. Keep the verified runtime preview intact. Bulk,
 playlist/channel and scheduled imports remain mandatory subsequent increments.
+
+## Authenticated per-job tunnel adapter
+
+`ImportTunnel` now provides an internal IPv4-loopback-only CONNECT proxy with a
+fresh 256-bit Basic authentication secret per instance. It accepts only HTTPS
+port443 targets; every tunnel runs ImportNetworkPolicy, including new connections
+for redirects/resources. It never decrypts TLS or replaces certificate validation.
+Proxy URLs contain secrets and must never enter logs, API payloads or job history.
+
+Limits: 4 active connections, 32 total accepted clients, 4KiB ASCII headers with a
+five-second deadline, ten-minute lifetime, 30-second read/write inactivity, and a
+64MiB aggregate bidirectional traffic budget (not a media-size guarantee). Rejects
+HTTP forwarding, unsafe CONNECT authority, body/transfer headers, duplicate auth,
+folding, oversized headers and missing/wrong credentials. Cancellation/disposal
+closes only owned sockets and observes client tasks. Limits are per future job.
+
+Fourteen actual loopback cases cover rejection, rebinding/new redirect targets,
+traffic/concurrency limits, cancellation, encrypted TLS payload and wrong-hostname
+certificate rejection using a private fixture trust root. No TLS verification is
+disabled. The trust root and loopback destination injection exist only in tests.
+The actual yt-dlp process has not yet been wired through this adapter: native
+downloader flags, executable leases, bounded process/output supervision, supported
+source protocols and actual executable/fixture integration are the next task.
+Downloading remains disabled, with no new external endpoint or UI promise.

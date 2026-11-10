@@ -4,6 +4,15 @@ Branch: `development/castlumora-web-1.3`; PR targets `main`. Base main: `b06078b
 
 Permanent source of truth: [docs/CASTLUMORA_PRODUCT_REQUIREMENTS.md](docs/CASTLUMORA_PRODUCT_REQUIREMENTS.md). Remaining product vision: [PRODUCT_ROADMAP.md](PRODUCT_ROADMAP.md). Actual coverage: [FEATURE_PARITY.md](FEATURE_PARITY.md).
 
+## Current continuation — bounded import tunnel
+
+- **Last completed milestone:** internal per-job authenticated loopback HTTPS CONNECT adapter, fresh secret, pinned public-address validation on every target, four active/32 total connections,4KiB headers/five-second handshake,30-second inactivity,ten-minute lifetime and64MiB shared traffic budget. TLS remains end-to-end. Not yet connected to a downloader endpoint.
+- **Branch:** development/castlumora-web-1.3, PR3. Previous published checkpoint8b3ba5a692ccc88d8d51330ed0c9c4f0ba5c3265; this adapter commit follows it. Prior checkpoint passed Tests/Format/ABI/OpenAPI and preview42779834003 uploaded artifact13745797052; newer artifact has not been independently downloaded here. Verified584e preview remains preserved.
+- **Verification:** API/test Release builds zero warnings/errors; full API278 passed/3 existing skips, including14 real loopback tunnel cases, TLS hostname rejection/encrypted traffic/concurrency/bytes/cancellation, plus pinned actual Linux runtime regression. Broad formatter caused a compiler process exit; scoped formatting and sequential single-worker rebuild succeeded. Rejected-TLS fixture cleanup corrected and rerun. No actual yt-dlp download, frontend or physical Mint test claimed for the adapter.
+- **Unfinished:** downloader supervision and managed executable leases, source/destination validation, durable jobs/history/cancel/retry/recovery/dedup/rights/scan and URL controls remain unfinished. downloadJobsAvailable=false is intentional. Full Phase1.4 is incomplete.
+- **Next exact task:** add a verified executable lease that prevents runtime replacement during a job; a fixed-argument native downloader runner with private staging/clean environment/bounded output/time/size, owned-process cancellation and mandatory tunnel; exercise actual pinned yt-dlp against authorized owned HTTPS fixtures before wiring persistent jobs and native controls.
+- **Usage:** Not accessible. **Recovery:** inspect Git status/log and permanent specs; preserve current preview/source; continue existing branch/PR only. No main merge, production deployment or Coon access.
+
 ## Current continuation — import connection safety prerequisite
 
 - **Last completed milestone:** internal HTTPS/public-address import policy with bounded DNS/connect, mixed-answer rejection and numeric endpoint pinning on every connection. No enabled download endpoint or change to the verified runtime preview.
