@@ -5,7 +5,6 @@ using System.Net;
 using System.Net.Security;
 using System.Net.Sockets;
 using System.Security.Authentication;
-using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using System.Threading;
@@ -43,20 +42,14 @@ public sealed class ImportExecutableTests
             using var runtime = new YtDlpRuntime(paths.Object);
             await runtime.InstallAsync(timeout.Token);
             using var lease = await runtime.AcquireAsync(timeout.Token);
-            using var key = RSA.Create(2048);
-            var request = new CertificateRequest("CN=example.org", key, HashAlgorithmName.SHA256, RSASignaturePadding.Pkcs1);
-            request.CertificateExtensions.Add(new X509BasicConstraintsExtension(true, false, 0, true));
-            var names = new SubjectAlternativeNameBuilder();
-            names.AddDnsName("example.org");
-            request.CertificateExtensions.Add(names.Build());
-            using var certificate = request.CreateSelfSigned(DateTimeOffset.UtcNow.AddMinutes(-1), DateTimeOffset.UtcNow.AddHours(1));
+            using var certificate = ImportTestCertificate.Create();
             var ca = Path.Combine(root, "fixture-ca.pem");
             await File.WriteAllTextAsync(ca, certificate.ExportCertificatePem(), timeout.Token);
             using var listener = new TcpListener(IPAddress.Loopback, 0);
             listener.Start();
             var payload = Encoding.ASCII.GetBytes("Owned authorized transport fixture, not a playable media certification.");
             using var serving = CancellationTokenSource.CreateLinkedTokenSource(timeout.Token);
-            var server = ServeAsync(listener, certificate, payload, serving.Token);
+            var server = ServeAsync(listener, certificate, payload, trustFixture, serving.Token);
             var connections = 0;
             var policy = new ImportNetworkPolicy(
                 (host, _) =>
@@ -157,7 +150,7 @@ public sealed class ImportExecutableTests
         }
     }
 
-    private static async Task ServeAsync(TcpListener listener, X509Certificate2 certificate, byte[] payload, CancellationToken token)
+    private static async Task ServeAsync(TcpListener listener, X509Certificate2 certificate, byte[] payload, bool trustFixture, CancellationToken token)
     {
         try
         {
@@ -185,7 +178,7 @@ public sealed class ImportExecutableTests
 
                     await tls.FlushAsync(token);
                 }
-                catch (Exception exception) when (exception is AuthenticationException or IOException)
+                catch (Exception exception) when (!trustFixture && exception is AuthenticationException or IOException)
                 {
                     // An untrusted fixture certificate must terminate the tool's TLS request.
                 }

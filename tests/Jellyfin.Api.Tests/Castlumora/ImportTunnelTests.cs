@@ -4,7 +4,6 @@ using System.Net;
 using System.Net.Security;
 using System.Net.Sockets;
 using System.Security.Authentication;
-using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using System.Threading;
@@ -121,12 +120,7 @@ public sealed class ImportTunnelTests
     [InlineData(true)]
     public async Task TunnelPreservesTlsHostnameValidationAndEncryptedPayload(bool wrongHost)
     {
-        using var key = RSA.Create(2048);
-        var request = new CertificateRequest("CN=example.org", key, HashAlgorithmName.SHA256, RSASignaturePadding.Pkcs1);
-        var names = new SubjectAlternativeNameBuilder();
-        names.AddDnsName("example.org");
-        request.CertificateExtensions.Add(names.Build());
-        using var certificate = request.CreateSelfSigned(DateTimeOffset.UtcNow.AddMinutes(-1), DateTimeOffset.UtcNow.AddHours(1));
+        using var certificate = ImportTestCertificate.Create();
         using var listener = new TcpListener(IPAddress.Loopback, 0);
         listener.Start();
         var server = Task.Run(
@@ -163,21 +157,30 @@ public sealed class ImportTunnelTests
         await using var secure = new SslStream(client.GetStream());
         var chain = new X509ChainPolicy { TrustMode = X509ChainTrustMode.CustomRootTrust, RevocationMode = X509RevocationMode.NoCheck };
         chain.CustomTrustStore.Add(certificate);
-        var options = new SslClientAuthenticationOptions { TargetHost = wrongHost ? "wrong.example.org" : "example.org", CertificateChainPolicy = chain };
-        if (wrongHost)
+        try
         {
-            await Assert.ThrowsAsync<AuthenticationException>(() => secure.AuthenticateAsClientAsync(options, TestContext.Current.CancellationToken));
-            await secure.DisposeAsync();
-            await server;
-            return;
-        }
+            var options = new SslClientAuthenticationOptions { TargetHost = wrongHost ? "wrong.example.org" : "example.org", CertificateChainPolicy = chain };
+            if (wrongHost)
+            {
+                await Assert.ThrowsAsync<AuthenticationException>(() => secure.AuthenticateAsClientAsync(options, TestContext.Current.CancellationToken));
+                await secure.DisposeAsync();
+                return;
+            }
 
-        await secure.AuthenticateAsClientAsync(options, TestContext.Current.CancellationToken);
-        await secure.WriteAsync("ping"u8.ToArray(), TestContext.Current.CancellationToken);
-        var result = new byte[4];
-        await secure.ReadExactlyAsync(result, TestContext.Current.CancellationToken);
-        Assert.Equal("pong", Encoding.ASCII.GetString(result));
-        await server;
+            await secure.AuthenticateAsClientAsync(options, TestContext.Current.CancellationToken);
+            await secure.WriteAsync("ping"u8.ToArray(), TestContext.Current.CancellationToken);
+            var result = new byte[4];
+            await secure.ReadExactlyAsync(result, TestContext.Current.CancellationToken);
+            Assert.Equal("pong", Encoding.ASCII.GetString(result));
+            await server;
+        }
+        finally
+        {
+            await secure.DisposeAsync();
+            client.Dispose();
+            // Observe the server handshake too: preserve Schannel errors instead of just client EOF.
+            await server;
+        }
     }
 
     [Fact]

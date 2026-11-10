@@ -4,6 +4,13 @@ Branch: `development/castlumora-web-1.3`; PR targets `main`. Base main: `b06078b
 
 Permanent source of truth: [docs/CASTLUMORA_PRODUCT_REQUIREMENTS.md](docs/CASTLUMORA_PRODUCT_REQUIREMENTS.md). Remaining product vision: [PRODUCT_ROADMAP.md](PRODUCT_ROADMAP.md). Actual coverage: [FEATURE_PARITY.md](FEATURE_PARITY.md).
 
+## Continuing CI correction — frozen source and portable TLS fixtures
+
+- Local full-solution formatting of32b67f9039 finished with zero changed files/diagnostics after removing SA1508; unlike the earlier scoped check it loaded the full solution and ran Debug analyzer references. Further source edits require rerunning the full gate; no partial pass authorizes publication.
+- Investigated Windows test job129965793527: four TLS fixtures failed with unexpected EOF (including trusted fixtures), consistent with Schannel/private-key handling. Added a shared DefaultKeySet PKCS12 fixture import with server-auth usage and observation of server-task exceptions. Kept all certificate/hostname/payload assertions; no skips or CI weakening. Windows execution is unavailable locally and remains explicitly unverified until CI.
+- Hardened gate snapshot checks before each stage; six isolated bare-remote enforcement tests pass, including source mutation during checks. Real validation of this final source is pending; no push until all required checks pass. Current latest published source remains2b79ffb136f2c46dca52b1a8562c38f37da2f94e, branch development/castlumora-web-1.3, PR3. Further local commits preserve corrections but are not publishing authorization.
+- Next: complete full formatting/Debug/Release/CI-equivalent tests on frozen committed source, investigate every failure and report environment blockers rather than push. Only then publish through the enabled hook, inspect exact-source CI and resume importer runner. No Coon/main deployment or merge. Usage allowance Not accessible.
+
 ## Active correction — mandatory complete pre-push validation
 
 CI Format42855077268/job129965793560 and ABI42855076911/HEAD job129965792607

@@ -12,7 +12,16 @@ logdir=$(mktemp -d "${TMPDIR:-/tmp}/castlumora-prepush.XXXXXXXX")
 export DOTNET_PROCESSOR_COUNT=${DOTNET_PROCESSOR_COUNT:-2}
 export MSBUILDDISABLENODEREUSE=1
 trap 'echo "VALIDATION FAILED: push blocked. Logs: $logdir" >&2' ERR
+assert_snapshot() {
+    if [[ $(git -C "$root" rev-parse HEAD) != "$head" ]] \
+        || ! git -C "$root" diff --quiet HEAD -- \
+        || [[ -n $(git -C "$root" ls-files --others --exclude-standard) ]]; then
+        echo 'BLOCKED: source changed during validation; commit the final source and rerun the entire gate.' >&2
+        return 1
+    fi
+}
 run() {
+    assert_snapshot
     local name=$1
     shift
     echo "Checking $name (log: $logdir/$name.log)"
@@ -60,7 +69,5 @@ run workflow-tests node --test .github/scripts/publish-openapi-report.test.cjs
     run web-tests npm test
     run web-build npm run build
 )
-[[ $(git rev-parse HEAD) == "$head" ]]
-git diff --quiet HEAD --
-[[ -z $(git ls-files --others --exclude-standard) ]]
+assert_snapshot
 printf 'PASS: %s, SDK%s, %s\nLogs: %s\n' "$head" "$sdk" "$(node --version)" "$logdir"

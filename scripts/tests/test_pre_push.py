@@ -37,6 +37,7 @@ class PrePushTests(unittest.TestCase):
         self.tool("dotnet", '''
 if [ "$1" = --version ]; then echo 10.0.403; exit 0; fi
 if [ "$1" = format ]; then
+  if [ "${CASTLUMORA_GATE_TEST_FAILURE:-}" = mutate ]; then echo dirty >> Castlumora.Web/package.json; fi
   if [ "${CASTLUMORA_GATE_TEST_FAILURE:-}" = workspace ]; then
     echo 'Warnings were encountered while loading the workspace.'; exit 0
   fi
@@ -69,6 +70,9 @@ if [ "$1" = test ] && [ "${CASTLUMORA_GATE_TEST_FAILURE:-}" = tests ]; then exit
 
     def test_workspace_warning_prevents_remote_update_even_with_zero_exit(self):
         self.blocked("workspace")
+
+    def test_source_mutation_during_checks_prevents_remote_update(self):
+        self.blocked("mutate")
 
     def test_debug_build_failure_prevents_remote_update(self):
         self.blocked("build")

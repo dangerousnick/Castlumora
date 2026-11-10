@@ -43,3 +43,17 @@ both failed with SA1508 at Jellyfin.Api/Castlumora/YtDlpRuntime.cs392: a blank l
 before a closing brace. Removed the blank line. Release-only builds and scoped
 formatter invocations were insufficient evidence; the gate now covers full Debug
 analyzers and full-solution formatting. No GitHub check has been disabled or weakened.
+
+## Additional Windows test investigation
+
+Windows Tests42855077283/job129965793527 also failed four TLS fixture cases;
+Linux/macOS passed. Both trusted and untrusted fixtures failed before meaningful
+certificate validation with unexpected TLS EOF. The tests had used private keys
+straight from CreateSelfSigned. A shared fixture now exports/reimports PKCS12 with
+DefaultKeySet (no PersistKeySet), server-auth EKU and key usage, making the key
+usable by Schannel as well as OpenSSL. Server task failures are observed so a
+future native handshake error is not hidden behind client EOF. All success,
+hostname-rejection and untrusted-certificate assertions remain; no tests are skipped.
+Windows confirmation requires CI because this executor is Linux; do not claim it
+passed locally. Six isolated hook tests include source mutation during validation.
+The gate checks its committed snapshot before every stage and at completion.
