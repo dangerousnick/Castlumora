@@ -19,6 +19,7 @@ public sealed class YtDlpRuntime : IDisposable
     private readonly YtDlpPlatform? _platform;
     private readonly Func<string, string, string, CancellationToken, Task> _probe;
     private readonly SemaphoreSlim _gate = new(1, 1);
+    private int _executions;
 
     /// <summary>Initializes a new instance of the <see cref="YtDlpRuntime"/> class.</summary>
     /// <param name="paths">Existing server data and application paths.</param>
@@ -59,6 +60,11 @@ public sealed class YtDlpRuntime : IDisposable
         await _gate.WaitAsync(cancellationToken).ConfigureAwait(false);
         try
         {
+            if (Volatile.Read(ref _executions) != 0)
+            {
+                throw new BusyException();
+            }
+
             var platform = _platform ?? throw new NotSupportedException("This preview has managed yt-dlp assets for Linux x64 and Windows x64 only.");
             var bundle = BundlePath();
             await VerifyAsync(bundle, platform, cancellationToken).ConfigureAwait(false);
@@ -104,6 +110,25 @@ public sealed class YtDlpRuntime : IDisposable
             {
                 File.Delete(temporary);
             }
+        }
+        finally
+        {
+            _gate.Release();
+        }
+    }
+
+    internal async Task<ExecutionLease> AcquireAsync(CancellationToken cancellationToken)
+    {
+        await _gate.WaitAsync(cancellationToken).ConfigureAwait(false);
+        try
+        {
+            var platform = _platform ?? throw new NotSupportedException("Managed runtime unavailable on this platform.");
+            var path = ManagedPath(false);
+            await VerifyAsync(path, platform, cancellationToken).ConfigureAwait(false);
+            await _probe(path, Path.GetDirectoryName(path)!, platform.Version, cancellationToken).ConfigureAwait(false);
+            cancellationToken.ThrowIfCancellationRequested();
+            Interlocked.Increment(ref _executions);
+            return new ExecutionLease(path, () => Interlocked.Decrement(ref _executions));
         }
         finally
         {
@@ -178,6 +203,7 @@ public sealed class YtDlpRuntime : IDisposable
             ["bundleAvailable"] = available,
             ["supported"] = _platform is not null,
             ["downloadJobsAvailable"] = false,
+            ["activeExecutions"] = Volatile.Read(ref _executions),
             ["releaseUrl"] = release["releaseUrl"]!.GetValue<string>()
         };
     }
@@ -350,4 +376,17 @@ public sealed class YtDlpRuntime : IDisposable
             result.Append(buffer, 0, count);
         }
     }
+
+    internal sealed class ExecutionLease(string executable, Action release) : IDisposable
+    {
+        private Action? _release = release;
+
+        internal string Executable { get; } = executable;
+
+        /// <inheritdoc />
+        public void Dispose() => Interlocked.Exchange(ref _release, null)?.Invoke();
+    }
+
+    internal sealed class BusyException() : InvalidOperationException("Managed runtime cannot be replaced while an import execution holds a lease.");
+
 }

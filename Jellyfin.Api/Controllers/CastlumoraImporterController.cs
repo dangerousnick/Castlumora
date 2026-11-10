@@ -40,6 +40,10 @@ public sealed class CastlumoraImporterController : BaseJellyfinApiController
         {
             return await _runtime.InstallAsync(cancellationToken).ConfigureAwait(false);
         }
+        catch (YtDlpRuntime.BusyException)
+        {
+            return Conflict("The managed runtime is in use by an import. Wait for active imports to finish before installing it.");
+        }
         catch (NotSupportedException)
         {
             return StatusCode(StatusCodes.Status501NotImplemented, "Managed yt-dlp is available for Linux x64 and Windows x64 in this preview.");

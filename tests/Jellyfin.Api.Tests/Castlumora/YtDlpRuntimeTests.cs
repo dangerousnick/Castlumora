@@ -5,7 +5,9 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Jellyfin.Api.Castlumora;
+using Jellyfin.Api.Controllers;
 using MediaBrowser.Common.Configuration;
+using Microsoft.AspNetCore.Mvc;
 using Moq;
 using Xunit;
 
@@ -44,6 +46,35 @@ public sealed class YtDlpRuntimeTests : IDisposable
         Assert.False(state["downloadJobsAvailable"]!.GetValue<bool>());
         Assert.Equal(_asset.Sha256, state["expectedSha256"]!.GetValue<string>());
         Assert.Equal(2, calls);
+    }
+
+    [Fact]
+    public async Task ExecutionLeaseReverifiesRuntimeAndBlocksReplacementUntilAllLeasesAreReleased()
+    {
+        await Bundle();
+        using var runtime = Runtime((_, _, _, _) => Task.CompletedTask);
+        await runtime.InstallAsync(TestContext.Current.CancellationToken);
+        var first = await runtime.AcquireAsync(TestContext.Current.CancellationToken);
+        var second = await runtime.AcquireAsync(TestContext.Current.CancellationToken);
+        Assert.Equal(Managed(), first.Executable);
+        Assert.Equal(2, (await runtime.StatusAsync(TestContext.Current.CancellationToken))["activeExecutions"]!.GetValue<int>());
+        await Assert.ThrowsAsync<YtDlpRuntime.BusyException>(() => runtime.InstallAsync(TestContext.Current.CancellationToken));
+        var response = await new CastlumoraImporterController(runtime).InstallRuntime(TestContext.Current.CancellationToken);
+        var conflict = Assert.IsType<ConflictObjectResult>(response.Result);
+        Assert.Contains("in use", Assert.IsType<string>(conflict.Value), StringComparison.Ordinal);
+        first.Dispose();
+        first.Dispose();
+        await Assert.ThrowsAsync<YtDlpRuntime.BusyException>(() => runtime.InstallAsync(TestContext.Current.CancellationToken));
+        second.Dispose();
+        await runtime.InstallAsync(TestContext.Current.CancellationToken);
+        Assert.Equal(0, (await runtime.StatusAsync(TestContext.Current.CancellationToken))["activeExecutions"]!.GetValue<int>());
+        await File.WriteAllBytesAsync(Managed(), new byte[_bytes.Length], TestContext.Current.CancellationToken);
+        await Assert.ThrowsAsync<InvalidDataException>(() => runtime.AcquireAsync(TestContext.Current.CancellationToken));
+        await runtime.InstallAsync(TestContext.Current.CancellationToken);
+        using var canceled = new CancellationTokenSource();
+        await canceled.CancelAsync();
+        await Assert.ThrowsAnyAsync<OperationCanceledException>(() => runtime.AcquireAsync(canceled.Token));
+        await runtime.InstallAsync(TestContext.Current.CancellationToken);
     }
 
     [Fact]

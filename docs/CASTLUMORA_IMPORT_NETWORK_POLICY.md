@@ -70,3 +70,21 @@ The actual yt-dlp process has not yet been wired through this adapter: native
 downloader flags, executable leases, bounded process/output supervision, supported
 source protocols and actual executable/fixture integration are the next task.
 Downloading remains disabled, with no new external endpoint or UI promise.
+
+## Runtime execution leases and shutdown correction
+
+The managed runtime now offers internal execution leases. Acquiring a lease checks
+the pinned size/hash and bounded version probe again; it never installs or chooses
+an executable supplied by a client. Active leases prevent replacement, with an
+administrator HTTP409 response explaining that an import owns the executable.
+Each lease is released exactly once, including repeated disposal. Status reports
+activeExecutions; this does not enable downloads or expose the executable path.
+Tests cover multiple leases, replacement blocking/unblocking, controller conflict,
+tampering and cancellation without a leaked reservation.
+
+A subsequent repeated API run exposed a listener stop/accept race in ImportTunnel.
+It now accepts InvalidOperationException only when its own cancellation is active;
+unexpected invalid operations are not silently hidden. The complete API suite
+passes279 tests with3 existing skips after this correction. The broad formatter's
+compiler-process failure was resolved with scoped project loads and single-worker
+builds. Actual yt-dlp invocation through the tunnel is still unverified/unimplemented.

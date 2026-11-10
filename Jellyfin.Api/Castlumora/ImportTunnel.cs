@@ -74,7 +74,8 @@ internal sealed class ImportTunnel : IAsyncDisposable
                 _clients.Add(ServeAsync(client));
             }
         }
-        catch (Exception exception) when (exception is OperationCanceledException or SocketException or ObjectDisposedException)
+        catch (Exception exception) when (exception is OperationCanceledException or SocketException or ObjectDisposedException
+            || (exception is InvalidOperationException && _stop.IsCancellationRequested))
         {
             // Only the owned listener is stopped on cancellation/disposal.
         }
