@@ -608,6 +608,7 @@ function LayoutEditor({ initial, users }: { initial: Layout; users: User[] }) {
 }
 const sections = [
   ['Libraries', 'libraries'],
+  ['Metadata Management', 'metadata'],
   ['Live TV & DVR', 'live'],
   ['Playback & Encoding', 'encoding'],
   ['Users & Access', 'users'],

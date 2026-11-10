@@ -65,3 +65,7 @@ Standardize frontend development and preview builds on Node.js 24 LTS; replace d
 ### Local source-aware metadata checkpoint
 
 First native retained-sidecar provider and generic-video browsing are implemented and verified independently of downloading. Next coherent increment: native Metadata Management backed by permission-checked persisted settings and explicit item repair/lock controls, with provider/type/ambiguity handling. Continue online metadata/caching/channel relationships and safe managed yt-dlp queue in separate tested increments. Full importer and production provider remain mandatory. Future preview manifests distinguish local-sidecar support from a complete metadata subsystem.
+
+### Native selected-item metadata controls
+
+Implemented and verified native local-reader enable/order, source inspection and selected-item correction/lock/repair. Next milestone: managed authorized importer executable/health/queue foundation, beginning with safe runner and validated source/destination boundaries, persistent queue/recovery and tests before dashboard claims. Retain online provider/ambiguity/bulk/artwork/duplicate and profile/admin requirements for further coherent increments. Produce current preview with completed features and keep its exact commit/checksum and recovery checkpoint.

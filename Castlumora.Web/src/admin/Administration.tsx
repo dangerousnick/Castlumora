@@ -6,6 +6,7 @@ const Registration = lazy(() => import('./Registration'));
 const Skipper = lazy(() => import('./Skipper'));
 const Presentation = lazy(() => import('../pages/Admin'));
 const Libraries = lazy(() => import('./Libraries'));
+const Metadata = lazy(() => import('./Metadata'));
 const Users = lazy(() => import('./Users'));
 const Encoding = lazy(() => import('./Encoding'));
 const System = lazy(() => import('./System'));
@@ -27,6 +28,7 @@ export default function Administration() {
           {[
             ['', 'Overview & presentation'],
             ['libraries', 'Libraries & metadata'],
+            ['metadata', 'Metadata Management'],
             ['live', 'Live TV & DVR'],
             ['encoding', 'Playback & encoding'],
             ['skipper', 'Intro & outro skipper'],
@@ -49,6 +51,7 @@ export default function Administration() {
           <Routes>
             <Route index element={<Presentation />} />
             <Route path="libraries" element={<Libraries />} />
+            <Route path="metadata" element={<Metadata />} />
             <Route path="live" element={<LiveSetup />} />
             <Route path="encoding" element={<Encoding />} />
             <Route path="skipper" element={<Skipper />} />
