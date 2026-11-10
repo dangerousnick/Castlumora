@@ -4,6 +4,31 @@ Branch: `development/castlumora-web-1.3`; PR targets `main`. Base main: `b06078b
 
 Permanent source of truth: [docs/CASTLUMORA_PRODUCT_REQUIREMENTS.md](docs/CASTLUMORA_PRODUCT_REQUIREMENTS.md). Remaining product vision: [PRODUCT_ROADMAP.md](PRODUCT_ROADMAP.md). Actual coverage: [FEATURE_PARITY.md](FEATURE_PARITY.md).
 
+## Active correction — mandatory complete pre-push validation
+
+CI Format42855077268/job129965793560 and ABI42855076911/HEAD job129965792607
+both failed SA1508 at YtDlpRuntime.cs392 (blank line before closing brace).
+Removed the blank line. Earlier scoped formatting/Release checks missed the full
+Debug analyzer failure; they are not accepted as proof of a clean full checkout.
+
+Added scripts/validate-before-push.sh, tracked .githooks/pre-push and installation
+helper; activated the local hooksPath. The gate requires clean committed HEAD,
+.NET10/Node24, full-solution restore/format (workspace warnings fail), Debug ABI
+server build, Release solution build/full tests with CI coverage and real pinned
+platform fixture, workflow-handler/frontend checks. No skip/cache/bypass is used.
+Five isolated bare-remote tests pass: format/workspace/build/test failures block
+publishing, and simulated successful checks publish only validated HEAD. These
+mock-tool tests validate enforcement only, not application build success.
+
+Current actual verification is pending. Initial full formatter emitted workspace
+warnings, so it was stopped for a restore/diagnostic rerun rather than called a
+pass. No push is authorized by this checkpoint until the entire real gate passes.
+See docs/PRE_PUSH_VALIDATION.md. Latest published source remains2b79ffb136f2c46dca52b1a8562c38f37da2f94e;
+current branch development/castlumora-web-1.3, PR3. Usage allowance Not accessible.
+Next: finish all real checks, investigate any failure, then publish once with the
+hook enabled; inspect exact-source GitHub results before resuming importer runner.
+No Coon access, deployment or main merge.
+
 ## Latest continuation checkpoint — actual pinned executable HTTPS verification
 
 - **Last completed milestones:** bounded authenticated tunnel528f0750190ecd4d6171a4a7ee4b4207788bcc5f; verified runtime leases/administrator409/shutdown race correctioncafc4590a804631a30399eb4d76c8b881ef72cba; real pinned executable trusted/untrusted owned-HTTPS transport tests in the following test-only commit.

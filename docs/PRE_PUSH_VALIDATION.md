@@ -1,0 +1,45 @@
+# Required local publishing checks
+
+Install with `./scripts/install-git-hooks.sh` in every checkout. This sets only
+repository-local core.hooksPath=.githooks and refuses to overwrite another hooks
+configuration. Git does not install hooks when cloning; AGENTS.md also requires the
+process for every future Codex session. Client hooks are not remote branch protection;
+maintainers must still require GitHub CI/review. Do not bypass the hook.
+
+Prerequisites: Bash, Git, .NET10 SDK selected by global.json, Node24 LTS, npm,
+Python3, Linux/Windows x64, outbound package access and enough disk/memory to build
+and start disposable test servers. On this workspace put /tmp/castlumora-dotnet on
+PATH. Commit the intended working tree locally before validation; the gate refuses
+tracked changes or untracked source files and validates only checked-out HEAD.
+
+Run `./scripts/validate-before-push.sh`. A normal git push invokes it again. Every
+step is required and failures stop the command before network publication:
+
+- Restore Jellyfin.sln; full `dotnet format --verify-no-changes --verbosity diagnostic`
+  (same check as Format CI, with additional diagnostic output). No project/file filter.
+  Workspace-load warnings are a failure, not evidence that all projects were checked.
+- `dotnet build Jellyfin.Server -o <temporary>/abi-head` in Debug, matching ABI HEAD CI.
+  Its temporary output is removed after success; logs remain.
+- Release build of Jellyfin.sln, then full Release solution tests with
+  --collect:"XPlat Code Coverage" and tests/coverletArgs.runsettings, matching Tests CI.
+- Verified OS-specific runtime bundle and bundler tests, so real-executable cases do
+  not silently skip. Optional CASTLUMORA_TEST_YTDLP_BUNDLE reuses verified cached bytes;
+  its digest/size are still checked.
+- Node workflow comment-handler tests; npm ci/typecheck/lint/test/build for Web.
+
+Logs are retained in a printed /tmp/castlumora-prepush.* directory. Parallelism is
+bounded for resource use; analyzers, tests and warnings-as-errors are not disabled.
+Missing tools, network/restore failure, unsupported platform or incomplete workspace
+loading block publication. There is no skip flag or successful-check cache.
+
+Linux execution cannot certify Windows/macOS, physical Mint, GPU/tuner hardware,
+remote ABI base/head comparison, OpenAPI Docker report or packaged browser workflows.
+Those remain required applicable CI/preview checks; never claim they ran locally.
+
+## Incident corrected
+
+GitHub Format42855077268/job129965793560 and ABI42855076911/HEAD job129965792607
+both failed with SA1508 at Jellyfin.Api/Castlumora/YtDlpRuntime.cs392: a blank line
+before a closing brace. Removed the blank line. Release-only builds and scoped
+formatter invocations were insufficient evidence; the gate now covers full Debug
+analyzers and full-solution formatting. No GitHub check has been disabled or weakened.

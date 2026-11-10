@@ -388,5 +388,4 @@ public sealed class YtDlpRuntime : IDisposable
     }
 
     internal sealed class BusyException() : InvalidOperationException("Managed runtime cannot be replaced while an import execution holds a lease.");
-
 }
