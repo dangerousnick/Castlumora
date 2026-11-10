@@ -24,6 +24,10 @@
     <ProjectReference Include="..\src\Jellyfin.Networking\Jellyfin.Networking.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <EmbeddedResource Include="../packaging/yt-dlp/release.json" LogicalName="Castlumora.YtDlpRelease" />
+  </ItemGroup>
+
   <!-- Code Analyzers -->
   <ItemGroup Condition=" '$(Configuration)' == 'Debug' ">
     <PackageReference Include="IDisposableAnalyzers">

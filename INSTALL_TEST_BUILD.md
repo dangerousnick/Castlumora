@@ -27,7 +27,7 @@ sudo apt update
 sudo apt install ffmpeg libicu74 libssl3t64 libfontconfig1 libfreetype6
 ```
 
-Ubuntu/Mint package versions vary; use their corresponding ICU/OpenSSL 3 packages if those exact names differ. The bundled .NET runtime still requires native system libraries. FFmpeg and its sibling ffprobe are external, not bundled. Normal FFmpeg validation stays enabled; the package was tested with FFmpeg 7.1.5. The inherited minimum recommendation is 4.4; ordinary supported Mint FFmpeg may work, but every codec/hardware path is not certified. A compatible `jellyfin-ffmpeg` installation can be selected explicitly:
+Ubuntu/Mint package versions vary; use their corresponding ICU/OpenSSL 3 packages if those exact names differ. The bundled .NET runtime still requires native system libraries. FFmpeg and its sibling ffprobe are external, not bundled. New previews bundle a separately licensed pinned yt-dlp runtime; install/check it through Administration → Imports & Sources. This is executable readiness only; URL importing/queues are not available yet. See the included CASTLUMORA_IMPORTER_RUNTIME.md. Normal FFmpeg validation stays enabled; the package was tested with FFmpeg 7.1.5. The inherited minimum recommendation is 4.4; ordinary supported Mint FFmpeg may work, but every codec/hardware path is not certified. A compatible `jellyfin-ffmpeg` installation can be selected explicitly:
 
 ```bash
 CASTLUMORA_FFMPEG=/usr/lib/jellyfin-ffmpeg/ffmpeg ./start-castlumora

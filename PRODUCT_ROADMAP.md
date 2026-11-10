@@ -75,3 +75,7 @@ Verified downloadable preview now contains native local-sidecar identification a
 ## Owner version/platform requirements synchronized from main
 
 All previously agreed 1.0 features remain mandatory; previews are incomplete checkpoints. Deep independent core replacement plus plugin/ebook marketplaces belong to 2.0, not a reason to defer existing 1.0 work. Keep shared business/API logic and genuine Windows/Linux process, path, dependency and service adapters; preserve existing reliable FFmpeg/session behavior. See permanent requirements Sections L/M. Managed importer runtime installation/health is the next prerequisite to its queue.
+
+### Managed importer executable checkpoint
+
+Pinned offline bundle installation/health and native administrator controls are implemented as the queue prerequisite. Current runtime readiness does not enable downloading. Next: one complete authorized-single-source queue milestone with persistent lifecycle/history, safe validated destinations, per-request egress/DNS/redirect protections, bounded subprocess supervision, cancellation/retry and scan on success. Extend to bulk/playlists/channels/scheduling only after that core is verified; full 1.0 requirements remain unchanged.

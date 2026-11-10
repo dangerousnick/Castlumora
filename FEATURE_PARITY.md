@@ -83,3 +83,7 @@ Administrator reader enable/order, source ID/type inspection, title/description 
 ### Refreshed exact-commit preview verification
 
 Source 835716785add501a27d98e979fa67d411c63b570: Windows/macOS/Ubuntu full server CI passes; Ubuntu 4,255 tests passed/19 skipped. Native frontend 56 and report-handler five tests pass; Format/ABI/OpenAPI Check pass. Actual downloaded package passed CI fresh/restart/library/playback plus five independent local compiled-web/server creator/metadata/movie/DVR workflows, including completed and retained-partial recording playback and authorization. Download/checksum/report in DEVELOPMENT_PROGRESS.md and docs/verification-node24-and-metadata.md. This is an intermediate preview, not complete master-spec acceptance.
+
+### Managed importer runtime prerequisite
+
+Native administrator status/install UI and protected endpoints manage only reviewed bundled yt-dlp assets. Linux/Windows x64 asset selection, hash/size verification before execution, atomic candidate installation, bounded clean-environment version checks and failure/cancellation cleanup implemented. Local API205/3 skips, HTTP132/3 skips, frontend58 and bundler5 tests pass; compiled real Linux native install/reload/health/viewer denials verified. CI actual Windows/Linux asset checks and preview installer smoke configured; report executed outcomes after publication. URL queues/downloads/egress protection/source scheduling remain mandatory unfinished work. See docs/CASTLUMORA_IMPORTER_RUNTIME.md.

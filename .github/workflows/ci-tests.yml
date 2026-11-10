@@ -26,6 +26,20 @@ jobs:
         with:
           dotnet-version: ${{ env.SDK_VERSION }}
 
+      - name: Python for pinned tool fixture
+        if: runner.os == 'Linux' || runner.os == 'Windows'
+        uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0, Node 24
+        with:
+          python-version: '3.12'
+      - name: Prepare verified OS-specific yt-dlp health fixture
+        if: runner.os == 'Linux' || runner.os == 'Windows'
+        shell: bash
+        run: |
+          if [[ "$RUNNER_OS" == "Windows" ]]; then tool_platform=win-x64; else tool_platform=linux-x64; fi
+          python -m unittest discover -s packaging/yt-dlp -p 'test_*.py'
+          python packaging/yt-dlp/bundle.py --platform "$tool_platform" --system-root "$RUNNER_TEMP/castlumora-tool-fixture"
+          echo "CASTLUMORA_TEST_YTDLP_BUNDLE=$RUNNER_TEMP/castlumora-tool-fixture" >> "$GITHUB_ENV"
+
       - name: Run DotNet CLI Tests
         run: >
           dotnet test Jellyfin.sln

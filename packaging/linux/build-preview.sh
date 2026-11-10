@@ -14,8 +14,10 @@ mkdir -p "$stage/server" "$stage/web" "$stage/licenses"
 export DOTNET_CLI_TELEMETRY_OPTOUT=1
 export DOTNET_NOLOGO=1
 node --test .github/scripts/*.test.cjs
+python3 -m unittest discover -s packaging/yt-dlp -p 'test_*.py'
 (cd Castlumora.Web; npm ci; npm run typecheck; npm run lint; npm test; VITE_LEGACY_WEB_PATH=web/legacy/ npm run build)
 dotnet publish Jellyfin.Server/Jellyfin.Server.csproj --configuration Release --runtime linux-x64 --self-contained true --nologo -m:1 -p:PublishSingleFile=false -p:ContinuousIntegrationBuild=true -o "$stage/server"
+python3 packaging/yt-dlp/bundle.py --platform linux-x64 --system-root "$stage/server"
 cp -a Castlumora.Web/dist/. "$stage/web/"
 mkdir "$stage/web/legacy"
 cp packaging/linux/legacy-help.html "$stage/web/legacy/index.html"
@@ -28,8 +30,8 @@ python3 packaging/linux/collect-licenses.py Jellyfin.Server/obj/project.assets.j
 cp FEATURE_PARITY.md PRODUCT_ROADMAP.md DEVELOPMENT_PROGRESS.md "$stage/"
 cp Castlumora.Web/public/THIRD_PARTY_NOTICES.txt "$stage/licenses/WEB_DEPENDENCIES.txt"
 cp -a branding "$stage/branding"
-cp docs/CASTLUMORA_READER_AND_SHELVES.md docs/CASTLUMORA_SKIPPER.md docs/CASTLUMORA_REGISTRATION.md docs/CASTLUMORA_CREATOR_SIDECAR.md docs/CASTLUMORA_METADATA_MANAGEMENT.md docs/CASTLUMORA_DVR.md "$stage/"
-printf '{"product":"Castlumora","version":"1.0 development preview","commit":"%s","platform":"linux-x64","selfContainedDotnet":true,"legacyWebIncluded":false,"importerImplemented":false,"metadataProviderImplemented":false,"creatorSidecarImplemented":true,"metadataManagementStage":"selected-item-local"}\n' "$sha" > "$stage/BUILD_INFO.json"
+cp docs/CASTLUMORA_READER_AND_SHELVES.md docs/CASTLUMORA_SKIPPER.md docs/CASTLUMORA_REGISTRATION.md docs/CASTLUMORA_CREATOR_SIDECAR.md docs/CASTLUMORA_METADATA_MANAGEMENT.md docs/CASTLUMORA_IMPORTER_RUNTIME.md docs/CASTLUMORA_DVR.md "$stage/"
+printf '{"product":"Castlumora","version":"1.0 development preview","commit":"%s","platform":"linux-x64","selfContainedDotnet":true,"legacyWebIncluded":false,"importerImplemented":false,"managedYtDlpRuntimeBundled":true,"metadataProviderImplemented":false,"creatorSidecarImplemented":true,"metadataManagementStage":"selected-item-local"}\n' "$sha" > "$stage/BUILD_INFO.json"
 cp "$stage/BUILD_INFO.json" "$stage/web/BUILD_INFO.json"
 (cd "$output"; tar --sort=name --mtime="@$epoch" --owner=0 --group=0 --numeric-owner -czf "$name.tar.gz" "$name"; sha256sum "$name.tar.gz" > "$name.tar.gz.sha256")
 printf 'Package: %s/%s.tar.gz\nSource: %s\n' "$output" "$name" "$sha"

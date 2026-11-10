@@ -23,6 +23,7 @@ Use an isolated installation and copies/authorized fixtures. Record BUILD_INFO.j
 | Plugins/network | Admin → Plugins/System; inspect repos/catalog/network | Native screens retained; real plugin installation, discovery/proxy/TLS deployment pending |
 | Logs/tasks/backups | Admin → System; view logs/tasks/triggers/backup controls | Inherited backend retained; destructive actions/restore unverified; back up preview before experimenting |
 | Advanced legacy | Existing client opens help unless compatible compiled legacy assets are attached | Not bundled; see INSTALL_TEST_BUILD.md; no false parity claim |
+| Managed importer runtime | Admin → Imports & Sources; install bundled executable; check health; reload | Native pinned/hash/version lifecycle implemented; Linux real-binary tests pass; Windows real-binary CI configured; no URL jobs yet |
 | Importer/full online provider | Consult feature inventory and local sidecar guide | Managed yt-dlp queue and full online provider remain mandatory unfinished work; native local-sidecar subset is implemented, not production parity |
 | Restart/removal | Ctrl+C; restart same state; verify account/layout; stop and delete only preview folder/state | Package smoke required; do not touch original media/another server |
 

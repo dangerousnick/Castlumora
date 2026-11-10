@@ -111,4 +111,20 @@ test('packaged preview: restart retains owner and creates/scans a library throug
     })
     .toBeGreaterThan(0);
   await page.getByRole('link', { name: 'Back', exact: true }).click();
+  await page.getByRole('link', { name: 'Administration', exact: true }).click();
+  await page
+    .getByRole('navigation', { name: 'Administration sections' })
+    .getByRole('link', { name: 'Imports & Sources', exact: true })
+    .click();
+  page.once('dialog', (dialog) => dialog.accept());
+  await page.getByRole('button', { name: 'Install bundled runtime', exact: true }).click();
+  await expect(page.getByText('Ready', { exact: true })).toBeVisible();
+  const runtime = await request.get(new URL('../Castlumora/Imports/Runtime', preview!).href, {
+    headers: auth,
+  });
+  expect(runtime.ok()).toBe(true);
+  const tool = await runtime.json();
+  expect(tool.ready).toBe(true);
+  expect(tool.bundleAvailable).toBe(true);
+  expect(tool.downloadJobsAvailable).toBe(false);
 });

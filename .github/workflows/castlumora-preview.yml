@@ -77,7 +77,7 @@ jobs:
           echo '<movie><title>Castlumora Test</title><plot>Synthetic packaged fixture.</plot><lockdata>true</lockdata></movie>' > '/tmp/castlumora-preview-fresh-media/Castlumora Test (2026).nfo'
           env -u DOTNET_ROOT -u DOTNET_ROOT_X64 CASTLUMORA_DATA_DIR=/tmp/castlumora-preview-fresh "$PREVIEW_PACKAGE/start-castlumora" > "$RUNNER_TEMP/castlumora-restart.log" 2>&1 &
           echo "PREVIEW_PID=$!" >> "$GITHUB_ENV"
-      - name: Verify restart, native library creation, scanning and playback
+      - name: Verify restart, libraries, playback and bundled yt-dlp installation
         working-directory: Castlumora.Web
         env:
           CASTLUMORA_PREVIEW_RESTART: '1'
@@ -97,13 +97,13 @@ jobs:
 
           Exact source commit: {sha}. Development preview, not production-stable or complete Phase 1.4 parity.
 
-          This GitHub-hosted Ubuntu 24.04 build passed frontend typecheck/lint/build and tests, self-contained linux-x64 Release publish, archive checksum verification and two browser workflows on the extracted package: fresh setup/login/admin/logout/security; restart/account persistence/native library creation/scanning/actual movie playback. The server served the compiled web itself. .NET runtime is bundled; no Node/SDK/build is needed to run the preview. Native libraries and compatible FFmpeg remain external; see INSTALL_TEST_BUILD.md. No GPU or real tuner/Mint hardware certification is claimed.
+          This GitHub-hosted Ubuntu 24.04 build passed frontend typecheck/lint/build and tests, self-contained linux-x64 Release publish, archive checksum verification and two browser workflows on the extracted package: fresh setup/login/admin/logout/security; restart/account persistence/native library creation/scanning/actual movie playback and native installation/integrity/version health of the bundled pinned yt-dlp executable. The server served the compiled web itself. .NET runtime is bundled; no Node/SDK/build is needed to run the preview. Native libraries and compatible FFmpeg remain external; see INSTALL_TEST_BUILD.md. No GPU or real tuner/Mint hardware certification is claimed.
 
           Extract the archive, run ./start-castlumora, and open http://127.0.0.1:28096/web/. Preview state and temporary files are isolated. Check the accompanying SHA-256 file and BUILD_INFO.json. Source is the exact tested commit. No main merge or production/Coon Media deployment.
 
           Prior local packaged-output tests at application commit 8d591a4d58cc705de1668fb7dc63a0b013cc35e4 verified all thirteen media/admin/skipper/invitation/music/photo/book/collection workflows across full and targeted runs; those broader workflows were not rerun in this CI job. See the repository verification report for exact evidence.
 
-          Native local .info.json creator identification, generic-video browsing and safe descriptions are included; source checkpoint documents exact local verification. Missing: mandatory yt-dlp importing, full online YouTube metadata/admin management, DVR quotas/real-tuner certification, linked profiles, recommendations/notifications, creator/business/cloud/offline/native clients and complete advanced admin parity. Compiled legacy Web is not bundled; compatible-assets attachment is documented. Native administration and inherited backend functionality are preserved. The source checkpoint's progress notes precede this post-build report.
+          Native local .info.json creator identification, generic-video browsing, safe descriptions and managed pinned yt-dlp runtime installation/health are included; source checkpoint documents exact local verification. Missing: mandatory yt-dlp importing, full online YouTube metadata/admin management, DVR quotas/real-tuner certification, linked profiles, recommendations/notifications, creator/business/cloud/offline/native clients and complete advanced admin parity. Compiled legacy Web is not bundled; compatible-assets attachment is documented. Native administration and inherited backend functionality are preserved. The source checkpoint's progress notes precede this post-build report.
 
           GitHub Actions artifact is retained for 30 days and requires GitHub sign-in. Report issues with exact commit/environment and redacted logs, never credentials.
           '''

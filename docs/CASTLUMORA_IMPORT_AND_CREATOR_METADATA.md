@@ -62,3 +62,7 @@ The same functionality must be available in **all** server setup presets, withou
 ## Implementation checkpoint — retained sidecars
 
 The first native offline reader is implemented for explicitly generic Video items; see [CASTLUMORA_CREATOR_SIDECAR.md](CASTLUMORA_CREATOR_SIDECAR.md) for strict ID/type boundaries, actual verification, settings and limitations. This supplies existing-file identification and source IDs without downloading media. The complete provider, metadata dashboard and safe yt-dlp import subsystem above remain mandatory and incomplete.
+
+## Managed executable prerequisite
+
+Pinned platform bundle/install/health and administrator controls now exist; see CASTLUMORA_IMPORTER_RUNTIME.md. This does not implement URL ingestion, queue or download-job production safety. Those remain mandatory targets above, independent of already working local sidecar metadata.
