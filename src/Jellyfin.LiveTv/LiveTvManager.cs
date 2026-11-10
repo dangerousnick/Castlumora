@@ -1265,6 +1265,7 @@ namespace Jellyfin.LiveTv
             {
                 fields.Remove(ItemFields.CanDelete);
             }
+
             fields.Remove(ItemFields.CanDownload);
             fields.Remove(ItemFields.DisplayPreferencesId);
             fields.Remove(ItemFields.Etag);
