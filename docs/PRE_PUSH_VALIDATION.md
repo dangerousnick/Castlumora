@@ -57,3 +57,21 @@ hostname-rejection and untrusted-certificate assertions remain; no tests are ski
 Windows confirmation requires CI because this executor is Linux; do not claim it
 passed locally. Six isolated hook tests include source mutation during validation.
 The gate checks its committed snapshot before every stage and at completion.
+
+## Storage failure and recovery
+
+A full local run passed full-solution formatting and Debug server build, then
+failed the Release solution build with ENOSPC on this8GB filesystem. It did not
+run subsequent required stages and did not authorize a push. Logs are retained
+at /tmp/castlumora-prepush.v1RcuxL8. Stopped old generated extractions and failed
+bin outputs were removed; source, test data, logs, installed packages and all saved
+archives were preserved. Only the redundant NuGet HTTP download cache was cleared.
+
+The gate now uses MSBuild's supported CreateHardLinksForCopyLocalIfPossible=true
+storage optimization for identical dependency copies. No source fixture content
+is hard-linked, no runtime assets are excluded, and checks/assertions are unchanged.
+The filesystem was probed for hard-link support. Disk headroom is checked before
+builds and tests (minimum2GiB); failure still blocks publication. Nine isolated
+bare-remote tests include disk failure and preservation of existing hook settings.
+Final frozen-source validation must still pass in full; earlier partial runs are
+not a substitute. Windows TLS fixture confirmation still requires Windows CI.

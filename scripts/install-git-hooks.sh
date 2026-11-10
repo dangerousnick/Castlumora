@@ -2,6 +2,10 @@
 set -Eeuo pipefail
 cd "$(git rev-parse --show-toplevel)"
 existing=$(git config --get core.hooksPath || true)
+if [[ -z "$existing" && -f "$(git rev-parse --git-path hooks/pre-push)" ]]; then
+    echo 'Refusing to shadow an existing default pre-push hook; integrate the validation gate first.' >&2
+    exit 1
+fi
 if [[ -n "$existing" && "$existing" != .githooks ]]; then
     echo "Refusing to replace existing hooksPath: $existing; integrate the required pre-push gate first." >&2
     exit 1

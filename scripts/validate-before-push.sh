@@ -11,6 +11,9 @@ head=$(git rev-parse HEAD)
 logdir=$(mktemp -d "${TMPDIR:-/tmp}/castlumora-prepush.XXXXXXXX")
 export DOTNET_PROCESSOR_COUNT=${DOTNET_PROCESSOR_COUNT:-2}
 export MSBUILDDISABLENODEREUSE=1
+# SDK-supported I/O optimization only: identical dependency bytes, no omitted assets/tests.
+# Do not hard-link source/content fixtures, which tests may edit.
+export CreateHardLinksForCopyLocalIfPossible=true
 trap 'echo "VALIDATION FAILED: push blocked. Logs: $logdir" >&2' ERR
 assert_snapshot() {
     if [[ $(git -C "$root" rev-parse HEAD) != "$head" ]] \
@@ -38,6 +41,7 @@ sdk=$(dotnet --version)
 [[ "$sdk" == 10.* ]] || { echo 'BLOCKED: .NET SDK10 required.' >&2; exit 1; }
 [[ $(node --version) == v24.* ]] || { echo 'BLOCKED: Node24 required.' >&2; exit 1; }
 run hook-tests python3 -m unittest discover -s scripts/tests -p 'test_*.py'
+run disk-space python3 -c 'import shutil,sys; free=shutil.disk_usage(sys.argv[1]).free; print(f"Free bytes: {free}; required: 2147483648"); sys.exit(0 if free >= 2147483648 else 1)' "$root"
 run restore dotnet restore Jellyfin.sln
 # No include/exclude list: Debug analyzers must load across the whole solution.
 run format dotnet format --verify-no-changes --verbosity diagnostic
@@ -59,6 +63,7 @@ esac
 export CASTLUMORA_TEST_YTDLP_BUNDLE=${CASTLUMORA_TEST_YTDLP_BUNDLE:-"$logdir/tool-fixture"}
 run bundle-tests python3 -m unittest discover -s packaging/yt-dlp -p 'test_*.py'
 run bundle python3 packaging/yt-dlp/bundle.py --platform "$platform" --system-root "$CASTLUMORA_TEST_YTDLP_BUNDLE"
+run test-disk-space python3 -c 'import shutil,sys; free=shutil.disk_usage(sys.argv[1]).free; print(f"Free bytes: {free}; required: 2147483648"); sys.exit(0 if free >= 2147483648 else 1)' "$root"
 run tests dotnet test Jellyfin.sln --configuration Release --collect:XPlat\ Code\ Coverage --settings tests/coverletArgs.runsettings --verbosity minimal -m:1
 run workflow-tests node --test .github/scripts/publish-openapi-report.test.cjs
 (

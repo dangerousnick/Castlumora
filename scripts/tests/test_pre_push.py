@@ -24,7 +24,7 @@ class PrePushTests(unittest.TestCase):
         self.git("init", str(self.repo), cwd=self.root)
         self.git("config", "user.name", "Fixture")
         self.git("config", "user.email", "fixture@example.invalid")
-        for name in ["scripts/validate-before-push.sh", ".githooks/pre-push"]:
+        for name in ["scripts/validate-before-push.sh", "scripts/install-git-hooks.sh", ".githooks/pre-push"]:
             target = self.repo / name
             target.parent.mkdir(parents=True, exist_ok=True)
             shutil.copy2(SOURCE / name, target)
@@ -48,7 +48,7 @@ if [ "$1" = test ] && [ "${CASTLUMORA_GATE_TEST_FAILURE:-}" = tests ]; then exit
 ''')
         self.tool("node", 'if [ "$1" = --version ]; then echo v24.22.1; fi\n')
         self.tool("npm", "")
-        self.tool("python3", "")
+        self.tool("python3", 'if [ "$1" = -c ] && [ "${CASTLUMORA_GATE_TEST_FAILURE:-}" = disk ]; then exit 1; fi')
 
     def git(self, *args, cwd=None, check=True):
         return subprocess.run(["git", *args], cwd=cwd or self.repo, env=self.env,
@@ -73,6 +73,26 @@ if [ "$1" = test ] && [ "${CASTLUMORA_GATE_TEST_FAILURE:-}" = tests ]; then exit
 
     def test_source_mutation_during_checks_prevents_remote_update(self):
         self.blocked("mutate")
+
+    def test_insufficient_disk_prevents_remote_update(self):
+        self.blocked("disk")
+
+    def test_installer_preserves_existing_default_hook(self):
+        self.git("config", "--unset", "core.hooksPath")
+        hook = self.repo / ".git/hooks/pre-push"
+        hook.write_text("owned existing hook")
+        result = subprocess.run(["bash", "scripts/install-git-hooks.sh"], cwd=self.repo,
+                                env=self.env, capture_output=True)
+        self.assertNotEqual(result.returncode, 0)
+        self.assertEqual(hook.read_text(), "owned existing hook")
+        self.assertNotEqual(self.git("config", "--get", "core.hooksPath", check=False).returncode, 0)
+
+    def test_installer_preserves_existing_hooks_path(self):
+        self.git("config", "core.hooksPath", "existing-hooks")
+        result = subprocess.run(["bash", "scripts/install-git-hooks.sh"], cwd=self.repo,
+                                env=self.env, capture_output=True)
+        self.assertNotEqual(result.returncode, 0)
+        self.assertEqual(self.git("config", "--get", "core.hooksPath").stdout.strip(), "existing-hooks")
 
     def test_debug_build_failure_prevents_remote_update(self):
         self.blocked("build")

@@ -4,6 +4,25 @@ Branch: `development/castlumora-web-1.3`; PR targets `main`. Base main: `b06078b
 
 Permanent source of truth: [docs/CASTLUMORA_PRODUCT_REQUIREMENTS.md](docs/CASTLUMORA_PRODUCT_REQUIREMENTS.md). Remaining product vision: [PRODUCT_ROADMAP.md](PRODUCT_ROADMAP.md). Actual coverage: [FEATURE_PARITY.md](FEATURE_PARITY.md).
 
+## Active storage recovery for complete validation (not published)
+
+Required gate on9f5c9478df passed complete format (2,413 files, zero changes) and
+Debug server build (zero warnings/errors), but Release solution build failed
+ENOSPC/Bus error on the8GB workspace. The gate exited1 and no push occurred.
+Full tests/frontend stages were not reached; do not represent this as a pass.
+Logs: /tmp/castlumora-prepush.v1RcuxL8. Cleared only stopped generated extractions,
+failed bin outputs and redundant NuGet HTTP download cache. Preserved all source,
+logs, package dependencies and saved build archives; no production process touched.
+
+Standard SDK dependency hard-link copy support was verified. The gate now enables
+CreateHardLinksForCopyLocalIfPossible (same file bytes, no omitted assets/checks),
+checks disk before builds/tests and refuses to shadow existing default hooks.
+Nine isolated enforcement tests pass. Next: freeze this source, rerun the entire
+gate after storage recovery, then publish only after complete success and inspect
+exact-source CI, especially the proposed Windows Schannel fixture correction.
+Current last published source is2b79ffb136f2c46dca52b1a8562c38f37da2f94e; branch
+and PR remain unchanged. No CI weakening or hook bypass. Usage Not accessible.
+
 ## Continuing CI correction — frozen source and portable TLS fixtures
 
 - Local full-solution formatting of32b67f9039 finished with zero changed files/diagnostics after removing SA1508; unlike the earlier scoped check it loaded the full solution and ran Debug analyzer references. Further source edits require rerunning the full gate; no partial pass authorizes publication.
