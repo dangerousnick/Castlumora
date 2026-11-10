@@ -79,3 +79,5 @@ All previously agreed 1.0 features remain mandatory; previews are incomplete che
 ### Managed importer executable checkpoint
 
 Pinned offline bundle installation/health and native administrator controls are implemented as the queue prerequisite. Current runtime readiness does not enable downloading. Next: one complete authorized-single-source queue milestone with persistent lifecycle/history, safe validated destinations, per-request egress/DNS/redirect protections, bounded subprocess supervision, cancellation/retry and scan on success. Extend to bulk/playlists/channels/scheduling only after that core is verified; full 1.0 requirements remain unchanged.
+
+Managed runtime preview584e58c4ed is delivered and independently verified, including actual Windows/Linux binary checks and packaged native installation. Continue the authorized-single-source persistent import queue/security/scan workflow; this is the next 1.0 milestone, not a core rewrite or marketplace task.
