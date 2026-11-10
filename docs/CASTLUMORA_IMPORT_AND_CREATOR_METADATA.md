@@ -58,3 +58,7 @@ The same functionality must be available in **all** server setup presets, withou
 - Ship in reviewable milestones: (1) schema/provider and sidecar metadata tests; (2) secure authorized import runner and queue; (3) admin workflow and account/profile permissions; (4) large-scale syncing/recovery and production validation.
 
 **Requirement permanence:** This feature is **mandatory for the full Castlumora production vision**, not necessarily completed within the current Codex task. No arbitrary omission or downgrading to a third-party plugin. Do not misrepresent planned behavior as shipped behavior.
+
+## Implementation checkpoint — retained sidecars
+
+The first native offline reader is implemented for explicitly generic Video items; see [CASTLUMORA_CREATOR_SIDECAR.md](CASTLUMORA_CREATOR_SIDECAR.md) for strict ID/type boundaries, actual verification, settings and limitations. This supplies existing-file identification and source IDs without downloading media. The complete provider, metadata dashboard and safe yt-dlp import subsystem above remain mandatory and incomplete.

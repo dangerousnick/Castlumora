@@ -71,3 +71,7 @@ Native Recordings now refreshes automatically while visible and separates retain
 ### Node.js 24 development/CI continuation
 
 Node 24 LTS is declared in .nvmrc and frontend engines and consumed by preview CI. Clean install/typecheck/lint/48 tests/build pass; workflow lint and five OpenAPI handler tests pass. Missing upstream JF_BOT_TOKEN replaced with built-in github.token for OpenAPI comments. Live workflow_run rollout requires reviewed default-branch changes; old main notifications can continue until then. Release version-bump execution remains untested and has an existing missing build.yaml dependency. No application feature or license changes.
+
+### Native local creator metadata (first increment)
+
+Built-in .info.json reader for explicitly generic Video files: strict YouTube/source/filename IDs, channel IDs, title/date/escaped description, bounded offline reads, reader disable/order settings and inherited metadata locks. Actual existing-file repair, whole-item and field locks, unlock and conflicting-ID rejection pass. Browse/Search/My List include generic Video items; formatting-only safe descriptions and creator playback are tested. Full provider suite 532 pass (17 new), frontend 50 pass/typecheck/lint/build. Full online provider/dashboard/relationships/caching, bulk repair/duplicates and yt-dlp importing remain required and unfinished; no fuzzy movie/TV matching or silent type migration. See docs/CASTLUMORA_CREATOR_SIDECAR.md.

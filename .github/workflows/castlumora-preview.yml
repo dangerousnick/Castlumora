@@ -103,7 +103,7 @@ jobs:
 
           Prior local packaged-output tests at application commit 8d591a4d58cc705de1668fb7dc63a0b013cc35e4 verified all thirteen media/admin/skipper/invitation/music/photo/book/collection workflows across full and targeted runs; those broader workflows were not rerun in this CI job. See the repository verification report for exact evidence.
 
-          Missing: mandatory yt-dlp/YouTube creator metadata, full DVR lifecycle/quotas, linked profiles, recommendations/notifications, creator/business/cloud/offline/native clients and complete advanced admin parity. Compiled legacy Web is not bundled; compatible-assets attachment is documented. Native administration and inherited backend functionality are preserved. The source checkpoint's progress notes precede this post-build report.
+          Native local .info.json creator identification, generic-video browsing and safe descriptions are included; source checkpoint documents exact local verification. Missing: mandatory yt-dlp importing, full online YouTube metadata/admin management, DVR quotas/real-tuner certification, linked profiles, recommendations/notifications, creator/business/cloud/offline/native clients and complete advanced admin parity. Compiled legacy Web is not bundled; compatible-assets attachment is documented. Native administration and inherited backend functionality are preserved. The source checkpoint's progress notes precede this post-build report.
 
           GitHub Actions artifact is retained for 30 days and requires GitHub sign-in. Report issues with exact commit/environment and redacted logs, never credentials.
           '''

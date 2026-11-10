@@ -7,7 +7,7 @@ export default function Browse() {
   const { api, preferences, layout } = useApp();
   const path = useLocation().pathname;
   const [params, setParams] = useSearchParams();
-  const [type, setType] = useState('Movie,Series');
+  const [type, setType] = useState('Movie,Series,Video');
   const [library, setLibrary] = useState('');
   const [page, setPage] = useState(0);
   const search = params.get('q') ?? '';
@@ -94,7 +94,9 @@ export default function Browse() {
               setPage(0);
             }}
           >
+            <option value="Movie,Series,Video">All videos</option>
             <option value="Movie,Series">Movies & series</option>
+            <option value="Video">Creator & home videos</option>
             <option value="Movie">Movies</option>
             <option value="Series">TV shows</option>
           </select>

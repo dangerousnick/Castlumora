@@ -61,3 +61,7 @@ Active DVR stop/retained partial playback is now verified. Next: separate source
 ### Development runtime checkpoint
 
 Standardize frontend development and preview builds on Node.js 24 LTS; replace deprecated Node action runtimes and missing-secret OpenAPI comments with scoped built-in token use. Validate workflow lint, comment handler and frontend checks on the existing branch. Apply reporting to the default branch only through reviewed merge; continue source-aware creator metadata and importer development afterwards. Existing inherited release/version tooling needs separate Castlumora-specific design and validation, not an unrequested release.
+
+### Local source-aware metadata checkpoint
+
+First native retained-sidecar provider and generic-video browsing are implemented and verified independently of downloading. Next coherent increment: native Metadata Management backed by permission-checked persisted settings and explicit item repair/lock controls, with provider/type/ambiguity handling. Continue online metadata/caching/channel relationships and safe managed yt-dlp queue in separate tested increments. Full importer and production provider remain mandatory. Future preview manifests distinguish local-sidecar support from a complete metadata subsystem.

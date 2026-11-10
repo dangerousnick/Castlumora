@@ -6,6 +6,7 @@ import { errorText, useApp, useLoad } from '../state';
 import { ShelfDetail } from '../shelf/Shelf';
 import { MusicDetail } from '../music/Music';
 import { Feedback } from '../components/Media';
+import { Overview } from '../components/Overview';
 function Episodes({ seriesId, seasonId }: { seriesId: string; seasonId: string }) {
   const { api } = useApp();
   const result = useLoad(() => api.episodes(seriesId, seasonId), [api, seriesId, seasonId]);
@@ -22,7 +23,7 @@ function Episodes({ seriesId, seasonId }: { seriesId: string; seasonId: string }
             <span>
               <small>EPISODE {i.IndexNumber}</small>
               <h3>{i.Name}</h3>
-              <p>{i.Overview}</p>
+              <Overview text={i.Overview} />
             </span>
             <small>{i.RunTimeTicks ? Math.round(i.RunTimeTicks / 600000000) + ' min' : ''}</small>
           </Link>
@@ -80,7 +81,7 @@ export default function Detail() {
                 {item.RunTimeTicks && <span>{Math.round(item.RunTimeTicks / 600000000)} min</span>}
                 <span>{item.Genres?.join(' · ')}</span>
               </div>
-              <p>{item.Overview}</p>
+              <Overview text={item.Overview} />
               <div className="actions">
                 {item.Type !== 'Series' && (
                   <Link className="button primary" to={'/play/' + id}>
