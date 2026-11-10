@@ -685,6 +685,58 @@ The following requirements were added to main during Phase 1.3 development. They
 - Do not require merging a development PR into `main` just to distribute a test artifact. Build from an explicitly identified tested branch/commit and leave merge decisions for human review.
 - Produce this usable build **before declaring the coding task complete**. If usage is low, first save/push a tested checkpoint and make packaging/release the next clearly documented milestone. Do not falsely promise autonomous continuation or invisible work after limits interrupt the session.
 
+## L. Version strategy — Complete 1.0 feature platform; independent architecture in 2.0
+
+**OWNER'S EXPLICIT VERSION BOUNDARY (2026-11-09):**
+
+- **Castlumora 1.0 is ALL previously agreed streaming-platform functionality** in Sections A–K and the accompanying import/creator metadata specification: mature backend capability parity, custom Castlumora Web, full administration, Live TV/DVR/FFmpeg/transcoding, server-controlled responsive UI and category editor, profiles/invitations and resource tiers (including free $0 tiers), built-in intro/outro skipper, creator and business modes/tools, authorized yt-dlp import and YouTube metadata, ebook/media reading, notifications/recommendations, cloud/offline options, native TV/mobile architecture and other features in the permanent spec. Do not silently defer a previously agreed feature to 2.0 simply because implementation is difficult. Track incomplete 1.0 work honestly and complete it across development milestones.
+- **Castlumora 2.0 is the deeper redesign and replacement of inherited Jellyfin implementation code so the platform has a genuinely independently maintained Castlumora codebase and architecture**, while preserving useful capabilities and data migration. It also introduces the **server-side plugin marketplace** and **user/server ebook marketplace** described below.
+- A **1.0 Development Preview** is a test build, NOT a declaration that full version 1.0 feature completeness has been achieved. Preview releases are iterative checkpoints; the eventual stable 1.0 acceptance criteria remain the complete 1.0 feature requirements.
+- For **1.0**, retain the proven inherited Jellyfin/MediaBrowser/Emby backend components, protocols and namespaces whenever needed for functionality. Cosmetic user-facing rebranding and independently built Castlumora Web are in scope; a risky mass rewrite of the core engine is **NOT** a 1.0 requirement.
+- For **2.0**, undertake deliberate module-by-module clean-room or independently authored replacements/refactors where lawful and practical, with compatibility tests, new Castlumora-owned APIs/services/packaging, migration tooling, and a plan to eventually no longer require inherited Jellyfin implementation modules as dependencies. Avoid an untested big-bang rewrite.
+
+### 2.0 — Independence and code redesign
+
+- Audit every inherited server component: media scanning/library model, catalog/data layer, metadata providers, authentication/users, API routing, playback and streaming negotiation, FFmpeg transcoding, Live TV/EPG/DVR, plugin infrastructure, device discovery, configuration, deployment and update services.
+- Design Castlumora-native equivalents with explicit APIs, test coverage, documentation, strong security and operational support. Replace inherited implementation gradually while keeping the user-facing features fully functional.
+- Preserve media files, playback/watch history, account/profile permissions, metadata, library categories, recordings and server configuration through reversible/verified migration paths where feasible.
+- Build independent release engineering, package/update distribution, extension contracts and supported device clients; protect compatibility during transitions, with documented deprecation/migration for old identifiers.
+- Never mistake renamed symbols for rewritten independent implementation; proof is an actually maintainable Castlumora-owned architecture and functioning replacement code.
+- **Legal note:** Rewriting code does not retroactively erase GPL and other licensing obligations on inherited or adapted code or its distribution. Keep required notices, copyright attribution and license compliance. Do not promise that refactoring alone makes derivative code proprietary or allows removal of upstream legal notices. Evaluate the provenance and licenses of each replaced module.
+
+### 2.0 — Server-side plugin marketplace
+
+- Integrated server dashboard marketplace for free and paid plugins, visual themes, metadata providers and other authorized extensions.
+- Third-party developers can publish, sell and maintain their extensions, optionally receive donations, and Castlumora may collect a disclosed service fee.
+- Developer verification, security/permission review, supply-chain checks, compatibility/version enforcement, automatic updates, abandonment/incompatibility notices and safeguards against selling known-broken plugins.
+- The core platform remains free; marketplace purchases are optional, never required for existing core functionality.
+
+### 2.0 — User-side and server-side ebook marketplace
+
+- User-facing ebook discovery, previews, purchases and entitlement-controlled reading from authorized authors, publishers, distributors and sellers.
+- Optional administrator/server-side discovery and purchase of appropriate multi-user/library-licensed books for shared collections. Personal purchases alone do not grant shared or commercial redistribution rights.
+- Rights tracking, secure checkout, payment/refund/tax integrations where applicable, account entitlements and DRM/format support within authorized limits. Launch with properly licensed DRM-free/public-domain or authorized seller content where practical.
+- Keep locally owned EPUB/PDF/other supported book reading in **1.0**; commercial ebook storefront, marketplace purchases and seller infrastructure in **2.0**.
+
+### Developer scope rule
+
+- Current Phase 1.4 Codex work is building **1.0**. Do not divert it into 2.0 core-engine replacement or marketplace checkout systems.
+- **All 1.0 capabilities in the prior requirements remain required**, even if individual previews do not yet include them. Use explicit progress, parity and release-acceptance checklists rather than pretending that an early preview equals stable 1.0.
+- Preserve this 2.0 vision in the roadmap for later architecture planning. Scope changes require the owner's explicit direction.
+
+## M. Cross-platform separation — shared engine, OS-specific implementations (1.0 onward)
+
+**Owner requirement:** Do not assume Windows and Linux behave identically. Preserve one shared Castlumora server feature set while implementing and testing OS-specific behavior behind clear platform interfaces. This is particularly important for FFmpeg, IPTV channel switching, child process cleanup, resource management, drivers and background services.
+
+- Common code defines media sessions, playback/transcoding state, authorization, settings, API contracts, cleanup policies and telemetry.
+- Windows adapters handle process launch/termination (including child process trees / Job Objects where appropriate), Windows Service lifecycle, Win32 process/resource monitoring, path/file locking, driver discovery and supported hardware encoders.
+- Linux adapters handle process groups and appropriate signals, systemd/service lifecycle where applicable, permissions and file ownership, /proc/cgroup monitoring, mounted paths and Linux hardware encoder discovery.
+- Channel switching must request shutdown of abandoned FFmpeg sessions, allow configurable grace periods and enforce orphan cleanup safely without disrupting streams still in use; test scenarios separately on Windows and Linux.
+- Maintain platform-specific integration tests for FFmpeg startup, stop, cancellation, channel hop, unexpected client disconnect, crash recovery, simultaneous streams, transcoder selection, process leaks and media locks.
+- Installation and dependency detection should choose verified packages for the detected OS; do not assume binaries produced on newer Ubuntu releases will work on older Mint/Ubuntu-based systems. First Linux preview targets Mint 22.3 Cinnamon / Ubuntu 24.04 base; eventual support aims for Jellyfin's server platform breadth.
+- Avoid duplicated application/business logic and needless platform forks. Abstract only the genuinely OS-dependent operations and keep existing reliable backend behavior until replacements are verified.
+- This architectural separation is **in scope for Castlumora 1.0 where needed for reliable functionality**; a wholesale replacement of inherited Jellyfin core source remains a separate **2.0** goal.
+
 ## Requirement retention rule
 
 **Do not silently remove a feature in this file when narrowing scope for a development phase.** Mark it `planned` or `deferred`, record constraints and dependencies, and preserve it for future work. Any deliberate removal or changed product requirement should be recorded explicitly in Git history with rationale and owner approval.
