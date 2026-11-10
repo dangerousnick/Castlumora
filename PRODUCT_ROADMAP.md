@@ -81,3 +81,7 @@ All previously agreed 1.0 features remain mandatory; previews are incomplete che
 Pinned offline bundle installation/health and native administrator controls are implemented as the queue prerequisite. Current runtime readiness does not enable downloading. Next: one complete authorized-single-source queue milestone with persistent lifecycle/history, safe validated destinations, per-request egress/DNS/redirect protections, bounded subprocess supervision, cancellation/retry and scan on success. Extend to bulk/playlists/channels/scheduling only after that core is verified; full 1.0 requirements remain unchanged.
 
 Managed runtime preview584e58c4ed is delivered and independently verified, including actual Windows/Linux binary checks and packaged native installation. Continue the authorized-single-source persistent import queue/security/scan workflow; this is the next 1.0 milestone, not a core rewrite or marketplace task.
+
+## Import queue security continuation
+
+Internal per-connection HTTPS/public-address validation and DNS-pinned numeric connections are implemented; API264 passed/3 existing skips (59 new policy cases). This is not yet connected to yt-dlp: downloadJobsAvailable remains false. Next is the bounded subprocess egress adapter with TLS/redirect/resource fixtures, followed by destination safety and the durable authorized single-source queue. See docs/CASTLUMORA_IMPORT_NETWORK_POLICY.md. Full 1.0 import requirements remain mandatory; the verified584e runtime preview is preserved.

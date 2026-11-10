@@ -4,6 +4,15 @@ Branch: `development/castlumora-web-1.3`; PR targets `main`. Base main: `b06078b
 
 Permanent source of truth: [docs/CASTLUMORA_PRODUCT_REQUIREMENTS.md](docs/CASTLUMORA_PRODUCT_REQUIREMENTS.md). Remaining product vision: [PRODUCT_ROADMAP.md](PRODUCT_ROADMAP.md). Actual coverage: [FEATURE_PARITY.md](FEATURE_PARITY.md).
 
+## Current continuation — import connection safety prerequisite
+
+- **Last completed milestone:** internal HTTPS/public-address import policy with bounded DNS/connect, mixed-answer rejection and numeric endpoint pinning on every connection. No enabled download endpoint or change to the verified runtime preview.
+- **Current branch:** development/castlumora-web-1.3, PR #3. Latest published checkpoint before this change: 2a50a4bebf1287cefc134617204fc84087398753; tested application/runtime preview: 584e58c4edced3c5addcb92bd060748ab6591dd6. The connection-policy commit follows this checkpoint; inspect Git log for its exact SHA after publication.
+- **Verification:** Release API and API-test builds, zero warnings/errors; full API264 passed/3 existing skips, including59 new connection-policy cases and actual bundled Linux runtime health. No real download, proxy/TLS integration, streaming or Mint certification claimed for this internal prerequisite. See docs/CASTLUMORA_IMPORT_NETWORK_POLICY.md.
+- **Unfinished:** egress adapter not connected to yt-dlp; queue/destinations/history/cancel/retry/recovery/dedup/rights/scan and native URL UI remain unfinished. `downloadJobsAvailable=false` remains accurate. This is a smaller prerequisite checkpoint, not completion of the promised single-source queue or Phase1.4.
+- **Next exact task:** implement bounded authenticated loopback subprocess CONNECT egress using ImportNetworkPolicy for every target; maintain original TLS hostname validation and validate redirect/resource connections; test private redirects, DNS rebinding, malicious headers/auth, cancellation and byte/connection limits. Then complete server-selected destination validation and persistent single-source job lifecycle before enabling imports.
+- **Usage status:** Not accessible. **Recovery:** preserve clean checkpoints; read permanent requirements/progress/parity/roadmap; inspect Git status/log before continuing existing branch. Verified downloadable584e preview and local extracted package remain intact. No automatic resume, main merge or production access.
+
 ## Latest verified managed-runtime checkpoint
 
 - **Last completed milestone:** native pinned yt-dlp runtime installation/health and Linux distribution; controlled platform assets and original license/source materials, no arbitrary executable/URL/flags or auto-update. Native Imports & Sources page is functional for runtime management, not URL jobs.
