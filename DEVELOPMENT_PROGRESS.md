@@ -4,6 +4,25 @@ Branch: `development/castlumora-web-1.3`; PR targets `main`. Base main: `b06078b
 
 Permanent source of truth: [docs/CASTLUMORA_PRODUCT_REQUIREMENTS.md](docs/CASTLUMORA_PRODUCT_REQUIREMENTS.md). Remaining product vision: [PRODUCT_ROADMAP.md](PRODUCT_ROADMAP.md). Actual coverage: [FEATURE_PARITY.md](FEATURE_PARITY.md).
 
+## Storage cleanup investigation — validation still blocked
+
+Preserved0ad2f94608 and all completed application work. Safe cleanup reclaimed
+1.59GiB: free space 2.64→4.23GiB.
+Removed only regenerable outputs, obsolete preview copies, temporary test data and
+unused/download caches; retained source/Git/docs, backup-test binaries, current
+required dependencies, SDK, validation logs, recovery bundle and both protected
+previews (archive checksums reverified). Application/test/gate code unchanged.
+
+Free space remains about0.77GiB below the unchanged5GiB requirement,
+so the backup test was not retried and no validation success or publishing
+permission is claimed. Additional capacity is required under the current setup,
+with build headroom beyond5GiB; roughly2GiB extra is practical. See
+[storage audit](docs/verification-storage-cleanup.md) and the detailed deletion
+manifest at /tmp/castlumora-storage-cleanup-report.json. After capacity is added,
+rerun the backup test and full mandatory gate, then inspect exact-source CI before
+resuming importer development. No push, deployment, main merge or automatic resume.
+Usage allowance remains Not accessible.
+
 ## Current blocked checkpoint — no new commits pushed
 
 - **Latest published source:**2b79ffb136f2c46dca52b1a8562c38f37da2f94e (known CI failures investigated, not retried). **Local corrections:**32b67f9039 (SA1508/gate),9f5c9478df (frozen snapshots/TLS fixture key import),005a2f1cd7 (storage-safe dependency hard links and hook protection), plus the following final resource-check/documentation commit. Branch development/castlumora-web-1.3; PR3 unchanged.
