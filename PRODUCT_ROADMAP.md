@@ -69,3 +69,5 @@ First native retained-sidecar provider and generic-video browsing are implemente
 ### Native selected-item metadata controls
 
 Implemented and verified native local-reader enable/order, source inspection and selected-item correction/lock/repair. Next milestone: managed authorized importer executable/health/queue foundation, beginning with safe runner and validated source/destination boundaries, persistent queue/recovery and tests before dashboard claims. Retain online provider/ambiguity/bulk/artwork/duplicate and profile/admin requirements for further coherent increments. Produce current preview with completed features and keep its exact commit/checksum and recovery checkpoint.
+
+Verified downloadable preview now contains native local-sidecar identification and Metadata Management, with actual packaged creator/movie/DVR complete/partial playback and permission tests. Exact source 835716785add501a27d98e979fa67d411c63b570; see recovery checkpoint for download/checksum. Next importer milestone must be bounded, secure, persistent and end-to-end testable; do not discard these completed features or infer full Phase1.4 completion from the preview.

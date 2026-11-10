@@ -79,3 +79,7 @@ Built-in .info.json reader for explicitly generic Video files: strict YouTube/so
 ### Native Metadata Management (selected items)
 
 Administrator reader enable/order, source ID/type inspection, title/description corrections, whole-item lock, confirmed source repair and reload now use persistent inherited APIs. Fresh complete DTO/library snapshots preserve unrelated fields/options. Frontend 56 tests/typecheck/lint/build pass; actual persisted settings/correction/lock/repair and denied-viewer item/refresh/library writes pass. No bulk repair, artwork editing, source-ID override, ambiguity queue, duplicate UI, online enrichment or safe importer is claimed. See docs/CASTLUMORA_METADATA_MANAGEMENT.md.
+
+### Refreshed exact-commit preview verification
+
+Source 835716785add501a27d98e979fa67d411c63b570: Windows/macOS/Ubuntu full server CI passes; Ubuntu 4,255 tests passed/19 skipped. Native frontend 56 and report-handler five tests pass; Format/ABI/OpenAPI Check pass. Actual downloaded package passed CI fresh/restart/library/playback plus five independent local compiled-web/server creator/metadata/movie/DVR workflows, including completed and retained-partial recording playback and authorization. Download/checksum/report in DEVELOPMENT_PROGRESS.md and docs/verification-node24-and-metadata.md. This is an intermediate preview, not complete master-spec acceptance.
