@@ -4,6 +4,10 @@ Branch: `development/castlumora-web-1.3`; PR targets `main`. Base main: `b06078b
 
 Permanent source of truth: [docs/CASTLUMORA_PRODUCT_REQUIREMENTS.md](docs/CASTLUMORA_PRODUCT_REQUIREMENTS.md). Remaining product vision: [PRODUCT_ROADMAP.md](PRODUCT_ROADMAP.md). Actual coverage: [FEATURE_PARITY.md](FEATURE_PARITY.md).
 
+## Continuation — synchronized main requirements and managed importer runtime
+
+Merged origin/main through f63d87faaa (requirements only; no application replacement). Complete 1.0 features remain required; deep inherited-core replacement and optional marketplaces belong to 2.0. Windows/Linux adapters are required where OS behavior differs. Next bounded task is pinned managed yt-dlp runtime: verified platform asset, bundled Linux dependency, safe installation/health lifecycle and administrator controls, with tests before queue/download endpoints. The existing working preview and completed metadata/DVR features are preserved. Usage allowance/reset remains Not accessible.
+
 ## Latest published tested application checkpoint — Node24, native metadata and refreshed preview
 
 - **Last completed milestones:** Node24 LTS/Actions/authentication; native source-aware retained creator sidecars and safe browsing/descriptions; native Metadata Management settings/corrections/locks/repair; refreshed packaged owner checklist/manifest and actual-package DVR verification.
