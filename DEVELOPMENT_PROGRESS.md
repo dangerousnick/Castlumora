@@ -4,6 +4,71 @@ Branch: `development/castlumora-web-1.3`; PR targets `main`. Base main: `b06078b
 
 Permanent source of truth: [docs/CASTLUMORA_PRODUCT_REQUIREMENTS.md](docs/CASTLUMORA_PRODUCT_REQUIREMENTS.md). Remaining product vision: [PRODUCT_ROADMAP.md](PRODUCT_ROADMAP.md). Actual coverage: [FEATURE_PARITY.md](FEATURE_PARITY.md).
 
+## Completed session milestones — Linux/macOS validation and native Mac runtime
+
+- **Last completed milestone:** pinned universal macOS importer executable support,
+  including platform selection, private bundled installation/status and native
+  health/TLS/transport/cancellation/cleanup CI. This is an importer prerequisite;
+  persistent URL jobs and library promotion remain unfinished and disabled.
+- **Latest published commit at this checkpoint:**
+  8aa77c0cc9c46f3847907483154a141831503af3. Branch:
+  development/castlumora-web-1.3; PR #3. Published commits include platform policy
+  c9129c0aeb, native assets f70bc317ca, fixture isolation 8aa77c0cc9, and the saved
+  earlier checkpoint 1d40c0c904. Preserve all ancestors, including 0ad2f94608.
+- **Required verification passed:** full local gate on 8aa77c0cc9, format 2,418
+  files/zero changes/no workspace warning, zero-warning Debug/Release builds,
+  17 backend projects 4,365 passed/19 existing skips, 58 frontend tests with
+  typecheck/lint/build, 9 hook/6 bundler/5 workflow-handler cases. Logs:
+  /tmp/castlumora-prepush.3djp9pd4 and /tmp/castlumora-macos-runtime-push-corrected.log.
+- **Exact-source CI:** Linux and macOS Debug/Release/tests passed, as did format,
+  ABI, OpenAPI and packaged Linux preview. Tests run 42960456142; native Mac ARM64
+  job 130325480859 installed verified osx-arm64 and passed all 17 projects (4,365
+  passed/19 existing skips); API 295/3 confirms native cases ran. x64 asset mapping
+  and universal header verified, but x64 execution/desktop installation not tested.
+- **Windows remains deferred/advisory:** job 130325480811 passed this run (API
+  294/4). Earlier five staging cleanup failures did not recur with native fixtures
+  isolated from unrelated CPU-heavy tests; this is not Windows release certification
+  or proof of complete process containment. Diagnostics retained in artifact
+  13829466762. Platform-policy run 42952364673 previously confirmed Windows could
+  fail visibly while the required Linux/macOS workflow still succeeded.
+- **Real failure preserved:** the f70 attempt was blocked before publishing because
+  a 15-second health probe timed out before TLS. No deadline/assertion/production
+  guard was relaxed. SDK shutdown found mostly defunct servers, so no RAM-recovery
+  claim is made. Controlled probes returned exact version in 1.317–1.457 seconds;
+  exact earlier stall cause remains unproven. Collection/project scheduling changed,
+  all native assertions stayed, and full API plus full gate and native CI passed.
+- **Preview delivered and independently downloaded/verified:**
+  https://github.com/dangerousnick/Castlumora/actions/runs/42960456033/artifacts/13829470962
+  Archive Castlumora-1.0-dev-8aa77c0cc9c4-linux-x64.tar.gz; SHA-256
+  c51fd507d6187ecd889c1b3ebacd7414f2c1f0b3c7f73d55ea01d03475d7b603.
+  Expiry 2026-12-11; GitHub sign-in required. Outer/inner hashes/manifests, original
+  GPL LICENSE, server/.NET runtime, branded compiled Web, launcher, platform guide
+  and 16 branding assets verified. Actual extracted-package setup/authentication,
+  restart/library/scanning/playback and tool-install workflows passed in CI.
+  Retained ZIP/report: /tmp/castlumora-preview-8aa77c0-artifact/. Older protected
+  previews remain intact; no extra expanded application copy was created.
+- **Unfinished/known limits:** no full macOS installer/runtime/hardware certification,
+  physical Mint/GPU/tuner certification or Docker/NAS deployment certification.
+  Main's OpenAPI Report still runs the legacy missing JF_BOT_TOKEN action; its
+  tested replacement in PR3 needs reviewed adoption on main. Branch-protection
+  inspection denied (HTTP403); administrator must verify Linux/macOS required
+  contexts. No main merge, required-check suppression or production deployment.
+- **Next exact development task:** implement a bounded persistent authorized
+  single-source import lifecycle on existing staging. First audit library APIs and
+  secure destination resolution; persist private rights/provenance and queue state,
+  cancellation/retry/recovery and deduplication. Add bounded playable-container
+  validation with safe FFmpeg/protocol limits, sanitize sidecars, atomically promote
+  only authorized complete media, then scan. Keep URL jobs off until this complete
+  boundary and permissions are tested. Broader sources/metadata/DVR/profiles and
+  every other retained 1.0 requirement remain mandatory; no feature scope cut.
+- **Recovery:** fetch and fast-forward the existing branch (preserve any later local
+  documentation checkpoint), read the permanent specs/progress/platform evidence,
+  install hooks, use .NET10/Node24/Python3 and the verified platform fixture, then
+  complete one task before the next. A normal push must pass the full hook; no
+  bypass/cached pass or unnecessary restart. Usage/reset: Not accessible. No
+  automatic resume is promised. Current documentation checkpoint will also be
+  published through that gate; exact validated code/evidence above is 8aa77c0cc9.
+
 ## Active code milestone — native macOS importer prerequisite
 
 - **Last completed milestone:** Linux/macOS-required CI and advisory Windows policy.

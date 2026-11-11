@@ -52,8 +52,8 @@ Remaining importer work: authorized source policy, strict egress/DNS/redirect/SS
 GitHub release API digest, official SHA2-256SUMS and the locally downloaded file
 agree with the macOS pin above. File inspection confirms both x86_64 and ARM64;
 no macOS binary was executed on the Linux workspace. The bundler never executes
-downloads. Local Linux runtime/transport regressions and native required macOS CI
-results are recorded in DEVELOPMENT_PROGRESS.md and PR3, with failures disclosed.
+downloads. Local Linux runtime/transport regressions and passing native ARM64 macOS CI
+results at 8aa77c0cc9 are recorded in DEVELOPMENT_PROGRESS.md and PR3, with failures disclosed.
 macOS CI now receives the real executable rather than a missing fixture; original
 health, TLS/transport, cancellation, output and cleanup assertions remain intact.
 This does not enable public URL jobs or finish the persistent importer lifecycle.
@@ -64,3 +64,9 @@ within-test lease/concurrency assertions remain unchanged. CI test projects run
 serially, matching the local gate; no assertion, native asset, timeout or test is
 removed. A previously blocked Linux run timed out before TLS in AcquireAsync;
 the complete API suite subsequently passed with this scheduling correction.
+
+At 8aa77c0cc9, required native ARM64 macOS CI installed the reviewed binary and
+passed the full API suite (295 passed, three existing platform skips), including
+the real executable cases. All 17 Mac backend projects passed. x64 mapping and
+universal Mach-O bytes were verified; x64 execution and graphical macOS app
+installation remain unverified. See verification-platform-runtime-1.4.md.

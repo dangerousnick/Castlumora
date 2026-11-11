@@ -6,7 +6,7 @@ compatibility is deferred and tested as advisory. See the
 requirements remain in scope; a passing CI job is not installation certification.
 
 
-**Linux development preview:** [download the verified GitHub Actions artifact](https://github.com/dangerousnick/Castlumora/actions/runs/42952364694/artifacts/13825707071) (GitHub sign-in; retained 30 days). Includes the self-contained server and compiled Castlumora Web. Read [INSTALL_TEST_BUILD.md](INSTALL_TEST_BUILD.md), the [test checklist](docs/TEST_BUILD_CHECKLIST.md), and [actual build/package verification](docs/verification-preview-1.4.md). This is a test preview, not production-stable or full Phase 1.4 completion; importer/creator metadata and other remaining features are tracked honestly.
+**Linux development preview:** [download the verified GitHub Actions artifact](https://github.com/dangerousnick/Castlumora/actions/runs/42960456033/artifacts/13829470962) (GitHub sign-in; retained 30 days). Includes the self-contained server and compiled Castlumora Web. Read [INSTALL_TEST_BUILD.md](INSTALL_TEST_BUILD.md), the [test checklist](docs/TEST_BUILD_CHECKLIST.md), and [actual build/package verification](docs/verification-preview-1.4.md). This is a test preview, not production-stable or full Phase 1.4 completion; importer/creator metadata and other remaining features are tracked honestly.
 
 
 <img src="branding/castlumora-wordmark.svg" alt="Castlumora" width="640">

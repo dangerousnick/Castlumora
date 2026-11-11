@@ -1,5 +1,20 @@
 # Feature parity inventory — Phase 1.3
 
+## Latest verified checkpoint — 8aa77c0cc9
+
+Linux/macOS-required policy and native macOS importer executable prerequisites
+are published and verified. Both required platforms passed Debug/Release and all
+17 backend suites (4,365 passed/19 existing skips each); Mac ARM64 real-tool API
+cases ran (295/3). Windows advisory also passed (294/4 API) without changing its
+deferred release status. Full local gate and the new Linux packaged/browser preview
+passed. See [verification and download](docs/verification-platform-runtime-1.4.md).
+
+Persistent import queue/library integration remains the next task; public URL jobs
+are off. No full Mac installer, x64 Mac execution, Mint hardware or NAS/Docker
+certification is claimed. Main report-token adoption and branch-protection admin
+verification remain outstanding. All Castlumora 1.0 feature requirements remain.
+Historical pending/blocker entries below are retained, superseded by this checkpoint.
+
 ## Native macOS importer prerequisite (current increment)
 
 Reviewed universal macOS executable selection/bundling/install paths are added for

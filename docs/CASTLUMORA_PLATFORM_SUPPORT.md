@@ -10,8 +10,8 @@ code and tests remain, with diagnostic failures visible for later investigation.
 | Mint22.3 / Ubuntu-compatible Linux x64 | Primary required target | Ubuntu24.04 CI rebuilds/extracts the self-contained preview and tests setup/authentication, restart, library/scanning/playback and tool installation. Physical Mint installation and GPU/tuner certification remain unverified. |
 | Debian / other supported Linux | Required target | Debian13 cloud packaged runtime/browser/media verification exists. Other distributions, native dependencies and architecture coverage require separate certification. |
 | Docker / Linux NAS | Required target | Preserve existing container/backend support; new Castlumora integrated-image installation, persistent volumes, permissions and NAS/hardware workflows still need verification. |
-| macOS | Required managed build/test checks; runtime support where verified | Debug/Release builds and backend suites passed required macos-latest CI at c9129c0aeb. Pinned universal managed-importer asset selection and bundling are implemented; native execution awaits its exact-source CI. Self-contained macOS preview and desktop installation/runtime certification remain pending. |
-| Windows / Windows Server | Deferred; advisory compatibility CI | Inherited implementation/tests retained. Five abort/file-lock staging cleanup failures at0293885c4b remain visible. No Windows release readiness claimed. Investigate shared/security implications before exposing import jobs. |
+| macOS | Required managed build/test checks; runtime support where verified | Debug/Release and all 17 backend projects passed at 8aa77c0cc9. Native ARM64 verified-tool installation, health, TLS/transport and abort tests passed (API 295/3). x64 manifest/universal header verified, but x64 execution and full desktop installation/runtime certification remain pending. No standalone macOS app preview delivered. |
+| Windows / Windows Server | Deferred; advisory compatibility CI | Inherited implementation/tests retained. Five abort/file-lock cleanup failures at 0293885c4b remain recorded; they did not recur in the passing advisory 8aa77c0cc9 run after fixture scheduling isolation (API 294/4). No Windows release readiness or complete containment claim. Investigate shared/security implications before exposing jobs. |
 
 Passing CI alone never establishes full OS support. Mint hardware, macOS desktop,
 NAS permissions, Docker storage mappings, FFmpeg drivers and supported codecs
@@ -47,3 +47,10 @@ legacy comment action still requires missing `JF_BOT_TOKEN`. PR3 already include
 the standard-token, trusted-checkout handler with tests. Applying it on main needs
 review; do not automatically merge unfinished Phase1.4. Track the actual failure
 separately from required source validation, without hiding it or disabling checks.
+
+## Verified source and delivery
+
+See [verification report](verification-platform-runtime-1.4.md) for exact commits,
+required/advisory job outcomes, native ARM64 coverage, verified Linux download and
+known limitations. Historical pending entries describe earlier snapshots; a green
+advisory Windows run does not change the owner-approved release strategy.
