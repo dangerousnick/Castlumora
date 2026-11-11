@@ -34,7 +34,10 @@ internal sealed class ImportQueue : IAsyncDisposable
 
     internal ImportQueue(string data, Func<Job, Action<long>, CancellationToken, Task<Receipt>> execute, ILogger logger)
     {
-        _directory = Path.GetFullPath(data);
+        var directory = Path.GetFullPath(data);
+        _directory = OperatingSystem.IsMacOS()
+            ? MacDataDirectory(directory, alias => new DirectoryInfo(alias).ResolveLinkTarget(returnFinalTarget: true)?.FullName)
+            : directory;
         for (var parent = _directory; parent is not null; parent = Path.GetDirectoryName(parent))
         {
             YtDlpPlatform.RejectLink(parent);
@@ -245,6 +248,23 @@ internal sealed class ImportQueue : IAsyncDisposable
             _wake.Dispose();
             _shutdown.Dispose();
         }
+    }
+
+    // macOS owns these root aliases. Normalize only after verifying the exact system
+    // target; arbitrary aliases/reparse points throughout the resulting path still fail.
+    internal static string MacDataDirectory(string directory, Func<string, string?> resolve)
+    {
+        foreach (var alias in new[] { "/var", "/tmp" })
+        {
+            var expected = "/private" + alias;
+            if (directory.StartsWith(alias + "/", StringComparison.Ordinal)
+                && string.Equals(resolve(alias), expected, StringComparison.Ordinal))
+            {
+                return expected + directory[alias.Length..];
+            }
+        }
+
+        return directory;
     }
 
     private async Task RunAsync()

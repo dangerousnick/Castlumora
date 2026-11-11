@@ -266,6 +266,35 @@ public sealed class ImportQueueTests : IDisposable
         Assert.Equal(Enum.Parse<ImportQueue.State>(expected), Assert.Single(await recovered.ListAsync(_token)).State);
     }
 
+    [Theory]
+    [InlineData("/var/folders/owned/queue", "/private/var", "/private/var/folders/owned/queue")]
+    [InlineData("/tmp/owned/queue", "/private/tmp", "/private/tmp/owned/queue")]
+    [InlineData("/var/folders/owned/queue", "/untrusted", "/var/folders/owned/queue")]
+    [InlineData("/variable/queue", "/private/var", "/variable/queue")]
+    [InlineData("/private/var/folders/owned/queue", "/private/var", "/private/var/folders/owned/queue")]
+    [InlineData("/other/queue", "/private/var", "/other/queue")]
+    public void MacSystemAlias_OnlyExactVerifiedOperatingSystemTargetsNormalize(string directory, string target, string expected)
+    {
+        Assert.Equal(expected, ImportQueue.MacDataDirectory(directory, _ => target));
+    }
+
+    [Fact]
+    public void OrdinarySymlinkedParent_RemainsRejected()
+    {
+        if (OperatingSystem.IsWindows())
+        {
+            Assert.Skip("POSIX symbolic link fixture; Windows reparse handling remains in shared path policy.");
+        }
+
+        Directory.CreateDirectory(_root);
+        var target = Path.Combine(_root, "target");
+        Directory.CreateDirectory(target);
+        var alias = Path.Combine(_root, "ordinary-alias");
+        Directory.CreateSymbolicLink(alias, target);
+        Assert.Throws<InvalidDataException>(() => new ImportQueue(Path.Combine(alias, "queue"), CompleteAsync, NullLogger.Instance));
+        Assert.False(Directory.Exists(Path.Combine(target, "queue")));
+    }
+
     public void Dispose()
     {
         if (Directory.Exists(_root))

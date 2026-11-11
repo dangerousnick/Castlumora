@@ -19,7 +19,10 @@ Jobs are durably persisted before acknowledging submission or changing state.
 Each replacement writes a new private file, flushes bytes to disk and atomically
 replaces `queue.json`. A separate exclusive ownership handle prevents two queue
 instances sharing a journal. Directories are POSIX0700 and files POSIX0600;
-Windows retains inherited server-directory ACLs. Links/reparse points, invalid
+Windows retains inherited server-directory ACLs. macOS's root /var and /tmp aliases
+are normalized only when they resolve to their exact /private system targets;
+ordinary symbolic-link ancestors and journal links remain rejected. Links/reparse
+points, invalid
 schema/state/identity and oversized or corrupt journals fail closed. Failed loads
 preserve the original journal for operator recovery. Atomic replacement protects
 against partial JSON on process interruption; this is not a claim of directory

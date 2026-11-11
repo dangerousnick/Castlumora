@@ -25,6 +25,16 @@ Permanent source of truth: [docs/CASTLUMORA_PRODUCT_REQUIREMENTS.md](docs/CASTLU
   including real TLS shutdown/restart recovery; log
   /tmp/castlumora-queue-native-tests7.log. Full formatter corrections ran across
   2,420 files. Full clean pre-push verification and exact-source CI follow.
+- Initial local commit5814fb023e was NOT published: pre-publication review caught
+  macOS root /var and /tmp aliases that could reject native temporary fixtures.
+  Stopped only this push/validation process tree before publication. Its format
+  (2,420files/zerochanges/no warning), Debug and Release builds passed, but the
+  interrupted full gate is not a pass. Added exact verified OS-alias normalization
+  plus portable mapping and ordinary-symlink rejection cases; full validation must
+  rerun on the corrected commit. No user-controlled symlink exception was added.
+  Corrected focused Debug/native verification41passed/0skips/0failures; log
+  /tmp/castlumora-queue-native-tests-alias.log. Remote remained exactly6f04 after
+  stopping the first push. Required final full gate/CI remain to be verified.
 - Latest published commit at start6f04c2c885dabfa41f2a8a277391a220aa927cbe;
   normal full pre-push gate remains mandatory before publication. Production
   backup reserve, original tests, Linux/macOS requirements and GPL unchanged.
