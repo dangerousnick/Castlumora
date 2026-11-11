@@ -1,5 +1,15 @@
 # Castlumora product roadmap
 
+## Current CI correction before further feature work
+
+Backup policy fix and internal staging work published at0293885c4b after a passing
+full local gate. Linux/macOS CI, formatting, ABI, OpenAPI and the downloadable
+Linux preview passed. Windows has five abort/file-lock cleanup failures in the
+staging runner; fix and verify those before unrelated milestones. Main's legacy
+OpenAPI Report also needs reviewed adoption of PR3's standard-token handler.
+No automatic main merge, repeated failing pushes or full Phase1.4 completion claim.
+See DEVELOPMENT_PROGRESS.md for exact jobs, recovery steps and preview checksum.
+
 ## Backup validation before importer continuation
 
 Production retains its original approximately5GiB reserve. Integration tests use

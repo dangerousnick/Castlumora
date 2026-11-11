@@ -4,6 +4,67 @@ Branch: `development/castlumora-web-1.3`; PR targets `main`. Base main: `b06078b
 
 Permanent source of truth: [docs/CASTLUMORA_PRODUCT_REQUIREMENTS.md](docs/CASTLUMORA_PRODUCT_REQUIREMENTS.md). Remaining product vision: [PRODUCT_ROADMAP.md](PRODUCT_ROADMAP.md). Actual coverage: [FEATURE_PARITY.md](FEATURE_PARITY.md).
 
+## Published backup fix; CI correction checkpoint — 2026-11-11
+
+- **Last completed milestone:** isolated per-instance backup reserve policy with
+  real SQLite export/ZIP tests. Production reserve unchanged. Local implementation
+  190d5ea9ed36b51044d218228b2524a6e8272681; verification documentation0293885c4b.
+- **Latest published commit:**0293885c4bb5bee25a912d0903916eecaec31020.
+  Branch development/castlumora-web-1.3; PR3 remains open. Normal push succeeded
+  only after the complete mandatory hook passed. No main merge or deployment.
+- **Local verification:** complete gate passed on implementation and final published
+  HEAD, including full format2,417 files/zero changes/no workspace warning,
+  .NET10 Debug/Release builds zero warnings/errors,17 backend projects4,365 passed,
+  19 existing skips/zero failures,10 focused real backup cases,9 hook cases,
+  5 bundler/5 workflow-handler cases, Node24 frontend58 tests/typecheck/lint/build.
+  Logs:/tmp/castlumora-prepush.XfcHPStd, /tmp/castlumora-prepush.OUGDyPgy and
+  /tmp/castlumora-backup-policy-push.log. Workspace needs no extra disk for this
+  validation design; production backup safety is not reduced.
+- **Exact-source GitHub:** Format42946892790, ABI42946892825, OpenAPI42946892951,
+  Linux/macOS tests and packaged Linux preview42946892764 passed. Windows
+  job130281739705 in Tests42946892971 failed five staging-runner cases:
+  metadataLarge,streamLarge,unexpectedFile,cancellation leave staging directories;
+  tiny-deadline/output test teardown cannot delete locked yt-dlp.exe.
+  No backup case failed. Existing TLS fixture EOF failures did not recur.
+- **Unfinished correction:** abort-time Windows subprocess/file-handle cleanup.
+  Evidence is consistent with descendant teardown/deferred file locks, but the
+  precise cause is not proven. No test skips, deadline relaxation, assertion
+  removal or speculative unverified native-interoperability patch was applied.
+  Linux cannot independently certify Windows process/file-lock semantics.
+- **Separate main workflow blocker:** OpenAPI Report42947167543 executes
+  main@f63d87faaaa29976148e271baea86deb86617ea2, not this development commit.
+  Job130282668054 fails with "Parameter token or opts.auth is required" because
+  main still uses secrets.JF_BOT_TOKEN. The standard github.token replacement and
+  trusted handler already exist in PR3 and pass five local handler tests; adoption
+  on main requires review. Do not automatically merge PR3 or alter main to evade
+  this limitation. This is not a GitHub write-access failure; the normal push worked.
+- **New intermediate test build:** verified download
+  https://github.com/dangerousnick/Castlumora/actions/runs/42946892764/artifacts/13823357351
+  (GitHub sign-in; expires2026-12-11). Archive
+  Castlumora-1.0-dev-0293885c4bb5-linux-x64.tar.gz SHA256
+  fef0ebd5e0d7385d9108b27738ebc1ff79dac99fef801ea3eb555a7e5a28feec.
+  Downloaded outer ZIP matches GitHub digest97a206f9107aab0896a2b7abebd92dce6be494239d506455074285573a55c2ba.
+  Outer/inner source manifests match published SHA; GPL LICENSE bytes match source;
+  server/runtime, compiled branded Web, castle assets and launcher verified by
+  streaming archive inspection. CI tested actual extracted fresh setup/auth,
+  restart/library scanning/playback and bundled runtime installation. No local
+  Mint/GPU/tuner certification. Metadata/import completeness flags remain honest.
+  Retained at /tmp/castlumora-preview-0293885-artifact/github-artifact.zip; did not
+  overwrite/delete older protected previews or create another expanded copy.
+- **Next exact task:** inspect Windows job logs above; reproduce abort/output-bound
+  and cancellation cases on Windows with owned-process/cleanup diagnostics (redact
+  source/proxy secrets); ensure owned descendants and file handles are closed before
+  cleanup/lease release. Preserve all existing assertions/time limits. Run all runner
+  cases on Windows and Linux, then the complete clean-commit gate before publishing
+  a correction. Separately arrange review of the existing default-main report fix.
+  No repeated pushes of known failing source and no new unrelated features meanwhile.
+  Then resume the persistent authorized single-source importer; URL jobs remain off.
+- **Recovery:** fetch/fast-forward the existing development branch to published0293885c4b,
+  preserve any later local documentation commit, install hooks and use .NET10/Node24.
+  Existing verified tool fixture:/tmp/castlumora-ytdlp-runtime-bundle.
+  Preserve0ad2f94608, all completed work and recovery bundles. No reset/restart.
+  Usage allowance/reset: Not accessible. No automatic background resume is promised.
+
 ## Latest verified milestone — isolated backup capacity policy
 
 - Production backup reserve remains exactly5,368,709,115 bytes and the existing

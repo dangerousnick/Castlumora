@@ -45,3 +45,14 @@ staging implementation toward the first persistent authorized single-source job.
 Do not enable public URL jobs until rights/provenance, destination permission,
 bounded media validation, metadata sanitization, deduplication and recovery are
 implemented and tested. Preserve legacy administration and all completed work.
+
+## Published CI and preview result
+
+Published0293885c4bb5bee25a912d0903916eecaec31020 through the full hook.
+Format, ABI, OpenAPI, Linux/macOS tests and extracted-package Linux preview passed.
+Windows failed five existing staging-runner abort/cleanup cases; no backup case
+failed. The separate OpenAPI Report still runs main's legacy missing-bot-token
+implementation; the tested replacement in PR3 requires reviewed adoption on main.
+No full cross-platform CI success is claimed and no repeated failing source push
+is authorized. Exact jobs, verified preview download/checksums and recovery steps
+are recorded in DEVELOPMENT_PROGRESS.md.
