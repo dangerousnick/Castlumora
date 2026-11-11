@@ -1,5 +1,17 @@
 # Castlumora product roadmap
 
+## Persistent queue continuation — internal only
+
+Private durable single-worker job lifecycle now implemented with rights/provenance,
+opaque destination IDs, deduplication, progress, cancellation, bounded retries and
+restart recovery. Native TLS queue/runner integration is tested as transport only.
+No library publication, public URL jobs or importer production-readiness claim.
+See [queue contract](docs/CASTLUMORA_IMPORT_QUEUE.md) and DEVELOPMENT_PROGRESS.md
+for actual verification and exact next steps. Complete secure media inspection,
+idempotent library promotion/scanning and elevated admin management next; all
+playlist/channel/bulk and remaining1.0 requirements remain mandatory.
+
+
 ## Latest verified checkpoint — 8aa77c0cc9
 
 Linux/macOS-required policy and native macOS importer executable prerequisites

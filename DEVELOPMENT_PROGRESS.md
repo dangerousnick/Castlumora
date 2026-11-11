@@ -4,6 +4,35 @@ Branch: `development/castlumora-web-1.3`; PR targets `main`. Base main: `b06078b
 
 Permanent source of truth: [docs/CASTLUMORA_PRODUCT_REQUIREMENTS.md](docs/CASTLUMORA_PRODUCT_REQUIREMENTS.md). Remaining product vision: [PRODUCT_ROADMAP.md](PRODUCT_ROADMAP.md). Actual coverage: [FEATURE_PARITY.md](FEATURE_PARITY.md).
 
+
+## Active continuation — persistent internal importer lifecycle
+
+- Resumed exact clean6f04c2c885dabfa41f2a8a277391a220aa927cbe; remote fetch
+  confirmed no newer development commits. Existing hooks installed and retained.
+- Implemented internal versioned atomic private journal, exclusive ownership,
+  one worker, source/destination deduplication, explicit rights/provenance,
+  cancellation/progress/retry/attempt caps and restart recovery. Existing runner
+  now reports sampled byte progress without exposing downloader output.
+- Public URL jobs remain disabled; library validation/publication and elevated
+  API/UI wiring are the next coherent milestone, not declared complete. See
+  docs/CASTLUMORA_IMPORT_QUEUE.md for contract and security/recovery boundaries.
+- Preliminary Debug API build passed. Sandbox formatting/test attempts could not
+  run (proxy/MSBuild pipe/VSTest socket restrictions); equivalent checks moved to
+  the approved outer executor. Initial executable cases32passed/1new fixture
+  assertion failed (private restart URL confused with exception-only secret);
+  corrected fixture separates those values. Analyzer ownership/order issues fixed
+  without suppressions. Final focused Debug/native run34passed/0skips/0failures,
+  including real TLS shutdown/restart recovery; log
+  /tmp/castlumora-queue-native-tests7.log. Full formatter corrections ran across
+  2,420 files. Full clean pre-push verification and exact-source CI follow.
+- Latest published commit at start6f04c2c885dabfa41f2a8a277391a220aa927cbe;
+  normal full pre-push gate remains mandatory before publication. Production
+  backup reserve, original tests, Linux/macOS requirements and GPL unchanged.
+- Usage/reset: Not accessible. No automatic continuation or full1.0 claim.
+- Next exact task: idempotent authorized library publication/media inspection,
+  sanitized metadata, hash deduplication, crash reconciliation and scan, then
+  elevated queue endpoints/native management only after the boundary passes.
+
 ## Completed session milestones — Linux/macOS validation and native Mac runtime
 
 - **Last completed milestone:** pinned universal macOS importer executable support,

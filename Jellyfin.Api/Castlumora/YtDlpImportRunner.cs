@@ -42,7 +42,7 @@ internal sealed class YtDlpImportRunner
         _fixtureCa = fixtureCa;
     }
 
-    internal async Task<StagedDownload> RunAsync(string source, CancellationToken cancellationToken)
+    internal async Task<StagedDownload> RunAsync(string source, CancellationToken cancellationToken, Action<long>? progress = null)
     {
         var uri = ImportNetworkPolicy.ValidateSource(source);
         if (!uri.AbsolutePath.EndsWith(".mp4", StringComparison.OrdinalIgnoreCase))
@@ -78,7 +78,7 @@ internal sealed class YtDlpImportRunner
             var tunnel = new ImportTunnel(_policy, stop.Token);
             await using var tunnelScope = tunnel.ConfigureAwait(false);
             var info = CreateStart(lease.Executable, work, temporary, tunnel.Proxy);
-            var outcome = await ImportProcess.RunAsync(info, uri.AbsoluteUri, _limits.Duration, 16384, token => MonitorAsync(work, token), stop.Token).ConfigureAwait(false);
+            var outcome = await ImportProcess.RunAsync(info, uri.AbsoluteUri, _limits.Duration, 16384, token => MonitorAsync(work, progress, token), stop.Token).ConfigureAwait(false);
             if (outcome.ExitCode != 0)
             {
                 throw new InvalidDataException(outcome.ErrorCode switch
@@ -90,7 +90,8 @@ internal sealed class YtDlpImportRunner
                 });
             }
 
-            CheckFiles(work);
+            var finalBytes = CheckFiles(work);
+            progress?.Invoke(finalBytes);
             if (!File.Exists(staged.MediaPath) || !File.Exists(staged.MetadataPath) || new FileInfo(staged.MediaPath).Length == 0)
             {
                 throw new InvalidDataException("No complete media and metadata pair was produced; source format or size policy may reject this source.");
@@ -166,17 +167,20 @@ internal sealed class YtDlpImportRunner
         return info;
     }
 
-    private async Task MonitorAsync(string work, CancellationToken token)
+    private async Task MonitorAsync(string work, Action<long>? progress, CancellationToken token)
     {
         while (true)
         {
-            CheckFiles(work);
+            var bytes = CheckFiles(work);
+            progress?.Invoke(bytes);
+
             await Task.Delay(TimeSpan.FromMilliseconds(100), token).ConfigureAwait(false);
         }
     }
 
-    private void CheckFiles(string work)
+    private long CheckFiles(string work)
     {
+        var mediaBytes = 0L;
         YtDlpPlatform.RejectLink(work);
         foreach (var path in Directory.EnumerateFileSystemEntries(work))
         {
@@ -190,7 +194,13 @@ internal sealed class YtDlpImportRunner
             var limit = name == "media.info.json" || name.EndsWith(".ytdl", StringComparison.Ordinal) ? 2097152 : _limits.MediaBytes;
             try
             {
-                if (new FileInfo(path).Length > limit)
+                var length = new FileInfo(path).Length;
+                if (name is "media.mp4" or "media.mp4.part")
+                {
+                    mediaBytes = Math.Max(mediaBytes, length);
+                }
+
+                if (length > limit)
                 {
                     throw new InvalidDataException("Import output exceeded its size limit.");
                 }
@@ -200,6 +210,8 @@ internal sealed class YtDlpImportRunner
                 // The downloader atomically renames .part to the completed file; final checks still apply.
             }
         }
+
+        return mediaBytes;
     }
 
     internal sealed record Limits(long MediaBytes = 33554432, TimeSpan? Deadline = null)
