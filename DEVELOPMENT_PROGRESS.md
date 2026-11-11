@@ -4,6 +4,37 @@ Branch: `development/castlumora-web-1.3`; PR targets `main`. Base main: `b06078b
 
 Permanent source of truth: [docs/CASTLUMORA_PRODUCT_REQUIREMENTS.md](docs/CASTLUMORA_PRODUCT_REQUIREMENTS.md). Remaining product vision: [PRODUCT_ROADMAP.md](PRODUCT_ROADMAP.md). Actual coverage: [FEATURE_PARITY.md](FEATURE_PARITY.md).
 
+## Active milestone — Linux-first/macOS-required release policy
+
+- Owner update2026-11-11 supersedes the earlier Windows release blocker. Continue
+  existing branch/PR3 and all saved commits; Windows CI advisory, not removed.
+  Linux/macOS and shared formatting/security/API checks remain mandatory.
+- CI keeps stable Linux/macOS test contexts, adds explicit Debug/Release builds,
+  uses Windows-only job continue-on-error, and retains Windows TRX diagnostics even
+  on failure. No assertions/deadlines/compatibility implementation removed.
+- Backup isolation fix already published at0293885c4b and remains intact. Ten real
+  backup cases and full gate passed previously; rerun unchanged cases in this gate.
+  Production reserve remains5,368,709,115 bytes; no general5GiB gate prerequisite.
+- Branch-protection GET returned HTTP403 Resource not accessible by integration.
+  Ruleset listing returned[] but does not establish branch protection. No remote
+  security settings changed; exact administrator check contexts are documented in
+  docs/CASTLUMORA_PLATFORM_SUPPORT.md. Main remains untouched.
+- Windows staging cleanup failures remain deferred with shared-code investigation
+  required before public importer exposure. Main OpenAPI Report still uses the
+  legacy missing-bot-token action; PR3 contains the tested replacement, requiring
+  reviewed adoption on main. Do not suppress this failure or auto-merge main.
+- Verification/publication of this milestone pending. Latest published source at
+  start:0293885c4bb5bee25a912d0903916eecaec31020; local checkpoint1d40c0c904
+  preserved. Full gate must pass before a normal hook-protected push.
+- Next meaningful task after publication: extend the existing managed importer
+  prerequisite with a reviewed pinned macOS native executable and real macOS CI
+  health/transport tests, removing the currently documented native-runtime gap.
+  Then resume persistent authorized single-source jobs with secure destinations,
+  media validation, rights/provenance, cancellation/retry and deduplication.
+- Usage allowance/reset: Not accessible. Local host Linux, .NET10/Node24; macOS
+  verification requires CI and is not claimed locally. Preserve all1.0 requirements,
+  GPL notices, source/history, previous previews and commits including0ad2f94608.
+
 ## Published backup fix; CI correction checkpoint — 2026-11-11
 
 - **Last completed milestone:** isolated per-instance backup reserve policy with

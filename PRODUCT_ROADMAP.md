@@ -1,5 +1,21 @@
 # Castlumora product roadmap
 
+## Current platform policy — supersedes historical Windows blockers
+
+Linux/macOS/shared-code checks remain mandatory. Windows compatibility tests are
+advisory for Phase1.4 and stable1.0, with failure logs retained and inherited code
+preserved. Windows-specific staging cleanup stays tracked, not erased; shared
+security implications still require investigation. No1.0 feature scope is reduced.
+See [platform evidence](docs/CASTLUMORA_PLATFORM_SUPPORT.md). Required targets include
+Mint/Ubuntu, Debian, Docker/Linux NAS and verified macOS; actual runtime coverage
+is recorded separately from CI. Branch-protection inspection returned HTTP403;
+repository-level required-check configuration is not verified.
+
+The backup policy fix is already published at0293885c4b; ten real backup tests and
+the full Linux gate pass without a5GiB executor prerequisite. Production reserve
+remains unchanged. Resume bounded importer development after the workflow milestone
+is validated/published; do not repeatedly retry Windows-only failures.
+
 ## Current CI correction before further feature work
 
 Backup policy fix and internal staging work published at0293885c4b after a passing

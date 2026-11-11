@@ -9,6 +9,22 @@
 
 ---
 
+## Platform strategy update — 2026-11-11 (authoritative)
+
+Castlumora is Linux-first with macOS supported where verified. Required targets are
+Linux Mint22.3/Ubuntu-compatible distributions, Debian and other supported Linux,
+Docker/Linux NAS deployments, and macOS. Windows (including Windows Server) is
+**deferred for Phase1.4 and stable1.0 acceptance**, with inherited compatibility
+code preserved and advisory CI retained. Windows-only failures do not block
+Linux/macOS development or releases. Investigate any Windows failure that suggests
+a shared-code or security defect; do not remove tests or intentionally break it.
+
+This owner-approved platform change supersedes conflicting historical Windows
+release prerequisites below. **Every previously agreed Castlumora1.0 feature
+requirement remains mandatory.** No feature is moved to2.0 by this platform change.
+CI success is not installation/runtime certification; see
+[platform evidence and required checks](CASTLUMORA_PLATFORM_SUPPORT.md).
+
 # 1. PROJECT MISSION
 
 Castlumora is a free, open-source, self-hosted streaming platform derived from Jellyfin.

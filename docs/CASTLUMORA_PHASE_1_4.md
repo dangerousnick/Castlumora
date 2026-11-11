@@ -2,6 +2,22 @@
 
 Version: Castlumora 1.0 (development). Repository: dangerousnick/Castlumora. Base: main. Continue development/castlumora-web-1.3 and PR #3; never restart existing work or automatically merge/deploy. This addendum retains the owner's Phase 1.4 requirements alongside the complete earlier product and import/creator metadata specifications. Requirements are not implementation claims.
 
+## Platform strategy update — 2026-11-11 (authoritative)
+
+Castlumora is Linux-first with macOS supported where verified. Required targets are
+Linux Mint22.3/Ubuntu-compatible distributions, Debian and other supported Linux,
+Docker/Linux NAS deployments, and macOS. Windows (including Windows Server) is
+**deferred for Phase1.4 and stable1.0 acceptance**, with inherited compatibility
+code preserved and advisory CI retained. Windows-only failures do not block
+Linux/macOS development or releases. Investigate any Windows failure that suggests
+a shared-code or security defect; do not remove tests or intentionally break it.
+
+This owner-approved platform change supersedes conflicting historical Windows
+release prerequisites below. **Every previously agreed Castlumora1.0 feature
+requirement remains mandatory.** No feature is moved to2.0 by this platform change.
+CI success is not installation/runtime certification; see
+[platform evidence and required checks](CASTLUMORA_PLATFORM_SUPPORT.md).
+
 ## Product and compatibility
 
 Build an independent, free/open-source self-hosted platform for Family & Friends, Content Creators and Businesses. These are editable configuration presets, not editions; every feature is available in all modes, with no mandatory payments or feature paywalls.
