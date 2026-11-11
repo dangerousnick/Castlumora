@@ -38,6 +38,21 @@ Permanent source of truth: [docs/CASTLUMORA_PRODUCT_REQUIREMENTS.md](docs/CASTLU
   Local Mac execution unavailable; required CI must verify native behavior. main's
   legacy OpenAPI Report token error remains separately tracked; no automatic merge.
   Branch protection administration remains HTTP403; no remote settings changed.
+- **Required-gate failure investigated before publishing:** f70bc317ca's full
+  hook passed format/Debug/Release/bundler, but API294/3/1failed and other projects
+  passed. untrusted source failed before TLS: AcquireAsync's native health probe
+  timed out under the unchanged15-second limit. Logs:/tmp/castlumora-prepush.xvwoX0f6.
+  No push occurred. Idle SDK services were shut down; most listed compilers were
+  defunct, so no memory-reclamation/root-cause claim is made. Controlled native
+  probe measurements are retained in session diagnostics; exact stall cause remains
+  unproven. Native deadline fixtures now share a non-parallel xUnit collection,
+  avoiding unrelated CPU-heavy test contention. Explicit within-test concurrency,
+  all assertions, real binaries and production deadlines remain unchanged. CI
+  serializes test projects (-m:1), matching the existing local gate; none excluded.
+  Isolated probe1.457s; concurrent probes1.317/1.391s, all exit0/exact version.
+  Full API after collection scheduling correction passed295/3existing skips:
+  /tmp/castlumora-macos-runtime-api-isolated.log. The full gate must be rerun
+  before publishing; earlier failed gate remains recorded as failed.
 - **Next task after this increment:** persistent authorized single-source import
   lifecycle using existing staging; rights/provenance, secure destination policy,
   playable-media validation, sanitized metadata, deduplication, durable state,

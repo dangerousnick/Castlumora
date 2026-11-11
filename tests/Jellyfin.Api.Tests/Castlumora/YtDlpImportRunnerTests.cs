@@ -16,6 +16,7 @@ using Xunit;
 
 namespace Jellyfin.Api.Tests.Castlumora;
 
+[Collection(nameof(ImportExecutableCollection))]
 public sealed class YtDlpImportRunnerTests
 {
     [Fact]

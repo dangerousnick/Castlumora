@@ -57,3 +57,10 @@ results are recorded in DEVELOPMENT_PROGRESS.md and PR3, with failures disclosed
 macOS CI now receives the real executable rather than a missing fixture; original
 health, TLS/transport, cancellation, output and cleanup assertions remain intact.
 This does not enable public URL jobs or finish the persistent importer lifecycle.
+
+Real-executable deadline fixtures share a non-parallel xUnit collection, keeping
+fixed startup deadlines independent from unrelated CPU-heavy cases. Explicit
+within-test lease/concurrency assertions remain unchanged. CI test projects run
+serially, matching the local gate; no assertion, native asset, timeout or test is
+removed. A previously blocked Linux run timed out before TLS in AcquireAsync;
+the complete API suite subsequently passed with this scheduling correction.

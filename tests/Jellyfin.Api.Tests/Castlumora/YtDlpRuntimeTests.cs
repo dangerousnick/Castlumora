@@ -13,6 +13,7 @@ using Xunit;
 
 namespace Jellyfin.Api.Tests.Castlumora;
 
+[Collection(nameof(ImportExecutableCollection))]
 public sealed class YtDlpRuntimeTests : IDisposable
 {
     private readonly string _root = Path.Combine(Path.GetTempPath(), "castlumora-tool-test-" + Guid.NewGuid().ToString("N"));
