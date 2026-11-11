@@ -10,7 +10,7 @@ code and tests remain, with diagnostic failures visible for later investigation.
 | Mint22.3 / Ubuntu-compatible Linux x64 | Primary required target | Ubuntu24.04 CI rebuilds/extracts the self-contained preview and tests setup/authentication, restart, library/scanning/playback and tool installation. Physical Mint installation and GPU/tuner certification remain unverified. |
 | Debian / other supported Linux | Required target | Debian13 cloud packaged runtime/browser/media verification exists. Other distributions, native dependencies and architecture coverage require separate certification. |
 | Docker / Linux NAS | Required target | Preserve existing container/backend support; new Castlumora integrated-image installation, persistent volumes, permissions and NAS/hardware workflows still need verification. |
-| macOS | Required managed build/test checks; runtime support where verified | Backend Release suites passed macos-latest CI at0293885c4b. Explicit Debug/Release CI builds are now required. Native managed importer asset, self-contained macOS preview and real installation/runtime certification remain pending. |
+| macOS | Required managed build/test checks; runtime support where verified | Debug/Release builds and backend suites passed required macos-latest CI at c9129c0aeb. Pinned universal managed-importer asset selection and bundling are implemented; native execution awaits its exact-source CI. Self-contained macOS preview and desktop installation/runtime certification remain pending. |
 | Windows / Windows Server | Deferred; advisory compatibility CI | Inherited implementation/tests retained. Five abort/file-lock staging cleanup failures at0293885c4b remain visible. No Windows release readiness claimed. Investigate shared/security implications before exposing import jobs. |
 
 Passing CI alone never establishes full OS support. Mint hardware, macOS desktop,
@@ -36,9 +36,8 @@ configured without verifying settings. CI jobs remain mandatory regardless of
 whether branch-protection administration is accessible.
 
 The pre-push gate runs full local formatting, Debug/Release, all backend tests,
-frontend and handler/bundler checks. macOS follows its existing CI native-asset
-availability until a reviewed macOS executable is pinned; no managed test is
-excluded. A Linux workspace cannot claim local macOS execution. Real disk I/O
+frontend and handler/bundler checks. macOS now prepares its reviewed universal executable under the native
+architecture package path and runs the real-tool tests; no managed test is excluded. A Linux workspace cannot claim local macOS execution. Real disk I/O
 failures remain fatal, but no production-backup reserve is imposed on test fixtures.
 
 ## Separate report-workflow version issue

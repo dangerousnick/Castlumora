@@ -1,6 +1,12 @@
 <div align="center">
 
-**Linux development preview:** [download the verified GitHub Actions artifact](https://github.com/dangerousnick/Castlumora/actions/runs/42702481467/artifacts/13712785582) (GitHub sign-in; retained 30 days). Includes the self-contained server and compiled Castlumora Web. Read [INSTALL_TEST_BUILD.md](INSTALL_TEST_BUILD.md), the [test checklist](docs/TEST_BUILD_CHECKLIST.md), and [actual build/package verification](docs/verification-preview-1.4.md). This is a test preview, not production-stable or full Phase 1.4 completion; importer/creator metadata and other remaining features are tracked honestly.
+**Platform strategy:** Linux-first with macOS supported where verified; Windows
+compatibility is deferred and tested as advisory. See the
+[platform evidence](docs/CASTLUMORA_PLATFORM_SUPPORT.md). All Castlumora 1.0 feature
+requirements remain in scope; a passing CI job is not installation certification.
+
+
+**Linux development preview:** [download the verified GitHub Actions artifact](https://github.com/dangerousnick/Castlumora/actions/runs/42952364694/artifacts/13825707071) (GitHub sign-in; retained 30 days). Includes the self-contained server and compiled Castlumora Web. Read [INSTALL_TEST_BUILD.md](INSTALL_TEST_BUILD.md), the [test checklist](docs/TEST_BUILD_CHECKLIST.md), and [actual build/package verification](docs/verification-preview-1.4.md). This is a test preview, not production-stable or full Phase 1.4 completion; importer/creator metadata and other remaining features are tracked honestly.
 
 
 <img src="branding/castlumora-wordmark.svg" alt="Castlumora" width="640">

@@ -4,6 +4,49 @@ Branch: `development/castlumora-web-1.3`; PR targets `main`. Base main: `b06078b
 
 Permanent source of truth: [docs/CASTLUMORA_PRODUCT_REQUIREMENTS.md](docs/CASTLUMORA_PRODUCT_REQUIREMENTS.md). Remaining product vision: [PRODUCT_ROADMAP.md](PRODUCT_ROADMAP.md). Actual coverage: [FEATURE_PARITY.md](FEATURE_PARITY.md).
 
+## Active code milestone — native macOS importer prerequisite
+
+- **Last completed milestone:** Linux/macOS-required CI and advisory Windows policy.
+  Published c9129c0aeb1d1cac89fbc01c13418bdd52a67e80; full hook passed (4,365
+  backend tests/19 skips,58 frontend tests,full format,zero-warning Debug/Release,
+  nine hook/five bundler/five handler cases). Linux/macOS required jobs,format,ABI,
+  OpenAPI and preview passed; Tests workflow42952364673 succeeded despite visible
+  Windows failure. Windows TRX artifact13825348646 retained. No Windows retry.
+- **Latest published commit:**c9129c0aeb1d1cac89fbc01c13418bdd52a67e80.
+  Branch development/castlumora-web-1.3,PR3; local source work follows that checkpoint.
+- **Implemented now:** reviewed2026.10.26 universal macOS asset, distinct osx-x64 /
+  osx-arm64 selection and private bundling/install/status paths; real native macOS
+  fixture preparation in required CI and local macOS gate. Existing Windows/Linux
+  pins unchanged. Source archive/licenses retained; no new dependency installer or
+  arbitrary executable/update endpoint. Public URL jobs remain disabled.
+- **Supply-chain evidence:** API digest, official SHA2-256SUMS and downloaded file
+  SHA256 all0f922c15ccc0b83eefa1c8bc9104e434318c4bf16e408e1ee93b7745a6efe0aa;
+  size37,466,304; file inspection confirms universal x86_64/arm64. No Mac executable
+  ran locally. Six bundler cases and nine hook enforcement cases pass; focused
+  focused runtime/Linux regressions25/25 passed. Native Mac execution remains unverified
+  until exact-source required CI passes; no graphical macOS install claim.
+- **Shared-code investigation:** Linux post-test /proc scan found no surviving
+  executables from owned runner/TLS fixture roots. This is an observation, not a
+  proof of complete descendant containment; Windows abort/file-lock failures remain
+  tracked and must not be hidden. Strengthened Mac native coverage will exercise
+  original cleanup/TLS/cancellation assertions without new skips/deadline changes.
+- **Other delivery updates:** platform evidence guide now ships in Linux archives;
+  README points to completed c912 preview; installation guide distinguishes the
+  production backup reserve from startup/test requirements. main push trigger now
+  validates the actual base branch as well as retained master; PR triggers unchanged.
+- **Verification/publishing:** run full clean-commit hook before a normal push.
+  Local Mac execution unavailable; required CI must verify native behavior. main's
+  legacy OpenAPI Report token error remains separately tracked; no automatic merge.
+  Branch protection administration remains HTTP403; no remote settings changed.
+- **Next task after this increment:** persistent authorized single-source import
+  lifecycle using existing staging; rights/provenance, secure destination policy,
+  playable-media validation, sanitized metadata, deduplication, durable state,
+  cancellation/retry/recovery and successful scanning before exposing public jobs.
+  Preserve all1.0 requirements; no production/OS readiness inferred from this task.
+- **Usage status:** Not accessible. No scheduled reset/automatic resume claim.
+  Recovery: fetch existing branch; preserve local commits; install hooks; use.NET10,
+  Node24 and verified platform bundle; run full gate and inspect required CI.
+
 ## Active milestone — Linux-first/macOS-required release policy
 
 - Owner update2026-11-11 supersedes the earlier Windows release blocker. Continue

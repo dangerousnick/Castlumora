@@ -1,5 +1,15 @@
 # Feature parity inventory — Phase 1.3
 
+## Native macOS importer prerequisite (current increment)
+
+Reviewed universal macOS executable selection/bundling/install paths are added for
+x64 and ARM64. Required macOS CI now supplies the real tool and exercises existing
+health/TLS/transport/cancellation/cleanup assertions. Official digest/checksum and
+local byte/hash/Mach-O inspection agree; native execution awaits exact-source CI.
+No complete macOS installer, public URL jobs, queue or production readiness is
+claimed. Linux/Windows pins and inherited compatibility code remain unchanged.
+Next: persistent authorized single-source queue and secure library integration.
+
 ## Current platform policy — supersedes historical Windows blockers
 
 Linux/macOS/shared-code checks remain mandatory. Windows compatibility tests are

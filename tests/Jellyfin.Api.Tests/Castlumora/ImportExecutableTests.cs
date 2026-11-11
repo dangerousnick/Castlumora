@@ -26,7 +26,7 @@ public sealed class ImportExecutableTests
         var bundle = Environment.GetEnvironmentVariable("CASTLUMORA_TEST_YTDLP_BUNDLE");
         if (string.IsNullOrEmpty(bundle))
         {
-            Assert.Skip("Provide the verified platform fixture; Linux/Windows CI prepares this bundle.");
+            Assert.Skip("Provide the verified platform fixture; Linux/macOS/Windows CI prepares this bundle.");
             return;
         }
 

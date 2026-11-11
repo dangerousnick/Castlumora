@@ -53,18 +53,18 @@ def download(asset, destination, version):
 
 
 def main():
-    parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('--platform', choices=['linux-x64', 'win-x64'], required=True)
-    parser.add_argument('--system-root', type=Path, required=True)
-    args = parser.parse_args()
     here = Path(__file__).resolve().parent
     manifest = json.loads((here / 'release.json').read_text())
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument('--platform', choices=sorted(manifest['assets']), required=True)
+    parser.add_argument('--system-root', type=Path, required=True)
+    args = parser.parse_args()
     version = manifest['version']
     asset = manifest['assets'][args.platform]
     root = args.system_root.resolve()
     destination = root / 'tools' / 'yt-dlp' / version / args.platform / asset['fileName']
     download(asset, destination, version)
-    if args.platform == 'linux-x64':
+    if args.platform != 'win-x64':
         destination.chmod(0o700)
     notices = root / 'tools' / 'yt-dlp' / version / 'notices'
     notices.mkdir(parents=True, exist_ok=True)

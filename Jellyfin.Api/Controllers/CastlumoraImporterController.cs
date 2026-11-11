@@ -46,7 +46,7 @@ public sealed class CastlumoraImporterController : BaseJellyfinApiController
         }
         catch (NotSupportedException)
         {
-            return StatusCode(StatusCodes.Status501NotImplemented, "Managed yt-dlp is available for Linux x64 and Windows x64 in this preview.");
+            return StatusCode(StatusCodes.Status501NotImplemented, "Managed yt-dlp is available for Linux x64, macOS x64/ARM64 and Windows x64 in this preview.");
         }
         catch (InvalidDataException exception)
         {

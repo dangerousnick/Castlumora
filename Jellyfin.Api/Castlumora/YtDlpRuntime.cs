@@ -65,7 +65,7 @@ public sealed class YtDlpRuntime : IDisposable
                 throw new BusyException();
             }
 
-            var platform = _platform ?? throw new NotSupportedException("This preview has managed yt-dlp assets for Linux x64 and Windows x64 only.");
+            var platform = _platform ?? throw new NotSupportedException("This preview has managed yt-dlp assets for Linux x64, macOS x64/ARM64 and Windows x64.");
             var bundle = BundlePath();
             await VerifyAsync(bundle, platform, cancellationToken).ConfigureAwait(false);
             var destination = ManagedPath(true);
@@ -147,7 +147,7 @@ public sealed class YtDlpRuntime : IDisposable
     {
         if (_platform is null)
         {
-            return State("unsupportedPlatform", "Managed runtime is currently packaged for Linux x64 and Windows x64.", false);
+            return State("unsupportedPlatform", "Managed runtime is currently packaged for Linux x64, macOS x64/ARM64 and Windows x64.", false);
         }
 
         try

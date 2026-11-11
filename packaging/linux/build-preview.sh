@@ -30,7 +30,7 @@ python3 packaging/linux/collect-licenses.py Jellyfin.Server/obj/project.assets.j
 cp FEATURE_PARITY.md PRODUCT_ROADMAP.md DEVELOPMENT_PROGRESS.md "$stage/"
 cp Castlumora.Web/public/THIRD_PARTY_NOTICES.txt "$stage/licenses/WEB_DEPENDENCIES.txt"
 cp -a branding "$stage/branding"
-cp docs/CASTLUMORA_READER_AND_SHELVES.md docs/CASTLUMORA_SKIPPER.md docs/CASTLUMORA_REGISTRATION.md docs/CASTLUMORA_CREATOR_SIDECAR.md docs/CASTLUMORA_METADATA_MANAGEMENT.md docs/CASTLUMORA_IMPORTER_RUNTIME.md docs/CASTLUMORA_DVR.md "$stage/"
+cp docs/CASTLUMORA_PLATFORM_SUPPORT.md docs/CASTLUMORA_READER_AND_SHELVES.md docs/CASTLUMORA_SKIPPER.md docs/CASTLUMORA_REGISTRATION.md docs/CASTLUMORA_CREATOR_SIDECAR.md docs/CASTLUMORA_METADATA_MANAGEMENT.md docs/CASTLUMORA_IMPORTER_RUNTIME.md docs/CASTLUMORA_DVR.md "$stage/"
 printf '{"product":"Castlumora","version":"1.0 development preview","commit":"%s","platform":"linux-x64","selfContainedDotnet":true,"legacyWebIncluded":false,"importerImplemented":false,"managedYtDlpRuntimeBundled":true,"metadataProviderImplemented":false,"creatorSidecarImplemented":true,"metadataManagementStage":"selected-item-local"}\n' "$sha" > "$stage/BUILD_INFO.json"
 cp "$stage/BUILD_INFO.json" "$stage/web/BUILD_INFO.json"
 (cd "$output"; tar --sort=name --mtime="@$epoch" --owner=0 --group=0 --numeric-owner -czf "$name.tar.gz" "$name"; sha256sum "$name.tar.gz" > "$name.tar.gz.sha256")

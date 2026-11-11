@@ -93,3 +93,16 @@ Back up the preview state directory while the server is stopped; the `config/cas
 Built-in yt-dlp importing and the complete online YouTube provider are **not implemented in this preview**; there are no placeholder import buttons presented as functioning features. The native offline .info.json reader identifies existing generic videos, and Administration → Metadata Management supplies local-reader settings, selected-item corrections/locks/confirmed repair. See the included CASTLUMORA_CREATOR_SIDECAR.md and CASTLUMORA_METADATA_MANAGEMENT.md. Synthetic DVR completion/playback, active stop/retained partial media and permission-checked deletion have been verified; real tuners, long-duration behavior and quotas remain unverified or unfinished. Other unfinished groups include linked profiles, recommendations/follows/notifications, resource tiers, creator/OBS/business/cloud/offline/native clients and full metadata/ambiguity/bulk/artwork management. FEATURE_PARITY.md and PRODUCT_ROADMAP.md preserve them.
 
 Developer rebuild (not required on the test computer): check out the release's exact source commit, install Node 24/npm and .NET SDK 10.0.x, then run `packaging/linux/build-preview.sh` from the repository. It requires a clean checkout, npm lockfile, self-contained linux-x64 publish, a fresh output directory and produces a commit-named archive/checksum/BUILD_INFO. Tar entry ordering/time/ownership are normalized; toolchain/native dependency versions can still affect binary bytes. GPL/upstream source history, LICENSE/CONTRIBUTORS and web dependency notices are retained. Exact sources are downloadable from the linked GitHub commit.
+
+## Backup capacity and platform evidence
+
+Creating a production backup still requires approximately 5 GiB free in its backup
+filesystem. That safety guard is separate from the preview's startup requirement;
+small automated fixtures use an internal isolated policy, never a user setting.
+The general validation gate no longer imposes that reserve on every test.
+
+This archive is Linux x64. macOS managed-tool CI and inherited server compatibility
+are separate from a tested macOS desktop installer. Windows compatibility is
+advisory and deferred for Phase 1.4/stable 1.0. See CASTLUMORA_PLATFORM_SUPPORT.md
+inside the package for evidence and remaining checks. No broader support claim
+follows merely from compiling source.

@@ -1,10 +1,13 @@
 import hashlib
 import io
+import json
+import os
+from contextlib import redirect_stdout
 from pathlib import Path
 import tempfile
 import unittest
 from unittest.mock import Mock, patch
-from bundle import check_url, download, OfficialRedirects
+from bundle import check_url, download, main, OfficialRedirects
 
 
 class BundleTests(unittest.TestCase):
@@ -46,6 +49,28 @@ class BundleTests(unittest.TestCase):
             with self.assertRaises(FileExistsError):
                 download(self.asset, self.target, '2026.10.26')
         self.assertEqual(temporary.read_bytes(), b'other operation')
+
+    def test_macos_cli_packages_selected_asset_source_notices_and_private_permissions(self):
+        manifest = json.loads((Path(__file__).parent / 'release.json').read_text())
+        for platform in ['osx-x64', 'osx-arm64']:
+            with self.subTest(platform=platform):
+                root = Path(self.root.name) / platform
+                def owned_download(asset, destination, version):
+                    self.assertEqual(version, manifest['version'])
+                    destination.parent.mkdir(parents=True, exist_ok=True)
+                    destination.write_bytes(b'owned non-executable fixture')
+                with patch('sys.argv', ['bundle.py', '--platform', platform, '--system-root', str(root)]), \
+                     patch('bundle.download', side_effect=owned_download) as fetch, redirect_stdout(io.StringIO()):
+                    main()
+                tool = root / 'tools/yt-dlp' / manifest['version']
+                executable = tool / platform / 'yt-dlp_macos'
+                self.assertEqual(executable.read_bytes(), b'owned non-executable fixture')
+                self.assertEqual(fetch.call_args_list[0].args[0], manifest['assets'][platform])
+                self.assertEqual(fetch.call_args_list[1].args[0], manifest['source'])
+                for name in ['LICENSE', 'THIRD_PARTY_LICENSES.txt', 'NOTICE.md', 'release.json', 'yt-dlp-source.tar.gz']:
+                    self.assertGreater((tool / 'notices' / name).stat().st_size, 0)
+                if os.name != 'nt':
+                    self.assertEqual(executable.stat().st_mode & 0o777, 0o700)
 
     def test_unsafe_hosts_schemes_ports_and_redirects_are_rejected(self):
         for url in ['http://github.com/file', 'file:///etc/passwd', 'https://github.com.attacker.test/file', 'https://user@github.com/file', 'https://github.com:444/file', 'https://127.0.0.1/file']:

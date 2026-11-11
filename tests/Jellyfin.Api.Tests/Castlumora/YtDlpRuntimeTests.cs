@@ -160,6 +160,14 @@ public sealed class YtDlpRuntimeTests : IDisposable
     {
         Assert.Equal("yt-dlp.exe", YtDlpPlatform.Detect("win-x64")!.FileName);
         Assert.Equal("yt-dlp_linux", YtDlpPlatform.Detect("linux-x64")!.FileName);
+        var macArm = YtDlpPlatform.Detect("osx-arm64")!;
+        var macX64 = YtDlpPlatform.Detect("osx-x64")!;
+        Assert.Equal("yt-dlp_macos", macArm.FileName);
+        Assert.Equal(macArm.FileName, macX64.FileName);
+        Assert.Equal(macArm.Sha256, macX64.Sha256);
+        Assert.Equal(macArm.Size, macX64.Size);
+        Assert.Equal(macArm.Version, macX64.Version);
+        Assert.Null(YtDlpPlatform.Detect("osx-arm"));
         Assert.Null(YtDlpPlatform.Detect("linux-arm64"));
         using var runtime = new YtDlpRuntime(Path.Combine(_root, "data"), _root, null, (_, _, _, _) => throw new InvalidOperationException("Must not launch"));
         Assert.Equal("unsupportedPlatform", (await runtime.StatusAsync(TestContext.Current.CancellationToken))["state"]!.GetValue<string>());

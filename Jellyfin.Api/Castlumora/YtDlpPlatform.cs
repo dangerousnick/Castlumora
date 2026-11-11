@@ -17,7 +17,7 @@ internal sealed record YtDlpPlatform(string Id, string Version, string FileName,
 
     internal static string CurrentId()
     {
-        var os = OperatingSystem.IsLinux() ? "linux" : OperatingSystem.IsWindows() ? "win" : "unsupported";
+        var os = OperatingSystem.IsLinux() ? "linux" : OperatingSystem.IsWindows() ? "win" : OperatingSystem.IsMacOS() ? "osx" : "unsupported";
         return os + "-" + RuntimeInformation.ProcessArchitecture.ToString().ToLowerInvariant();
     }
 

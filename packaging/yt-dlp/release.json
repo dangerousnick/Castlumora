@@ -11,6 +11,16 @@
       "fileName": "yt-dlp.exe",
       "sha256": "f5389d3698ecde4ef06f4e6b1ce0294fe9ac1396228c8990b8d3416d6d177a7d",
       "size": 23575744
+    },
+    "osx-x64": {
+      "fileName": "yt-dlp_macos",
+      "sha256": "0f922c15ccc0b83eefa1c8bc9104e434318c4bf16e408e1ee93b7745a6efe0aa",
+      "size": 37466304
+    },
+    "osx-arm64": {
+      "fileName": "yt-dlp_macos",
+      "sha256": "0f922c15ccc0b83eefa1c8bc9104e434318c4bf16e408e1ee93b7745a6efe0aa",
+      "size": 37466304
     }
   },
   "source": {
