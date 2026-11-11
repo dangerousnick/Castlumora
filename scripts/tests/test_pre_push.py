@@ -48,8 +48,16 @@ if [ "$1" = build ] && [ "${CASTLUMORA_GATE_TEST_FAILURE:-}" = disk ]; then echo
 if [ "$1" = test ] && [ "${CASTLUMORA_GATE_TEST_FAILURE:-}" = tests ]; then exit 1; fi
 ''')
         self.tool("node", 'if [ "$1" = --version ]; then echo v24.22.1; fi\n')
+        self.tool("ffmpeg", "echo native-hook-fixture")
+        self.env["CASTLUMORA_TEST_FFMPEG"] = str(self.tools / "ffmpeg")
+        self.tool("ffprobe", "echo native-hook-fixture")
+        self.env["CASTLUMORA_TEST_FFPROBE"] = str(self.tools / "ffprobe")
         self.tool("npm", "")
         self.tool("python3", 'if [ "$1" = -c ]; then echo "Free bytes: 1024; informational only"; fi')
+
+    def test_missing_native_inspection_fixture_blocks_push(self):
+        self.env["CASTLUMORA_TEST_FFPROBE"] = str(self.root / "missing-native-probe")
+        self.blocked("inspectionFixture")
 
     def git(self, *args, cwd=None, check=True):
         return subprocess.run(["git", *args], cwd=cwd or self.repo, env=self.env,

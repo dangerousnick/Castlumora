@@ -5,6 +5,49 @@ Branch: `development/castlumora-web-1.3`; PR targets `main`. Base main: `b06078b
 Permanent source of truth: [docs/CASTLUMORA_PRODUCT_REQUIREMENTS.md](docs/CASTLUMORA_PRODUCT_REQUIREMENTS.md). Remaining product vision: [PRODUCT_ROADMAP.md](PRODUCT_ROADMAP.md). Actual coverage: [FEATURE_PARITY.md](FEATURE_PARITY.md).
 
 
+## Current continuation — media inspection after published queue lifecycle
+
+- **Latest published code:**0d3ea8c0bd9b90fbbe172b99f7010fa2d36ca951
+  (includes5814fb023e), existing development/castlumora-web-1.3 and PR3.
+- **Completed queue milestone:** full local hook passed:2,420files format/zero
+  changes/no workspace warnings; .NET10 Debug server and Release solution zero
+  warnings/errors;17backend suites4,392passed/19existing skips;58frontend tests
+  with typecheck/lint/build;9hook/6bundler/5handler cases. Logs
+  /tmp/castlumora-prepush.Nh7m0ZhX and /tmp/castlumora-queue-push-corrected.log.
+- **Exact-source CI:** required Linux/macOS passed (Tests42980593398;
+  jobs130389829007/130389829304), Format42980593570, ABI42980593501,
+  OpenAPI42980593484 and Linux preview42980593743 passed. Windows advisory
+  job130389829366 failed4owned-staging cleanup assertions after cancellation or
+  failure; inherited platform-specific cleanup issue remains tracked, tests/logs
+  retained, no assertion relaxed. No Linux/macOS counterpart observed.
+- **Intermediate preview:** GitHub artifact13837042618 exists for exact0d3ea8c0bd;
+  independent archive verification follows. No public URL import capability is
+  claimed; UI still reports queues unavailable. Previous6f04preview preserved.
+- **Active next increment:** bounded structural MP4/reference/protection checks,
+  restricted native FFprobe properties and actual first-frame FFmpeg decoding,
+  generated GPL test clip and real queue/TLS/decoder integration. No public jobs,
+  library writes or scan wiring yet. See docs/CASTLUMORA_IMPORT_MEDIA_INSPECTION.md.
+- **Preliminary inspection verification:**22focused Debug/native cases passed;
+  ten mandatory-hook enforcement cases passed. Before decoder addition, combined
+  run63passed/1existing runtime-health timeout while another build overlapped.
+  This was not a passing run. Exact stall cause unproven; stop overlapping heavy
+  builds/native tests, measure isolated probe health, then rerun affected suite
+  without changing its15second production deadline. Async-I/O analyzer errors
+  fixed, no suppression. After resume the isolated verified version probe returned
+ 2026.10.26 in1.586seconds. With no overlapping heavy work the entire Debug API
+  suite passed346tests/3existing platform skips/0failures, including genuine
+  first-frame decode, corrupt packets and queue/TLS/inspection integration.
+  Logs:/tmp/castlumora-media-full-api-tests.log; full-solution formatter corrected
+  one of2,422files without workspace warnings; actionlint passed. Required final
+  pre-push gate and exact-source CI for inspection still pending.
+- **Next exact task after inspection publication:** complete idempotent authorized
+  library destination/promotion/scan lifecycle and sanitized metadata, content
+  deduplication and restart receipts; then elevated API/native management and
+  real imported-video indexing/playback tests. Do not enable unfinished jobs.
+- **Usage/reset:**Not accessible. No automatic resume, stable1.0 or full Phase1.4
+  claim. No main merge/Coon Media access/deployment. Production backup safeguards
+  remain unchanged; preserve every ancestor and completed feature.
+
 ## Active continuation — persistent internal importer lifecycle
 
 - Resumed exact clean6f04c2c885dabfa41f2a8a277391a220aa927cbe; remote fetch

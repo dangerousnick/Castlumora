@@ -60,7 +60,7 @@ internal static class ImportProcess
             }
 
             completedNormally = true;
-            return new Result(process.ExitCode, Classify(await error.ConfigureAwait(false)));
+            return new Result(process.ExitCode, Classify(await error.ConfigureAwait(false))) { Output = await output.ConfigureAwait(false) };
         }
         catch (OperationCanceledException) when (!cancellationToken.IsCancellationRequested)
         {
@@ -150,5 +150,8 @@ internal static class ImportProcess
         return "downloadFailed";
     }
 
-    internal sealed record Result(int ExitCode, string ErrorCode);
+    internal sealed record Result(int ExitCode, string ErrorCode)
+    {
+        internal string Output { get; init; } = string.Empty;
+    }
 }

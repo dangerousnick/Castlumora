@@ -1,5 +1,17 @@
 # Castlumora product roadmap
 
+## Native inspection continuation — internal, not publicly enabled
+
+Queue lifecycle0d3ea8c0bd is published with passing Linux/macOS/shared checks.
+Next increment validates bounded self-contained MP4 structures/references, native
+FFprobe properties and real first-frame FFmpeg decoding, including corrupt packets
+and real queue/TLS transport. No library publication or public URL job capability
+is claimed. See [inspection boundary](docs/CASTLUMORA_IMPORT_MEDIA_INSPECTION.md)
+and DEVELOPMENT_PROGRESS.md for exact verification and next steps. Safe idempotent
+library promotion/scanning and elevated administrator workflow remain the next
+required boundary; all1.0 import/creator/other functionality stays mandatory.
+
+
 ## Persistent queue continuation — internal only
 
 Private durable single-worker job lifecycle now implemented with rights/provenance,

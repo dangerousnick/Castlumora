@@ -22,6 +22,10 @@
   </ItemGroup>
 
   <ItemGroup>
+    <None Update="Fixtures/import-owned.mp4" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="../../Jellyfin.Api/Jellyfin.Api.csproj" />
     <ProjectReference Include="../../Jellyfin.Server.Implementations/Jellyfin.Server.Implementations.csproj" />
   </ItemGroup>

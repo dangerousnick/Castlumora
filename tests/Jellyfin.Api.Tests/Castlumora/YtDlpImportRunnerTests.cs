@@ -281,6 +281,36 @@ public sealed class YtDlpImportRunnerTests
         }
     }
 
+    [Theory]
+    [InlineData("media", true)]
+    [InlineData("ok", false)]
+    public async Task RealQueueAndDownloader_RequireInspectedMediaBeforeCompletion(string mode, bool valid)
+    {
+        await using var fixture = await Fixture.CreateAsync(mode);
+        var probe = Environment.GetEnvironmentVariable("CASTLUMORA_TEST_FFPROBE");
+        Assert.True(!string.IsNullOrWhiteSpace(probe) && File.Exists(probe), "A real native FFprobe fixture is required.");
+        var encoder = Environment.GetEnvironmentVariable("CASTLUMORA_TEST_FFMPEG");
+        Assert.True(!string.IsNullOrWhiteSpace(encoder) && File.Exists(encoder), "A real native FFmpeg fixture is required.");
+        await using var queue = new ImportQueue(
+            Path.Combine(fixture.Root, "queue"),
+            async (job, progress, token) =>
+            {
+                using var staged = await fixture.Runner.RunAsync(job.Source, token, progress);
+                var seconds = await ImportMediaInspection.InspectAsync(staged.MediaPath, probe!, encoder!, token);
+                Assert.InRange(seconds, 0.9, 1.2);
+                // Validation is real, but library publication remains a separate, disabled boundary.
+                return new ImportQueue.Receipt(staged.Sha256, staged.Bytes);
+            },
+            NullLogger.Instance);
+        var job = await queue.SubmitAsync(fixture.Source, Guid.NewGuid(), "Owned generated clip", "Generated for Castlumora tests", Guid.NewGuid(), TestContext.Current.CancellationToken);
+        queue.Start();
+        await WaitForQueueStateAsync(queue, valid ? ImportQueue.State.Completed : ImportQueue.State.Failed);
+        var result = Assert.Single(await queue.ListAsync(TestContext.Current.CancellationToken));
+        Assert.Equal(job.Id, result.Id);
+        Assert.Equal(valid ? Convert.ToHexStringLower(SHA256.HashData(fixture.Payload)) : null, result.Sha256);
+        fixture.AssertNoStaging();
+    }
+
     private static async Task WaitForQueueStateAsync(ImportQueue queue, ImportQueue.State expected)
     {
         using var deadline = CancellationTokenSource.CreateLinkedTokenSource(TestContext.Current.CancellationToken);
@@ -305,7 +335,8 @@ public sealed class YtDlpImportRunnerTests
             _mode = mode;
             Root = Path.Combine(Path.GetTempPath(), "castlumora-runner-test-" + Guid.NewGuid().ToString("N"));
             YtDlpPlatform.PrivateDirectory(Root);
-            Payload = mode == "streamLarge" ? new byte[2097152] : Encoding.ASCII.GetBytes("Owned transport bytes; playable-container validation belongs before library commit.");
+            Payload = mode == "media" ? File.ReadAllBytes(Path.Combine(AppContext.BaseDirectory, "Fixtures", "import-owned.mp4"))
+                : mode == "streamLarge" ? new byte[2097152] : Encoding.ASCII.GetBytes("Owned transport bytes; playable-container validation belongs before library commit.");
             _stop.CancelAfter(TimeSpan.FromSeconds(90));
         }
 

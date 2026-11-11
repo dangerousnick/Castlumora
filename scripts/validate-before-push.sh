@@ -63,6 +63,17 @@ case "$(uname -s):$(uname -m)" in
         ;;
     *) echo 'BLOCKED: no CI-equivalent validation setup is defined for this host.' >&2; exit 1 ;;
 esac
+# Native media inspection is mandatory, using the existing server dependency.
+probe_fixture=${CASTLUMORA_TEST_FFPROBE:-$(command -v ffprobe || true)}
+[[ -n "$probe_fixture" && -x "$probe_fixture" ]] || { echo 'BLOCKED: native FFprobe required for media inspection tests.' >&2; exit 1; }
+if [[ "$platform" == win-x64 ]]; then probe_fixture=$(cygpath -w "$probe_fixture"); fi
+encoder_fixture=${CASTLUMORA_TEST_FFMPEG:-$(command -v ffmpeg || true)}
+[[ -n "$encoder_fixture" && -x "$encoder_fixture" ]] || { echo 'BLOCKED: native FFmpeg required for first-frame inspection.' >&2; exit 1; }
+if [[ "$platform" == win-x64 ]]; then encoder_fixture=$(cygpath -w "$encoder_fixture"); fi
+export CASTLUMORA_TEST_FFPROBE="$probe_fixture"
+export CASTLUMORA_TEST_FFMPEG="$encoder_fixture"
+run encoder-version "$CASTLUMORA_TEST_FFMPEG" -version
+run probe-version "$CASTLUMORA_TEST_FFPROBE" -version
 # Never silently skip the real platform executable tests.
 run bundle-tests python3 -m unittest discover -s packaging/yt-dlp -p 'test_*.py'
 export CASTLUMORA_TEST_YTDLP_BUNDLE=${CASTLUMORA_TEST_YTDLP_BUNDLE:-"$logdir/tool-fixture"}

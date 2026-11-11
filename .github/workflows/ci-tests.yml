@@ -46,6 +46,25 @@ jobs:
           python packaging/yt-dlp/bundle.py --platform "$tool_platform" --system-root "$RUNNER_TEMP/castlumora-tool-fixture"
           echo "CASTLUMORA_TEST_YTDLP_BUNDLE=$RUNNER_TEMP/castlumora-tool-fixture" >> "$GITHUB_ENV"
 
+      - name: Native media inspection fixture
+        shell: bash
+        run: |
+          if ! command -v ffprobe >/dev/null || ! command -v ffmpeg >/dev/null; then
+            case "$RUNNER_OS" in
+              Linux) sudo apt-get update; sudo apt-get install -y --no-install-recommends ffmpeg ;;
+              macOS) brew install ffmpeg ;;
+              *) echo 'Native FFprobe fixture missing on this compatibility runner.' >&2; exit 1 ;;
+            esac
+          fi
+          probe_fixture=$(command -v ffprobe)
+          if [[ "$RUNNER_OS" == Windows ]]; then probe_fixture=$(cygpath -w "$probe_fixture"); fi
+          encoder_fixture=$(command -v ffmpeg)
+          if [[ "$RUNNER_OS" == Windows ]]; then encoder_fixture=$(cygpath -w "$encoder_fixture"); fi
+          "$probe_fixture" -version
+          "$encoder_fixture" -version
+          echo "CASTLUMORA_TEST_FFMPEG=$encoder_fixture" >> "$GITHUB_ENV"
+          echo "CASTLUMORA_TEST_FFPROBE=$probe_fixture" >> "$GITHUB_ENV"
+
       - name: Build Debug server on required platforms
         if: runner.os == 'Linux' || runner.os == 'macOS'
         run: dotnet build Jellyfin.Server -m:1
