@@ -1,0 +1,40 @@
+# Backup capacity policy and real integration tests
+
+## Design
+
+The production reserve remains exactly 5,368,709,115 bytes (the original constant,
+approximately 5 GiB). The existing public `BackupService` constructor and DI wiring
+are unchanged; that constructor always creates the production policy using real
+filesystem free space. Unknown capacity still fails closed. No application option,
+environment variable, API or global test switch lowers production safety.
+
+An internal constructor accepts an immutable per-instance `BackupStoragePolicy`.
+Tests can control its reserve and capacity observer without replacing backup
+creation. A nonpositive reserve is invalid. Tests cover the production boundary,
+unknown/zero/insufficient capacity, custom-reserve rejection, policy isolation,
+and a real SQLite export/ZIP at the isolated boundary. The existing corrupt
+keyframe regression uses actual filesystem capacity with a 1 MiB test reserve;
+it still reads the generated ZIP and verifies the healthy row survived while the
+corrupt row was skipped. Each test owns and cleans its database/filesystem fixture.
+
+The pre-push gate records capacity as telemetry instead of imposing the production
+backup reserve on builds. All actual formatting, workspace loading, build, test,
+bundling and frontend failures remain fatal. Hook tests include an actual-stage
+simulated ENOSPC failure and a complete successful pipeline with low reported
+capacity. No backup test is skipped or replaced with a mocked backup operation.
+
+## Verification checkpoint
+
+Verification results and exact source checkpoint are maintained at the top of
+DEVELOPMENT_PROGRESS.md. The prior storage reports describe earlier source; their
+5 GiB executor prerequisite is superseded by this design. A complete mandatory
+gate and successful normal push are still required before publication is claimed.
+Windows and hardware-specific tests cannot be claimed from Linux-only execution.
+
+## Phase 1.4 continuation
+
+After full validation and publication, continue the existing internal import
+staging implementation toward the first persistent authorized single-source job.
+Do not enable public URL jobs until rights/provenance, destination permission,
+bounded media validation, metadata sanitization, deduplication and recovery are
+implemented and tested. Preserve legacy administration and all completed work.

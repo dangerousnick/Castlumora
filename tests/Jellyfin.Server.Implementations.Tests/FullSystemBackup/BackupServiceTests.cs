@@ -50,10 +50,7 @@ public sealed class BackupServiceTests : IDisposable
             ctx.Database.EnsureCreated();
         }
 
-        // Use the test assembly's own output directory instead of Path.GetTempPath(). On GitHub-hosted
-        // windows-latest runners, the system temp directory lives on the constrained C: drive, which can have
-        // less than the 5GiB BackupService requires free, causing spurious failures. AppContext.BaseDirectory
-        // is under the repo checkout (the much larger D: drive on Windows runners) on all platforms.
+        // Each instance owns a directory and an isolated reserve policy. Production settings are untouched.
         _testRoot = Path.Combine(AppContext.BaseDirectory, "jellyfin-backup-service-tests-" + Guid.NewGuid().ToString("N"));
         _backupPath = Path.Combine(_testRoot, "Backup");
         _configurationDirectoryPath = Path.Combine(_testRoot, "Config");
@@ -120,7 +117,86 @@ public sealed class BackupServiceTests : IDisposable
         Assert.Equal(validItemId, singleRow.GetProperty("ItemId").GetGuid());
     }
 
-    private BackupService CreateBackupService()
+    [Theory]
+    [InlineData(-1L)]
+    [InlineData(0L)]
+    [InlineData(5_368_709_114L)]
+    public async Task CreateBackupAsync_BelowProductionReserve_RejectsBeforeCreatingArchive(long freeBytes)
+    {
+        string? checkedPath = null;
+        var policy = new BackupStoragePolicy(path =>
+        {
+            checkedPath = path;
+            return freeBytes;
+        });
+        var service = CreateBackupService(policy);
+
+        var exception = await Assert.ThrowsAsync<InvalidOperationException>(() => service.CreateBackupAsync(new BackupOptionsDto())).ConfigureAwait(true);
+
+        Assert.Contains("Cannot create backup", exception.Message, StringComparison.Ordinal);
+        Assert.Equal(_backupPath, checkedPath);
+        Assert.Empty(Directory.GetFiles(_backupPath));
+    }
+
+    [Fact]
+    public void ProductionPolicy_AtOriginalReserve_AllowsBackup()
+    {
+        Assert.Equal(5_368_709_115L, BackupStoragePolicy.ProductionMinimumFreeBytes);
+        var policy = new BackupStoragePolicy(_ => 5_368_709_115L);
+        policy.Validate(_backupPath);
+    }
+
+    [Fact]
+    public async Task CreateBackupAsync_BelowIsolatedReserve_StillRejects()
+    {
+        var service = CreateBackupService(new BackupStoragePolicy(_ => 1023, 1024));
+        await Assert.ThrowsAsync<InvalidOperationException>(() => service.CreateBackupAsync(new BackupOptionsDto())).ConfigureAwait(true);
+        Assert.Empty(Directory.GetFiles(_backupPath));
+    }
+
+    [Fact]
+    public async Task CreateBackupAsync_AtIsolatedReserve_WritesRealDatabaseArchive()
+    {
+        var id = Guid.NewGuid();
+        await using (var context = CreateDbContext())
+        {
+            context.BaseItems.Add(CreateMovieEntity(id, "Small fixture"));
+            await context.SaveChangesAsync(TestContext.Current.CancellationToken).ConfigureAwait(true);
+        }
+
+        // Capacity is controlled, but database export, serialization and ZIP creation are real.
+        var service = CreateBackupService(new BackupStoragePolicy(_ => 1024 * 1024, 1024 * 1024));
+        var manifest = await service.CreateBackupAsync(new BackupOptionsDto()).ConfigureAwait(true);
+        using var archive = await ZipFile.OpenReadAsync(manifest.Path, TestContext.Current.CancellationToken).ConfigureAwait(true);
+        Assert.NotNull(archive.GetEntry("manifest.json"));
+        var entry = Assert.Single(archive.Entries, item => item.FullName == "Database/BaseItems.json");
+        await using var stream = await entry.OpenAsync(TestContext.Current.CancellationToken).ConfigureAwait(true);
+        using var json = await JsonDocument.ParseAsync(stream, cancellationToken: TestContext.Current.CancellationToken).ConfigureAwait(true);
+        // EnsureCreated seeds a detached-user-data placeholder in addition to our movie.
+        Assert.Equal(2, json.RootElement.GetArrayLength());
+        var item = Assert.Single(json.RootElement.EnumerateArray(), row => row.GetProperty("Id").GetGuid().Equals(id));
+        Assert.Equal(id, item.GetProperty("Id").GetGuid());
+        Assert.Equal("Small fixture", item.GetProperty("Name").GetString());
+    }
+
+    [Fact]
+    public void IsolatedReserve_DoesNotChangeProductionRequirement()
+    {
+        var isolated = new BackupStoragePolicy(_ => 1024 * 1024, 1024 * 1024);
+        var production = new BackupStoragePolicy(_ => 1024 * 1024);
+        isolated.Validate(_backupPath);
+        Assert.Throws<InvalidOperationException>(() => production.Validate(_backupPath));
+    }
+
+    [Theory]
+    [InlineData(0L)]
+    [InlineData(-1L)]
+    public void Policy_NonpositiveRequirement_IsRejected(long minimum)
+    {
+        Assert.Throws<ArgumentOutOfRangeException>(() => new BackupStoragePolicy(minimumFreeBytes: minimum));
+    }
+
+    private BackupService CreateBackupService(BackupStoragePolicy? storagePolicy = null)
     {
         var factory = new Mock<IDbContextFactory<JellyfinDbContext>>();
         factory.Setup(f => f.CreateDbContext()).Returns(CreateDbContext);
@@ -153,7 +229,8 @@ public sealed class BackupServiceTests : IDisposable
             applicationPaths.Object,
             jellyfinDatabaseProvider.Object,
             applicationLifetime.Object,
-            libraryManager.Object);
+            libraryManager.Object,
+            storagePolicy ?? new BackupStoragePolicy(minimumFreeBytes: 1024 * 1024));
     }
 
     private static BaseItemEntity CreateMovieEntity(Guid id, string name)

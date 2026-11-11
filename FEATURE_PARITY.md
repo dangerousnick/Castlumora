@@ -1,5 +1,16 @@
 # Feature parity inventory — Phase 1.3
 
+## Backup capacity validation
+
+Production retains its original approximately5GiB reserve. Integration tests use
+an internal per-instance policy while executing real SQLite export and ZIP
+creation; no global setting or production bypass is exposed. The pre-push gate
+reports capacity without applying a production-backup threshold to builds; actual
+failures remain fatal. Full validation/publication is pending in the current
+DEVELOPMENT_PROGRESS.md checkpoint. Historical storage-blocked entries below are
+superseded by this design. Continue the existing importer after verified publishing.
+
+
 “Preserved” means this change does not alter the inherited implementation; it does **not** mean every backend feature was exercised in this workspace. See `docs/verification-web-1.3.md` and DEVELOPMENT_PROGRESS.md for actual executed checks. Legacy fallback requires the existing compatible Web distribution at `<server-base>/web/`; it may require its own login. No fallback is removed.
 
 | Feature group | Backend availability | Castlumora Web | Legacy fallback | Automated coverage | Manual/real verification and outstanding work |

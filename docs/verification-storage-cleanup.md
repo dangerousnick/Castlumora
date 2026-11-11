@@ -1,5 +1,10 @@
 # Storage cleanup verification — 2026-11-10
 
+> Historical cleanup report. The later backup-policy refactor supersedes the
+> requirement to enlarge this workspace merely to run a tiny fixture backup.
+> Production retains its original reserve; tests use an isolated policy. See
+> [backup policy verification](verification-backup-storage-policy.md).
+
 ## Result
 
 Safe cleanup reclaimed 1.59GiB. Available space increased

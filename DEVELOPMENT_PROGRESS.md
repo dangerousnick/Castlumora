@@ -4,6 +4,33 @@ Branch: `development/castlumora-web-1.3`; PR targets `main`. Base main: `b06078b
 
 Permanent source of truth: [docs/CASTLUMORA_PRODUCT_REQUIREMENTS.md](docs/CASTLUMORA_PRODUCT_REQUIREMENTS.md). Remaining product vision: [PRODUCT_ROADMAP.md](PRODUCT_ROADMAP.md). Actual coverage: [FEATURE_PARITY.md](FEATURE_PARITY.md).
 
+## Active milestone — isolated backup capacity policy
+
+- Production backup reserve remains exactly5,368,709,115 bytes and the existing
+  public constructor/DI wiring is preserved. An internal per-instance policy allows
+  real backup integration tests to use a1MiB reserve without global overrides.
+- Tests cover production rejection below the reserve/unknown space, exact-boundary
+  acceptance, isolated requirement enforcement and independence, invalid policy
+  construction, real database ZIP contents and corrupt-keyframe recovery.
+- Gate capacity readings are now informational; every actual build/test failure
+  remains fatal. Nine private-remote hook enforcement tests pass, including ENOSPC
+  during a build and a complete pipeline despite low reported free space.
+- Targeted .NET10 backup verification passed:10/10 tests, actual ZIP contents
+  inspected; Release test-project build passed with zero warnings/errors.
+  The complete clean-commit gate is in progress.
+  No push or full validation success is claimed yet. See
+  [policy design and verification](docs/verification-backup-storage-policy.md).
+- Earlier sections requiring a5GiB build workspace describe historical source.
+  This refactor supersedes that requirement; production backup safety is unchanged.
+- Latest published commit remains2b79ffb136f2c46dca52b1a8562c38f37da2f94e.
+  Branch development/castlumora-web-1.3, PR3. Preserved all prior local commits,
+  including0ad2f94608 and staging896b5fe4dc; no reset, deployment or main merge.
+- Recovery: inspect clean HEAD, install hooks, set .NET10/Node24 PATH and the
+  existing CASTLUMORA_TEST_YTDLP_BUNDLE cache, run scripts/validate-before-push.sh;
+  fix every failure, publish through the mandatory hook, inspect exact-source CI.
+  Then continue the authorized persistent single-source import slice described in
+  docs/CASTLUMORA_IMPORT_STAGING.md. Usage allowance/reset: Not accessible.
+
 ## Latest local milestone — supervised direct-HTTPS import staging
 
 - **Completed scope:** internal verified yt-dlp process supervision and private

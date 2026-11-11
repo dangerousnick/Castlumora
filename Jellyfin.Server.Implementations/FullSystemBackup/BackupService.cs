@@ -35,6 +35,7 @@ public class BackupService : IBackupService
     private readonly IJellyfinDatabaseProvider _jellyfinDatabaseProvider;
     private readonly IHostApplicationLifetime _hostApplicationLifetime;
     private readonly ILibraryManager _libraryManager;
+    private readonly BackupStoragePolicy _storagePolicy;
     private static readonly JsonSerializerOptions _serializerSettings = new JsonSerializerOptions(JsonSerializerDefaults.General)
     {
         AllowTrailingCommas = true,
@@ -61,7 +62,22 @@ public class BackupService : IBackupService
         IJellyfinDatabaseProvider jellyfinDatabaseProvider,
         IHostApplicationLifetime applicationLifetime,
         ILibraryManager libraryManager)
+        : this(logger, dbProvider, applicationHost, applicationPaths, jellyfinDatabaseProvider, applicationLifetime, libraryManager, new BackupStoragePolicy())
     {
+    }
+
+    internal BackupService(
+        ILogger<BackupService> logger,
+        IDbContextFactory<JellyfinDbContext> dbProvider,
+        IServerApplicationHost applicationHost,
+        IServerApplicationPaths applicationPaths,
+        IJellyfinDatabaseProvider jellyfinDatabaseProvider,
+        IHostApplicationLifetime applicationLifetime,
+        ILibraryManager libraryManager,
+        BackupStoragePolicy storagePolicy)
+    {
+        ArgumentNullException.ThrowIfNull(storagePolicy);
+        _storagePolicy = storagePolicy;
         _logger = logger;
         _dbProvider = dbProvider;
         _applicationHost = applicationHost;
@@ -296,13 +312,7 @@ public class BackupService : IBackupService
             Directory.CreateDirectory(backupFolder);
         }
 
-        var backupStorageSpace = StorageHelper.GetFreeSpaceOf(_applicationPaths.BackupPath);
-
-        const long FiveGigabyte = 5_368_709_115;
-        if (backupStorageSpace.FreeSpace < FiveGigabyte)
-        {
-            throw new InvalidOperationException($"The backup directory '{backupStorageSpace.Path}' does not have at least '{StorageHelper.HumanizeStorageSize(FiveGigabyte)}' free space. Cannot create backup.");
-        }
+        _storagePolicy.Validate(_applicationPaths.BackupPath);
 
         var backupPath = Path.Combine(backupFolder, $"jellyfin-backup-{manifest.DateCreated.ToLocalTime():yyyyMMddHHmmss}.zip");
 

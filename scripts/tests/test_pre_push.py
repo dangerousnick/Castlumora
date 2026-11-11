@@ -44,11 +44,12 @@ if [ "$1" = format ]; then
   if [ "${CASTLUMORA_GATE_TEST_FAILURE:-}" = format ]; then exit 1; fi
 fi
 if [ "$1" = build ] && [ "$2" = Jellyfin.Server ] && [ "${CASTLUMORA_GATE_TEST_FAILURE:-}" = build ]; then exit 1; fi
+if [ "$1" = build ] && [ "${CASTLUMORA_GATE_TEST_FAILURE:-}" = disk ]; then echo "No space left on device" >&2; exit 1; fi
 if [ "$1" = test ] && [ "${CASTLUMORA_GATE_TEST_FAILURE:-}" = tests ]; then exit 1; fi
 ''')
         self.tool("node", 'if [ "$1" = --version ]; then echo v24.22.1; fi\n')
         self.tool("npm", "")
-        self.tool("python3", 'if [ "$1" = -c ] && [ "${CASTLUMORA_GATE_TEST_FAILURE:-}" = disk ]; then exit 1; fi')
+        self.tool("python3", 'if [ "$1" = -c ]; then echo "Free bytes: 1024; informational only"; fi')
 
     def git(self, *args, cwd=None, check=True):
         return subprocess.run(["git", *args], cwd=cwd or self.repo, env=self.env,
@@ -74,7 +75,7 @@ if [ "$1" = test ] && [ "${CASTLUMORA_GATE_TEST_FAILURE:-}" = tests ]; then exit
     def test_source_mutation_during_checks_prevents_remote_update(self):
         self.blocked("mutate")
 
-    def test_insufficient_disk_prevents_remote_update(self):
+    def test_actual_build_disk_failure_prevents_remote_update(self):
         self.blocked("disk")
 
     def test_installer_preserves_existing_default_hook(self):
@@ -106,6 +107,9 @@ if [ "$1" = test ] && [ "${CASTLUMORA_GATE_TEST_FAILURE:-}" = tests ]; then exit
         actual = self.git("--git-dir=" + str(self.remote), "rev-parse", "refs/heads/development").stdout.strip()
         self.assertEqual(actual, expected)
         commands = (self.root / "commands").read_text()
+        # Disk observations must not preempt real builds/tests using an unrelated backup threshold.
+        self.assertNotIn("5368709120", commands)
+        self.assertIn("informational only", commands)
         for command in ["dotnet format --verify-no-changes --verbosity diagnostic",
                         "dotnet build Jellyfin.Server", "dotnet build Jellyfin.sln --configuration Release",
                         "dotnet test Jellyfin.sln --configuration Release --collect:XPlat Code Coverage",

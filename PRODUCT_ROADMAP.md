@@ -1,5 +1,16 @@
 # Castlumora product roadmap
 
+## Backup validation before importer continuation
+
+Production retains its original approximately5GiB reserve. Integration tests use
+an internal per-instance policy while executing real SQLite export and ZIP
+creation; no global setting or production bypass is exposed. The pre-push gate
+reports capacity without applying a production-backup threshold to builds; actual
+failures remain fatal. Full validation/publication is pending in the current
+DEVELOPMENT_PROGRESS.md checkpoint. Historical storage-blocked entries below are
+superseded by this design. Continue the existing importer after verified publishing.
+
+
 Castlumora 1.0 (development) is free, open source and self-hosted. [The complete product requirements](docs/CASTLUMORA_PRODUCT_REQUIREMENTS.md) are the source of truth. This roadmap separates working Phase 1.3 foundations from future milestones; a type or preview is not feature completion.
 
 
