@@ -1,5 +1,18 @@
 # Feature parity inventory — Phase 1.3
 
+## Required native-CI setup recovery
+
+Inspection5fd129d4d3 passed the full local gate and native macOS CI. Linux CI was
+cancelled after over16minutes of Ubuntu mirror DNS failures during dependency
+setup, before builds/tests; this is infrastructure, not a passing check. A reviewed
+dated/hash-pinned GitHub native fixture removes apt mirror dependence while
+retaining every test and Linux/macOS requirement. Validate/publish this repair
+before further feature pushes. Internal publication source with12passing native/
+file tests is preserved in the exact stash recorded in DEVELOPMENT_PROGRESS.md;
+restore it once after CI verification and complete indexing/API/UI integration.
+Public URL importing remains disabled; full1.0 scope is unchanged.
+
+
 ## Native inspection continuation — internal, not publicly enabled
 
 Queue lifecycle0d3ea8c0bd is published with passing Linux/macOS/shared checks.

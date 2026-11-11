@@ -41,6 +41,7 @@ sdk=$(dotnet --version)
 [[ "$sdk" == 10.* ]] || { echo 'BLOCKED: .NET SDK10 required.' >&2; exit 1; }
 [[ $(node --version) == v24.* ]] || { echo 'BLOCKED: Node24 required.' >&2; exit 1; }
 run hook-tests python3 -m unittest discover -s scripts/tests -p 'test_*.py'
+run native-fixture-tests python3 -m unittest discover -s .github/scripts -p 'test_native_media_fixture.py'
 run disk-space python3 -c 'import shutil,sys; free=shutil.disk_usage(sys.argv[1]).free; print(f"Free bytes: {free}; informational only; build and test I/O failures remain fatal")' "$root"
 run restore dotnet restore Jellyfin.sln
 # No include/exclude list: Debug analyzers must load across the whole solution.

@@ -5,6 +5,59 @@ Branch: `development/castlumora-web-1.3`; PR targets `main`. Base main: `b06078b
 Permanent source of truth: [docs/CASTLUMORA_PRODUCT_REQUIREMENTS.md](docs/CASTLUMORA_PRODUCT_REQUIREMENTS.md). Remaining product vision: [PRODUCT_ROADMAP.md](PRODUCT_ROADMAP.md). Actual coverage: [FEATURE_PARITY.md](FEATURE_PARITY.md).
 
 
+## Active required-CI repair — pinned native dependency fixture
+
+- **Latest published code:**5fd129d4d34cdac5f4c4a7ec5e0093548e984186.
+  Existing branch development/castlumora-web-1.3, PR3. Every prior commit preserved.
+- **Completed inspection local gate:** full formatting2,422files/zero changes/no
+  workspace warning; zero-warning .NET10 Debug server/Release solution builds;
+  all17backend suites4,416passed/19existing platform skips;58frontend tests with
+  typecheck/lint/build;10hook/6bundler/5handler cases. Logs:
+  /tmp/castlumora-prepush.6Oy05Siq and /tmp/castlumora-media-inspection-push.log.
+- **Exact-source CI blocker:** Tests43057723303 macOS job130651575717 passed.
+  Linux job130651575298 stalled in native dependency setup for over16minutes:
+  apt repeatedly could not resolve Ubuntu archive/security/azure mirror names.
+  It never reached application builds/tests. Cancelled this stalled run to obtain
+  logs; Linux is NOT verified for5fd129d4d3. Windows advisory lacked native tools;
+  its setup failed. Do not retry identical apt failures or call this all-green.
+- **Repair:** reviewed dated/hash-pinned CI-only Linux/Windows native fixtures;
+  fixed-name, link/duplicate-safe bounded extraction, native version checks,
+  preserved licenses/source links and setup deadline. Prepare after builds so
+  advisory Windows fixture failure cannot erase compatibility compilation.
+  No production dependency/update settings or required tests weakened.
+- **Verification so far:** six fixture security cases and actionlint passed.
+  Linux archive hash matches API and publisher checksum, native binaries run;
+  full Debug API346passed/3existing skips using these exact binaries. Windows
+  pins/checksums agree but native execution awaits CI. Logs:
+  /tmp/castlumora-reviewed-native-media.log and
+  /tmp/castlumora-pinned-native-full-api.log. Full final gate/CI repair pending.
+- **Unfinished publication work preserved:** stash
+  49a95fefbab944c6e230a6b1bd1d37ec745ec8db, message
+  “Preserve tested internal publication boundary while repairing native CI
+  dependency setup”. Contains ImportPublication.cs and ImportPublicationTests.cs.
+  Twelve real-file/native cases passed, including provenance, cancellation,
+  collision safety, authorization, content deduplication and post-commit recovery.
+  Log:/tmp/castlumora-publication-tests2.log. No public service/endpoints enabled.
+- **Next exact task:** finish/publish this CI repair through the unchanged complete
+  gate; confirm required Linux/macOS tests. Then on a clean tree run
+  `git stash apply 49a95fefbab944c6e230a6b1bd1d37ec745ec8db` ONCE, retaining stash
+  until publication is tested/published. Extend actual library indexing/playback,
+  publication fault/security cases, elevated queue API and native management.
+  Never recreate or discard the saved source. Public importing stays off until
+  the complete authorized single-video boundary is verified.
+- **Usage/reset:**Not accessible. Previous session's automatic-review usage block
+  interrupted only an artifact download command, not source work; owner resumed.
+  No promise of background resume, stable1.0 completion, main merge or deployment.
+- **Verified existing preview0d3:**
+  https://github.com/dangerousnick/Castlumora/actions/runs/42980593743/artifacts/13837042618
+  Castlumora-1.0-dev-0d3ea8c0bd9b-linux-x64.tar.gz; SHA256
+  715f211697cf22fa4e99e2d98a478c678e708d7ebb7408b1d57565e286f25d4d.
+  Independent outer/inner hash, source, GPL/runtime/server/Web/install/checklist
+  and all16branding-file byte comparisons passed; verifier report
+  /tmp/castlumora-queue-preview-0d3-verified.json. Initial image-only count assertion
+  was a verifier error, not missing assets. Temporary ZIP removed; older previews
+  preserved. This intermediate preview has no public importer capability.
+
 ## Current continuation — media inspection after published queue lifecycle
 
 - **Latest published code:**0d3ea8c0bd9b90fbbe172b99f7010fa2d36ca951

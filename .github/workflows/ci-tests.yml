@@ -46,31 +46,29 @@ jobs:
           python packaging/yt-dlp/bundle.py --platform "$tool_platform" --system-root "$RUNNER_TEMP/castlumora-tool-fixture"
           echo "CASTLUMORA_TEST_YTDLP_BUNDLE=$RUNNER_TEMP/castlumora-tool-fixture" >> "$GITHUB_ENV"
 
-      - name: Native media inspection fixture
-        shell: bash
-        run: |
-          if ! command -v ffprobe >/dev/null || ! command -v ffmpeg >/dev/null; then
-            case "$RUNNER_OS" in
-              Linux) sudo apt-get update; sudo apt-get install -y --no-install-recommends ffmpeg ;;
-              macOS) brew install ffmpeg ;;
-              *) echo 'Native FFprobe fixture missing on this compatibility runner.' >&2; exit 1 ;;
-            esac
-          fi
-          probe_fixture=$(command -v ffprobe)
-          if [[ "$RUNNER_OS" == Windows ]]; then probe_fixture=$(cygpath -w "$probe_fixture"); fi
-          encoder_fixture=$(command -v ffmpeg)
-          if [[ "$RUNNER_OS" == Windows ]]; then encoder_fixture=$(cygpath -w "$encoder_fixture"); fi
-          "$probe_fixture" -version
-          "$encoder_fixture" -version
-          echo "CASTLUMORA_TEST_FFMPEG=$encoder_fixture" >> "$GITHUB_ENV"
-          echo "CASTLUMORA_TEST_FFPROBE=$probe_fixture" >> "$GITHUB_ENV"
-
       - name: Build Debug server on required platforms
         if: runner.os == 'Linux' || runner.os == 'macOS'
         run: dotnet build Jellyfin.Server -m:1
 
       - name: Build Release solution
         run: dotnet build Jellyfin.sln --configuration Release -m:1
+
+      - name: Native media inspection fixture
+        timeout-minutes: 10
+        shell: bash
+        run: |
+          python -m unittest discover -s .github/scripts -p 'test_native_media_fixture.py'
+          case "$RUNNER_OS" in
+            Linux) python .github/scripts/native_media_fixture.py --platform linux-x64 --output "$RUNNER_TEMP/castlumora-native-media" ;;
+            Windows) python .github/scripts/native_media_fixture.py --platform win-x64 --output "$RUNNER_TEMP/castlumora-native-media" ;;
+            macOS)
+              if ! command -v ffprobe >/dev/null || ! command -v ffmpeg >/dev/null; then brew install ffmpeg; fi
+              ffprobe -version
+              ffmpeg -version
+              echo "CASTLUMORA_TEST_FFPROBE=$(command -v ffprobe)" >> "$GITHUB_ENV"
+              echo "CASTLUMORA_TEST_FFMPEG=$(command -v ffmpeg)" >> "$GITHUB_ENV"
+              ;;
+          esac
 
       - name: Run DotNet CLI Tests
         run: >

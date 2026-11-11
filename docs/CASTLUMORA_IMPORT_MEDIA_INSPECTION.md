@@ -48,8 +48,9 @@ Production integration must use the inherited server-configured EncoderPath and
 ProbePath; no ordinary-user executable selector or environment override is added.
 Tests use explicit `CASTLUMORA_TEST_FFPROBE` and `CASTLUMORA_TEST_FFMPEG` absolute
 paths to real binaries. The mandatory local gate and CI prepare/check these native
-fixtures, log their versions and refuse silent skips. CI uses existing runner
-packages or official Ubuntu/Homebrew ffmpeg packages if absent. No new NuGet/npm
+fixtures, log their versions and refuse silent skips. CI uses reviewed dated/hash-pinned GitHub fixtures on Linux/Windows and installed
+macOS/Homebrew tools; see .github/fixtures/README.md. Ubuntu mirror DNS failures
+blocked the first Linux setup attempt, not the actual application tests. No new NuGet/npm
 package or installer/update mechanism is introduced.
 
 ## Verification and remaining boundary
