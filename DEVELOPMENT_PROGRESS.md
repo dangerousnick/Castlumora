@@ -4,7 +4,7 @@ Branch: `development/castlumora-web-1.3`; PR targets `main`. Base main: `b06078b
 
 Permanent source of truth: [docs/CASTLUMORA_PRODUCT_REQUIREMENTS.md](docs/CASTLUMORA_PRODUCT_REQUIREMENTS.md). Remaining product vision: [PRODUCT_ROADMAP.md](PRODUCT_ROADMAP.md). Actual coverage: [FEATURE_PARITY.md](FEATURE_PARITY.md).
 
-## Active milestone — isolated backup capacity policy
+## Latest verified milestone — isolated backup capacity policy
 
 - Production backup reserve remains exactly5,368,709,115 bytes and the existing
   public constructor/DI wiring is preserved. An internal per-instance policy allows
@@ -17,17 +17,29 @@ Permanent source of truth: [docs/CASTLUMORA_PRODUCT_REQUIREMENTS.md](docs/CASTLU
   during a build and a complete pipeline despite low reported free space.
 - Targeted .NET10 backup verification passed:10/10 tests, actual ZIP contents
   inspected; Release test-project build passed with zero warnings/errors.
-  The complete clean-commit gate is in progress.
-  No push or full validation success is claimed yet. See
+  Complete gate passed on190d5ea9ed36b51044d218228b2524a6e8272681:
+  full-solution format2,417 files/zero changes/no workspace warning; Debug server
+  and Release solution builds zero warnings/errors;17 backend projects4,365 passed,
+  19 existing skips/zero failures;9 hook enforcement,5 bundler and5 workflow-handler
+  tests; Node24 install/typecheck/lint,58 frontend tests and production build passed.
+  Logs:/tmp/castlumora-prepush.XfcHPStd; focused backup log:
+  /tmp/castlumora-backup-policy-tests-final.log. Frontend dependency/chunk-size
+  warnings remain nonfatal and were not suppressed.
+- Publishing: normal pre-push hook must repeat the complete gate on the final
+  documentation checkpoint; do not bypass it. GitHub exact-source CI is not yet
+  verified. The latest published SHA recorded below is the state before this push.
+  No Windows/Mint/GPU/manual playback success is inferred from Linux tests. See
   [policy design and verification](docs/verification-backup-storage-policy.md).
 - Earlier sections requiring a5GiB build workspace describe historical source.
   This refactor supersedes that requirement; production backup safety is unchanged.
-- Latest published commit remains2b79ffb136f2c46dca52b1a8562c38f37da2f94e.
+- Latest published commit at checkpoint preparation:2b79ffb136f2c46dca52b1a8562c38f37da2f94e.
   Branch development/castlumora-web-1.3, PR3. Preserved all prior local commits,
   including0ad2f94608 and staging896b5fe4dc; no reset, deployment or main merge.
 - Recovery: inspect clean HEAD, install hooks, set .NET10/Node24 PATH and the
   existing CASTLUMORA_TEST_YTDLP_BUNDLE cache, run scripts/validate-before-push.sh;
   fix every failure, publish through the mandatory hook, inspect exact-source CI.
+  No additional disk is currently required for validation; the isolated policy
+  resolved the fixture design issue without changing production safety.
   Then continue the authorized persistent single-source import slice described in
   docs/CASTLUMORA_IMPORT_STAGING.md. Usage allowance/reset: Not accessible.
 

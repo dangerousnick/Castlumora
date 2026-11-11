@@ -6,8 +6,9 @@ Production retains its original approximately5GiB reserve. Integration tests use
 an internal per-instance policy while executing real SQLite export and ZIP
 creation; no global setting or production bypass is exposed. The pre-push gate
 reports capacity without applying a production-backup threshold to builds; actual
-failures remain fatal. Full validation/publication is pending in the current
-DEVELOPMENT_PROGRESS.md checkpoint. Historical storage-blocked entries below are
+failures remain fatal. Full local validation passed on190d5ea9ed (4,365 backend
+tests passed/19 existing skips;58 frontend tests passed). Publishing and exact-source
+CI verification follow the current DEVELOPMENT_PROGRESS.md checkpoint. Historical storage-blocked entries below are
 superseded by this design. Continue the existing importer after verified publishing.
 
 

@@ -60,13 +60,15 @@ not relaxed and the failure was not skipped.
 
 Final repository formatting verification is recorded in DEVELOPMENT_PROGRESS.md.
 These checks do not substitute for the mandatory full pre-push gate. The complete
-gate remains infrastructure-blocked by less than 5 GiB free disk space. No push,
+gate now passes locally following the isolated backup-policy refactor; its earlier
+5GiB executor prerequisite is superseded. See verification-backup-storage-policy.md.
+No push,
 GitHub CI success, Windows/Mint manual test, playable-media validation, or production
 readiness is claimed for this checkpoint.
 
 ## Next implementation boundary
 
-First restore sufficient disk capacity, run the complete mandatory validation gate
+First run the complete mandatory validation gate
 on a clean committed tree, resolve every failure and inspect exact-source CI after
 publishing through the hook. Preserve all existing commits and requirements.
 

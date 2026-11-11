@@ -25,6 +25,13 @@ capacity. No backup test is skipped or replaced with a mocked backup operation.
 
 ## Verification checkpoint
 
+Full local gate passed on190d5ea9ed36b51044d218228b2524a6e8272681:
+full solution format (2,417 files, zero changes, no workspace warning), Debug server
+and Release solution builds (zero warnings/errors), 4,365 backend tests passed with
+19 existing skips across17 projects,58 frontend tests/typecheck/lint/build,9 hook
+cases,5 bundler cases and5 workflow-handler cases. Focused backup tests10/10 passed,
+including real ZIP inspection. Logs:/tmp/castlumora-prepush.XfcHPStd.
+
 Verification results and exact source checkpoint are maintained at the top of
 DEVELOPMENT_PROGRESS.md. The prior storage reports describe earlier source; their
 5 GiB executor prerequisite is superseded by this design. A complete mandatory
