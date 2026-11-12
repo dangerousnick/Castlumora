@@ -10,6 +10,39 @@ Permanent source of truth: [docs/CASTLUMORA_PRODUCT_REQUIREMENTS.md](docs/CASTLU
 
 
 
+
+## Active packaged-import verification increment — 2026-11-12
+
+Latest published/required-CI verified commit:
+`3726c3314c6b53960a4d44519296181547169164`. Linux/macOS/Windows tests and
+Format/ABI/OpenAPI/preview all passed (Tests43147576520, Preview43147576526).
+Full local gate again4438backend passes/19platform skips/60frontend tests.
+
+Ordinary compiled server/Chromium importer controls passed after safe recovery of
+real disk space to2.6GiB (old coverage, latest2/project retained; unused Debug output).
+No source/history/archives/native dependencies removed; no production threshold
+changed. Corrected optional fixture for integrated-server autodetection, registered
+library setup, accessible combobox selection and bounded native readiness waits.
+Local positive public import failed: compiled production policy validated public
+DNS then pinnedTCP443 was refused; cloud-proxied HTTP succeeds. No SSRF/TLS bypass.
+The owned failed job ab40f751e0c8423d876f29327c5abb80 remains in the disposable state.
+
+Next coherent milestone now in working tree: three-workflow extracted-package
+browser coverage including an actual owner-authorized public GPL clip import,
+persistence/hash/dedup/index/native codec metadata/browser playback. Typecheck,
+lint and Playwright discovery pass; positive GitHub execution is pending and must
+not be described as passed. See docs/verification-single-video-import-1.4.md.
+Stop/restart commands and normal fixture are preserved; owned server was stopped
+cleanly before full validation. Its state: /tmp/castlumora-web-real-server; credentials
+remain private in its credentials.json (do not print them).
+
+Next steps: run the complete normal hook/publish this test/doc increment; inspect
+required Linux/macOS/shared CI and the actual public-import preview run; diagnose
+failures before further pushes. Verify the new artifact's exact source/checksum/
+branding/GPL, update PR3, then continue broader retained importer/metadata roadmap.
+Usage status: Not accessible. Do not restart development or merge/deploy to main.
+
+
 ## Required macOS fixture correction — 2026-11-12
 
 Published source d6d5299f040f05e717dc133b13964432b21e3a07 passed native Linux

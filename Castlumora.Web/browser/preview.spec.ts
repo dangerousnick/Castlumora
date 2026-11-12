@@ -134,3 +134,147 @@ test('packaged preview: restart retains owner and creates/scans a library throug
   expect(queue.ok()).toBe(true);
   expect((await queue.json()).available).toBe(true);
 });
+
+test('packaged preview: authorized public import indexes, deduplicates and plays owned media', async ({
+  page,
+  request,
+}) => {
+  test.skip(!preview || !password || process.env.CASTLUMORA_PREVIEW_RESTART !== '1');
+  const target = new URL(preview!);
+  if (target.hostname !== '127.0.0.1' || target.port !== '28096')
+    throw new Error('Dedicated isolated packaged preview required.');
+  test.setTimeout(180000);
+  page.setDefaultTimeout(20000);
+  await page.goto(preview!);
+  await page.getByLabel('Username', { exact: true }).fill('PreviewOwner');
+  await page.getByLabel('Password', { exact: true }).fill(password!);
+  await page.getByRole('button', { name: 'Sign in', exact: true }).click();
+  await expect(page.getByRole('link', { name: 'Browse', exact: true })).toBeVisible();
+  const session = await page.evaluate(() =>
+    JSON.parse(sessionStorage.getItem('castlumora-session')!),
+  );
+  const headers = { Authorization: `MediaBrowser Token="${session.token}"` };
+  const endpoint = (path: string) => new URL('../' + path, preview!).href;
+  const get = async (path: string) => {
+    const response = await request.get(endpoint(path), { headers });
+    expect(response.ok()).toBe(true);
+    return response.json();
+  };
+  expect((await get('System/Info')).ProgramDataPath).toContain(
+    '/tmp/castlumora-preview-fresh/data',
+  );
+  const name = 'Owned Imported Videos';
+  const title = 'Owned Imported Preview Clip';
+  const library = await request.post(
+    endpoint(
+      'Library/VirtualFolders?name=' +
+        encodeURIComponent(name) +
+        '&collectionType=homevideos&refreshLibrary=true&paths=' +
+        encodeURIComponent('/tmp/castlumora-preview-authorized-import'),
+    ),
+    { headers, data: { LibraryOptions: { EnableRealtimeMonitor: true } } },
+  );
+  expect(library.ok()).toBe(true);
+  await expect
+    .poll(
+      async () =>
+        (await get('Castlumora/Imports/Queue')).destinations.map(
+          (item: { name: string }) => item.name,
+        ),
+      { timeout: 30000 },
+    )
+    .toContain(name);
+  await page.goto(new URL('#/admin/imports', preview!).href);
+  await expect(page.getByRole('heading', { name: 'Import a video', exact: true })).toBeVisible({
+    timeout: 20000,
+  });
+  await page
+    .getByRole('combobox', { name: 'Destination library', exact: true })
+    .selectOption({ label: name });
+  const source =
+    'https://raw.githubusercontent.com/dangerousnick/Castlumora/36cf2b44a01c0f88c6f5c9ec979161790f03d8a1/tests/Jellyfin.Api.Tests/Fixtures/import-owned.mp4';
+  await page.getByLabel('Source URL', { exact: true }).fill(source);
+  await page.getByLabel('Imported title', { exact: true }).fill(title);
+  await page
+    .getByLabel('Rights / permission record', { exact: true })
+    .fill(
+      'Repository owner-authorized generated synthetic clip, GPL; fixture provenance at commit36cf2b44a0.',
+    );
+  await page
+    .getByRole('checkbox', {
+      name: 'I have the rights and permission to download and retain this source.',
+    })
+    .check();
+  const submitted = page.waitForResponse(
+    (response) =>
+      new URL(response.url()).pathname.endsWith('/Castlumora/Imports/Jobs') &&
+      response.request().method() === 'POST',
+  );
+  await page.getByRole('button', { name: 'Queue authorized video', exact: true }).click();
+  const response = await submitted;
+  expect(response.ok()).toBe(true);
+  const job = await response.json();
+  await expect
+    .poll(
+      async () => {
+        const state = await get('Castlumora/Imports/Queue');
+        expect(JSON.stringify(state)).not.toContain(source);
+        const current = state.jobs.find((item: { id: string }) => item.id === job.id);
+        if (current?.state === 'failed')
+          throw new Error('Owned import failed: ' + current.error + '; job ' + job.id);
+        return current?.state;
+      },
+      { timeout: 75000, intervals: [500, 1000] },
+    )
+    .toBe('completed');
+  const completed = (await get('Castlumora/Imports/Queue')).jobs.find(
+    (item: { id: string }) => item.id === job.id,
+  );
+  expect(completed.sourceHost).toBe('raw.githubusercontent.com');
+  expect(completed.bytes).toBe(11734);
+  expect(completed.sha256).toBe('8f56e298a9ceaacc3f34126546eeb3cd9d8368c85f3e2c719c63aaa98a55e554');
+  const repeat = await request.post(endpoint('Castlumora/Imports/Jobs'), {
+    headers,
+    data: {
+      url: source,
+      destinationId: completed.destinationId,
+      title,
+      rights: 'Same authorized synthetic clip',
+      rightsConfirmed: true,
+    },
+  });
+  expect(repeat.ok()).toBe(true);
+  expect((await repeat.json()).id).toBe(job.id);
+  let item:
+    | { Id: string; Type: string; Name: string; MediaStreams: { Type: string; Codec: string }[] }
+    | undefined;
+  await expect
+    .poll(
+      async () => {
+        const result = await get(
+          'Items?Recursive=true&IncludeItemTypes=Video&SearchTerm=' +
+            encodeURIComponent(title) +
+            '&Fields=MediaStreams',
+        );
+        item = result.Items.find((entry: { Name: string }) => entry.Name === title);
+        return item?.Id;
+      },
+      { timeout: 60000 },
+    )
+    .toBeTruthy();
+  expect(item!.Type).toBe('Video');
+  expect(item!.MediaStreams).toEqual(
+    expect.arrayContaining([
+      expect.objectContaining({ Type: 'Video', Codec: 'h264' }),
+      expect.objectContaining({ Type: 'Audio', Codec: 'aac' }),
+    ]),
+  );
+  await page.goto(new URL('#/item/' + item!.Id, preview!).href);
+  await page.getByRole('link', { name: 'Watch now', exact: true }).click();
+  await expect
+    .poll(() => page.locator('video').evaluate((video: HTMLVideoElement) => video.currentTime), {
+      timeout: 20000,
+    })
+    .toBeGreaterThan(0);
+  await page.getByRole('link', { name: 'Back', exact: true }).click();
+});

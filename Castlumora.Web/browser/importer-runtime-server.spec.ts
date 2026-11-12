@@ -39,8 +39,10 @@ test('managed importer runtime: native install, integrity health, reload and vie
   expect(before.bundleAvailable).toBe(true);
   expect(before.downloadJobsAvailable).toBe(before.ready);
   await page.goto('/');
-  await page.getByLabel('Server address').fill(server!);
-  await page.getByRole('button', { name: 'Connect', exact: true }).click();
+  if (new URL(page.url()).origin !== new URL(server!).origin) {
+    await page.getByLabel('Server address').fill(server!);
+    await page.getByRole('button', { name: 'Connect', exact: true }).click();
+  }
   await page.getByLabel('Username', { exact: true }).fill(username!);
   await page.getByLabel('Password', { exact: true }).fill(password!);
   await page.getByRole('button', { name: 'Sign in', exact: true }).click();
@@ -60,9 +62,9 @@ test('managed importer runtime: native install, integrity health, reload and vie
   await expect(
     page.getByText('Managed runtime installed and checked.', { exact: true }),
   ).toBeVisible();
-  await expect(page.getByText('Ready', { exact: true })).toBeVisible();
+  await expect(page.getByText('Ready', { exact: true })).toBeVisible({ timeout: 20000 });
   await page.reload();
-  await expect(page.getByText('Ready', { exact: true })).toBeVisible();
+  await expect(page.getByText('Ready', { exact: true })).toBeVisible({ timeout: 20000 });
   await page.getByRole('button', { name: 'Check runtime', exact: true }).click();
   await expect(
     page.getByText('Runtime health checked on the server.', { exact: true }),
@@ -83,7 +85,7 @@ test('managed importer runtime: native install, integrity health, reload and vie
           server! +
             '/Library/VirtualFolders?name=' +
             libraryName +
-            '&collectionType=homevideos&paths=' +
+            '&collectionType=homevideos&refreshLibrary=true&paths=' +
             encodeURIComponent(libraryPath),
           {
             headers,
@@ -92,9 +94,18 @@ test('managed importer runtime: native install, integrity health, reload and vie
         )
       ).ok(),
     ).toBe(true);
+    await expect
+      .poll(
+        async () =>
+          (await get('/Castlumora/Imports/Queue')).destinations.map(
+            (item: { name: string }) => item.name,
+          ),
+        { timeout: 20000 },
+      )
+      .toContain(libraryName);
     await page.reload();
     await page
-      .getByLabel('Destination library', { exact: true })
+      .getByRole('combobox', { name: 'Destination library', exact: true })
       .selectOption({ label: libraryName });
     await page.getByLabel('Source URL', { exact: true }).fill('https://127.0.0.1/private.mp4');
     await page.getByLabel('Imported title', { exact: true }).fill('Owned browser test');

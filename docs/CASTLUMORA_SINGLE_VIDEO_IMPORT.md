@@ -80,3 +80,8 @@ passwords or tokens in bug reports. Report reproduction steps, exact build commi
 OS, safe logs and screenshots. Never delete the database or completed media to
 repair an import queue. Existing server functionality remains available if the
 queue cannot safely open its journal.
+
+The initial egress model opens validated numeric HTTPS connections and deliberately
+does not inherit arbitrary proxy settings/credentials. Proxy-only networks may
+reject this traffic; see verification-single-video-import-1.4.md. Controlled trusted
+egress support remains future work; do not disable SSRF or TLS validation.

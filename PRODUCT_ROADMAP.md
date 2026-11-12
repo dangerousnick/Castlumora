@@ -1,5 +1,16 @@
 # Castlumora product roadmap
 
+## Packaged authorized-import verification continuation
+
+Published3726c3314c passes required Linux/macOS/shared CI. Ordinary compiled-server
+Chromium runtime/form/rights/unsafe-source/viewer checks pass. The cloud refuses
+validated direct publicTCP443 despite proxied HTTP working; no policy bypass is
+permitted. A stronger normal extracted-package public GPL import/hash/dedup/index/
+codec/browser-playback workflow is being verified in GitHub, not yet claimed passed.
+See [evidence and boundaries](docs/verification-single-video-import-1.4.md).
+All full-importer/online-metadata and remaining1.0 scope stays mandatory.
+
+
 ## Authorized single-video continuation — 2026-11-12
 
 The native-CI dependency repair is published as
