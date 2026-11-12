@@ -60,7 +60,7 @@ public sealed class ImportService : IHostedService, IAsyncDisposable
         _publicationFactory = publicationFactory;
     }
 
-    /// <summary>Gets whether this host can accept the implemented import workflow.</summary>
+    /// <summary>Gets a value indicating whether this host can accept the implemented import workflow.</summary>
     public bool Available => _host.CoreStartupHasCompleted && (OperatingSystem.IsLinux() || OperatingSystem.IsMacOS())
         && _queue is { Completion.IsCompleted: false }
         && !string.IsNullOrWhiteSpace(_encoder.ProbePath) && Path.IsPathFullyQualified(_encoder.ProbePath) && File.Exists(_encoder.ProbePath)

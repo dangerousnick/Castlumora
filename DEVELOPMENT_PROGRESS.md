@@ -6,6 +6,21 @@ Permanent source of truth: [docs/CASTLUMORA_PRODUCT_REQUIREMENTS.md](docs/CASTLU
 
 
 
+
+## Required gate correction — 2026-11-12
+
+Local feature commit: `fbea85f83c752a4ace288113b0b9c27bdfbdeaf8`.
+Its first normal push was **blocked before publication** by restored full-workspace
+formatting: SA1513/SA1516 missing method separation, SA1508 extra closing-brace
+whitespace and SA1623 boolean-property documentation in the new controller/service.
+The earlier no-restore formatter used a different analyzer set and missed these;
+it is not evidence that the exact committed gate passed. Corrected the four issues
+without weakening checks or changing behavior. Rerun the complete normal hook,
+including builds/all tests, on the new exact commit. Original failure logs:
+`/tmp/castlumora-prepush.ftHZFZ9p/format.log`. Published branch still36cf until the
+new hook succeeds. Do not bypass it or repeat a known failing source push.
+
+
 ## Current single-video validation checkpoint — 2026-11-12
 
 Branch: `development/castlumora-web-1.3`; PR3 remains open against main.

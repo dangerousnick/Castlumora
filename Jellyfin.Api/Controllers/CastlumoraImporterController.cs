@@ -100,6 +100,7 @@ public sealed class CastlumoraImporterController : BaseJellyfinApiController
             return StatusCode(StatusCodes.Status503ServiceUnavailable, "The bundled runtime could not be installed or verified. Use a complete preview package, check executable filesystem permissions and OS runtime dependencies, then retry. The existing executable was retained.");
         }
     }
+
     private async Task<ActionResult<JsonObject>> QueueAction(Func<Task<JsonObject>> action)
     {
         try
@@ -127,5 +128,4 @@ public sealed class CastlumoraImporterController : BaseJellyfinApiController
             return StatusCode(StatusCodes.Status503ServiceUnavailable, "The import state could not be saved. Check storage permissions/capacity and queue diagnostics; preserve existing job files.");
         }
     }
-
 }
