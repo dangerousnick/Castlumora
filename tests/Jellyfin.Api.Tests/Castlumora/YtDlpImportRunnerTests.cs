@@ -311,6 +311,50 @@ public sealed class YtDlpImportRunnerTests
         fixture.AssertNoStaging();
     }
 
+    [Fact]
+    public async Task RealHttpsQueue_InspectsPublishesAndReconcilesWithoutSecondDownload()
+    {
+        await using var fixture = await Fixture.CreateAsync("media");
+        var library = Path.Combine(Path.GetTempPath(), "castlumora-library-" + Guid.NewGuid().ToString("N"));
+        Directory.CreateDirectory(library);
+        try
+        {
+            var scans = 0;
+            var downloads = 0;
+            var publisher = new ImportPublication(
+                fixture.Root,
+                [fixture.Root],
+                _ => library,
+                async (job, progress, token) =>
+                {
+                    downloads++;
+                    return await fixture.Runner.RunAsync(job.Source, token, progress);
+                },
+                _ => scans++,
+                Environment.GetEnvironmentVariable("CASTLUMORA_TEST_FFPROBE")!,
+                Environment.GetEnvironmentVariable("CASTLUMORA_TEST_FFMPEG")!,
+                NullLogger.Instance);
+            ImportQueue.Job submitted;
+            await using (var queue = new ImportQueue(Path.Combine(fixture.Root, "queue"), publisher.ExecuteAsync, NullLogger.Instance))
+            {
+                submitted = await queue.SubmitAsync(fixture.Source, Guid.NewGuid(), "Owned TLS generated video", "Generated test clip", Guid.NewGuid(), TestContext.Current.CancellationToken);
+                queue.Start();
+                await WaitForQueueStateAsync(queue, ImportQueue.State.Completed);
+            }
+
+            var media = Assert.Single(Directory.GetFiles(library, "*.mp4", SearchOption.AllDirectories));
+            Assert.Equal(fixture.Payload, await File.ReadAllBytesAsync(media, TestContext.Current.CancellationToken));
+            await publisher.ExecuteAsync(submitted, _ => { }, TestContext.Current.CancellationToken);
+            Assert.Equal(1, downloads);
+            Assert.Equal(2, scans);
+            fixture.AssertNoStaging();
+        }
+        finally
+        {
+            Directory.Delete(library, true);
+        }
+    }
+
     private static async Task WaitForQueueStateAsync(ImportQueue queue, ImportQueue.State expected)
     {
         using var deadline = CancellationTokenSource.CreateLinkedTokenSource(TestContext.Current.CancellationToken);

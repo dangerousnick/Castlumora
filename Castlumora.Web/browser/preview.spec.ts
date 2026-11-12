@@ -126,5 +126,11 @@ test('packaged preview: restart retains owner and creates/scans a library throug
   const tool = await runtime.json();
   expect(tool.ready).toBe(true);
   expect(tool.bundleAvailable).toBe(true);
-  expect(tool.downloadJobsAvailable).toBe(false);
+  expect(tool.downloadJobsAvailable).toBe(true);
+  await expect(page.getByRole('heading', { name: 'Import a video', exact: true })).toBeVisible();
+  const queue = await request.get(new URL('../Castlumora/Imports/Queue', preview!).href, {
+    headers: auth,
+  });
+  expect(queue.ok()).toBe(true);
+  expect((await queue.json()).available).toBe(true);
 });

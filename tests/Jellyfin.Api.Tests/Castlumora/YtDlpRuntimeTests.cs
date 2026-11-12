@@ -7,7 +7,11 @@ using System.Threading.Tasks;
 using Jellyfin.Api.Castlumora;
 using Jellyfin.Api.Controllers;
 using MediaBrowser.Common.Configuration;
+using MediaBrowser.Controller;
+using MediaBrowser.Controller.Library;
+using MediaBrowser.Controller.MediaEncoding;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Logging.Abstractions;
 using Moq;
 using Xunit;
 
@@ -60,7 +64,8 @@ public sealed class YtDlpRuntimeTests : IDisposable
         Assert.Equal(Managed(), first.Executable);
         Assert.Equal(2, (await runtime.StatusAsync(TestContext.Current.CancellationToken))["activeExecutions"]!.GetValue<int>());
         await Assert.ThrowsAsync<YtDlpRuntime.BusyException>(() => runtime.InstallAsync(TestContext.Current.CancellationToken));
-        var response = await new CastlumoraImporterController(runtime).InstallRuntime(TestContext.Current.CancellationToken);
+        await using var imports = new ImportService(runtime, Mock.Of<IServerApplicationHost>(), Mock.Of<IApplicationPaths>(), Mock.Of<ILibraryManager>(), Mock.Of<IUserManager>(), Mock.Of<ILibraryMonitor>(), Mock.Of<IMediaEncoder>(), NullLogger<ImportService>.Instance);
+        var response = await new CastlumoraImporterController(runtime, imports).InstallRuntime(TestContext.Current.CancellationToken);
         var conflict = Assert.IsType<ConflictObjectResult>(response.Result);
         Assert.Contains("in use", Assert.IsType<string>(conflict.Value), StringComparison.Ordinal);
         first.Dispose();

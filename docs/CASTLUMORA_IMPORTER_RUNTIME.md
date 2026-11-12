@@ -1,10 +1,10 @@
 # Managed yt-dlp runtime — completed prerequisite
 
-This increment supplies an administrator-owned executable lifecycle, not the media-import queue. **No URL downloading, playlist/channel processing or scheduled imports are enabled yet.** Full authorized importing remains a required Castlumora 1.0 feature. Existing native creator sidecars/Metadata Management work independently and are unchanged.
+This increment supplies an administrator-owned executable lifecycle, not the media-import queue. The subsequent [authorized single-video workflow](CASTLUMORA_SINGLE_VIDEO_IMPORT.md) builds on this prerequisite. Playlist/channel processing and scheduled imports remain unfinished. Full authorized importing remains a required Castlumora 1.0 feature. Existing native creator sidecars/Metadata Management work independently and are unchanged.
 
 ## Owner workflow
 
-Use a complete new Linux development preview, finish setup and sign in as administrator. Open **Administration → Imports & Sources**. The page reports the selected platform, reviewed version, integrity state and whether the bundled asset is present. Choose **Install bundled runtime**, confirm, then use **Check runtime**. Ready means the executable matches the pinned hash and returned the exact expected version; it does not mean importing, FFmpeg, JS challenge runtimes or source permissions are ready. URL/job controls are deliberately absent until implemented.
+Use a complete new Linux development preview, finish setup and sign in as administrator. Open **Administration → Imports & Sources**. The page reports the selected platform, reviewed version, integrity state and whether the bundled asset is present. Choose **Install bundled runtime**, confirm, then use **Check runtime**. Ready means the executable matches the pinned hash and returned the exact expected version; it does not mean importing, FFmpeg, JS challenge runtimes or source permissions are ready. A verified integrated preview exposes the single-video form only when the runtime and native media dependencies are available.
 
 The preview carries the Linux x64 executable and its notices/source materials. Installation is offline and requires no separate downloader/plugin or hand-operated yt-dlp command. Development builds without a bundled asset show a meaningful missing-bundle state. Linux x64 uses the glibc asset. macOS x64 and ARM64 now select the separately
 reviewed universal executable through distinct osx-x64/osx-arm64 package paths;
@@ -29,7 +29,7 @@ Managed/bundled path components reject symlinks/reparse points. POSIX owned tool
 
 Health invokes only `--ignore-config --no-plugin-dirs --version` with shell execution disabled, a clean child environment, private per-check extraction directory, a 15-second execution timeout, 4,096-character caps on each output stream and bounded cleanup waits. Cancellation/oversized output stops the owned process tree. It does not kill shared FFmpeg sessions or other processes. These narrow health checks do not claim to implement full long-running import/FFmpeg process-group/Job Object supervision; that remains required where appropriate for the download engine.
 
-Endpoints `GET Castlumora/Imports/Runtime` and `POST Castlumora/Imports/Runtime/Install` require existing administrator elevation. Anonymous/viewer reads and writes are denied independently of the UI. `downloadJobsAvailable=false` is explicit. No source URL/cookie/DRM handling exists in this runtime prerequisite.
+Endpoints `GET Castlumora/Imports/Runtime` and `POST Castlumora/Imports/Runtime/Install` require existing administrator elevation. Anonymous/viewer reads and writes are denied independently of the UI. The runtime prerequisite alone reports `downloadJobsAvailable=false`; the controller derives the integrated capability from runtime health and hosted importer/native dependency availability. Cookie handling and DRM bypass are not provided.
 
 ## Supply chain and licensing
 

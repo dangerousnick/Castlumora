@@ -5,6 +5,51 @@ Branch: `development/castlumora-web-1.3`; PR targets `main`. Base main: `b06078b
 Permanent source of truth: [docs/CASTLUMORA_PRODUCT_REQUIREMENTS.md](docs/CASTLUMORA_PRODUCT_REQUIREMENTS.md). Remaining product vision: [PRODUCT_ROADMAP.md](PRODUCT_ROADMAP.md). Actual coverage: [FEATURE_PARITY.md](FEATURE_PARITY.md).
 
 
+
+## Current single-video validation checkpoint — 2026-11-12
+
+Branch: `development/castlumora-web-1.3`; PR3 remains open against main.
+Latest verified published commit before this milestone:
+`36cf2b44a01c0f88c6f5c9ec979161790f03d8a1` (Linux/macOS/shared checks passed).
+All earlier checkpoints and the applied-once publication stash are preserved.
+
+Completed source: durable authorized single-video host/API/native administrator
+workflow, real container/decode inspection, secure idempotent same-filesystem
+publication, safe NFO/private provenance, source/content deduplication, cancellation,
+retry and startup recovery. Fixed automatic indexing for a destination without an
+indexed ancestor by queuing, not cancelling, the inherited library scan. Recovered
+jobs wait for core startup; native tool paths are resolved at execution time.
+
+Verification already executed:74focused queue/publication/native/runtime tests
+passed before the final startup-path regression addition; real HTTP import →
+automatic index → exact media bytes → host restart/deduplication and administrator/
+viewer authorization passed again after the core-readiness fix (2cases,27seconds).
+Node24 typecheck/lint/build and all60frontend tests passed; full-solution format
+applied zero changes across2428files before final readiness changes. Final exact-
+commit pre-push gate and CI results must be checked before claiming publication.
+Logs: /tmp/castlumora-import-final-focused2.log,
+/tmp/castlumora-import-startup-http.log, /tmp/castlumora-import-format-fix.log.
+
+Local browser attempt: actual executable startup was rejected by the unchanged
+production2GiB data/cache safeguard (about753MiB available). This is an explicit
+storage infrastructure limitation, not a passing browser run or an importer defect.
+Only regenerable test Release bin outputs were removed; available disk rose to
+about842MiB. Source/history/stash/archive previews and required dependencies remain.
+The existing GitHub preview workflow tests the extracted real package on a larger
+runner, now including queue/form capability. Verify its exact artifact before
+claiming packaged/browser success. No GPU, real tuner or macOS installation claim.
+
+Usage status: **Not accessible**. No remaining allowance/reset percentage claimed.
+Next: finish final format/build/backend/Node24 gate through a normal push; inspect
+exact Linux/macOS/shared CI, update PR3, verify a new downloadable Linux preview.
+Then extend secure source-aware YouTube/playlist/channel metadata/enumeration,
+bulk/resources/retry/admin controls and remaining Phase1.4/full1.0 scope. Initial
+scope remains direct H264/AAC MP4≤32MiB,one worker,three manual attempts; no full
+production importer or stable1.0 claim. Do not restart or reapply the old stash.
+Recovery: fetch origin; inspect git status/log and this section; continue existing
+implementation/tests. No automatic main merge, deployment or Coon Media access.
+
+
 ## Active required-CI repair — pinned native dependency fixture
 
 - **Latest published code:**5fd129d4d34cdac5f4c4a7ec5e0093548e984186.
@@ -830,3 +875,44 @@ GitHub Format and ABI HEAD on 269d4c5b3909dad3fb1c47491e3a3bd8f50a1b71 both iden
 On 8e489b965dd38fd833bede3f4372e18e36594040 GitHub Format, ABI HEAD/BASE/Difference, OpenAPI head/base/report generation and the complete preview build/extracted-package smoke/artifact delivery all passed. Full cross-platform test jobs were still running when recorded. The old default-branch OpenAPI Report comment workflow remains a separate rollout limitation; no automatic merge.
 
 Updated owner install/checklist text to distinguish implemented native local-sidecar/selected-item metadata and synthetic DVR verification from unfinished online provider/importer/quotas. BUILD_INFO now records metadataManagementStage=selected-item-local. This packaging/documentation follow-up starts only after the previous preview finished, preserving earlier artifacts. Verify its exact new source/archive/checksum before delivery.
+
+### Active continuation: integrated authorized single-video workflow (not published)
+
+Latest verified published checkpoint remains
+`36cf2b44a01c0f88c6f5c9ec979161790f03d8a1` on
+`development/castlumora-web-1.3`; exact-SHA Linux/macOS/shared CI passed after the
+pinned native dependency repair. PR3 remains open. The retained publication stash
+`49a95fefbab944c6e230a6b1bd1d37ec745ec8db` was applied once; do not reapply it over
+this working tree. No main merge or production deployment.
+
+Current changes add real native-inspected atomic library publication, private
+provenance/receipts, host-owned queue lifecycle, elevated job APIs and a native
+administrator form/history/cancel/retry interface. Eighteen focused publication /
+TLS / journal cases pass; frontend typecheck/lint/production build and all60tests
+pass. Full-server authorization coverage passed, but the new real import → normal
+indexing → exact-byte download test has not passed yet. Do not publish these
+changes or claim the single-video milestone complete before that test and the
+full mandatory gate pass.
+
+Investigation: media and NFO commit successfully. Initial library scan reports
+completed, yet no physical destination is indexed; the monitor notification then
+has no indexed ancestor to refresh. Add a queued full scan when the newly created
+import folder is not indexed, retaining normal monitoring for existing folders.
+Verify automatic indexing and media API delivery without manually scanning from
+the test. Diagnostic evidence: `/tmp/castlumora-import-index-diagnostics5.log`.
+Normal formatting is being applied repository-wide; final verify/build/tests must
+run on the final source. Keep all assertions and production backup safeguards.
+
+Disk: removed only an extracted copy of an already retained packaged preview and
+one stale owned downloader-test directory (~350MiB), retaining archives, sources,
+Git/stash/history and dependencies. About800MiB became free before formatter work.
+Usage status: **Not accessible**. No account allowance or reset time is claimed.
+
+Recovery: inspect `git status`, this section, the existing import queue/runner /
+inspection/publication/service, controller and native admin UI; finish the indexing
+regression, then run formatting verification and focused backend tests. Commit and
+push normally through the full .NET10 Debug/Release/all-backend/Node24 gate, inspect
+exact Linux/macOS CI, update PR3, and verify a new downloadable preview. Subsequent
+work remains playlists/channels/bulk, resource/retry controls, online creator
+metadata and all remaining Phase1.4/full1.0 requirements. Do not recreate existing
+features or mistake the earlier internal-only preview for this new workflow.

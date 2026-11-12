@@ -1,6 +1,6 @@
 // Opt-in managed-tool verification on our marked disposable server, never production.
 import { test, expect } from '@playwright/test';
-import { existsSync } from 'node:fs';
+import { existsSync, mkdirSync, rmdirSync } from 'node:fs';
 const root = '/tmp/castlumora-web-real-server';
 test('managed importer runtime: native install, integrity health, reload and viewer denials', async ({
   page,
@@ -37,7 +37,7 @@ test('managed importer runtime: native install, integrity health, reload and vie
   const before = await get('/Castlumora/Imports/Runtime');
   expect(before.supported).toBe(true);
   expect(before.bundleAvailable).toBe(true);
-  expect(before.downloadJobsAvailable).toBe(false);
+  expect(before.downloadJobsAvailable).toBe(before.ready);
   await page.goto('/');
   await page.getByLabel('Server address').fill(server!);
   await page.getByRole('button', { name: 'Connect', exact: true }).click();
@@ -71,7 +71,64 @@ test('managed importer runtime: native install, integrity health, reload and vie
   expect(ready.ready).toBe(true);
   expect(ready.expectedSha256).toBe(before.expectedSha256);
   expect(ready.expectedVersion).toBe(before.expectedVersion);
-  expect(ready.downloadJobsAvailable).toBe(false);
+  expect(ready.downloadJobsAvailable).toBe(true);
+  await expect(page.getByRole('heading', { name: 'Import a video', exact: true })).toBeVisible();
+  const libraryName = 'SyntheticImporterBrowser' + Date.now();
+  const libraryPath = root + '/import-browser-library';
+  mkdirSync(libraryPath, { recursive: true, mode: 0o700 });
+  try {
+    expect(
+      (
+        await request.post(
+          server! +
+            '/Library/VirtualFolders?name=' +
+            libraryName +
+            '&collectionType=homevideos&paths=' +
+            encodeURIComponent(libraryPath),
+          {
+            headers,
+            data: { LibraryOptions: { EnableRealtimeMonitor: true } },
+          },
+        )
+      ).ok(),
+    ).toBe(true);
+    await page.reload();
+    await page
+      .getByLabel('Destination library', { exact: true })
+      .selectOption({ label: libraryName });
+    await page.getByLabel('Source URL', { exact: true }).fill('https://127.0.0.1/private.mp4');
+    await page.getByLabel('Imported title', { exact: true }).fill('Owned browser test');
+    await page
+      .getByLabel('Rights / permission record', { exact: true })
+      .fill('Synthetic rejection test; no download authorized');
+    await expect(
+      page.getByRole('button', { name: 'Queue authorized video', exact: true }),
+    ).toBeDisabled();
+    await page
+      .getByRole('checkbox', {
+        name: 'I have the rights and permission to download and retain this source.',
+      })
+      .check();
+    const beforeJobs = (await get('/Castlumora/Imports/Queue')).jobs.length;
+    const rejected = page.waitForResponse(
+      (response) =>
+        new URL(response.url()).pathname.endsWith('/Castlumora/Imports/Jobs') &&
+        response.request().method() === 'POST',
+    );
+    await page.getByRole('button', { name: 'Queue authorized video', exact: true }).click();
+    expect((await rejected).status()).toBe(400);
+    expect((await get('/Castlumora/Imports/Queue')).jobs).toHaveLength(beforeJobs);
+  } finally {
+    expect(
+      (
+        await request.delete(
+          server! + '/Library/VirtualFolders?name=' + libraryName + '&refreshLibrary=false',
+          { headers },
+        )
+      ).ok(),
+    ).toBe(true);
+    rmdirSync(libraryPath);
+  }
   let viewerId: string | undefined;
   try {
     const created = await request.post(server! + '/Users/New', {

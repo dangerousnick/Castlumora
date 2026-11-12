@@ -1,5 +1,31 @@
 # Feature parity inventory — Phase 1.3
 
+## Authorized single-video continuation — 2026-11-12
+
+The native-CI dependency repair is published as
+`36cf2b44a01c0f88c6f5c9ec979161790f03d8a1` with passing Linux/macOS/shared
+checks. The earlier repair/internal-only sections below are retained history.
+The publication stash has been applied once; do not restore it over current work.
+
+The integrated source now includes a private persistent single-worker queue,
+authorized direct HTTPS H264/AAC MP4 imports, progress/cancellation/manual retries,
+restart recovery, source/content deduplication, secure atomic library publication,
+private provenance and native administrator management. The actual owned TLS/native
+import → automatic indexing → media API bytes → server restart workflow passes.
+A first-library scan race required an ordinary queued scan when no import folder
+was indexed; inherited scans are not cancelled. Native paths are resolved at job
+execution and recovered jobs wait for core initialization. See
+[the exact contract and limits](docs/CASTLUMORA_SINGLE_VIDEO_IMPORT.md) and
+DEVELOPMENT_PROGRESS.md for final gate/CI/package evidence.
+
+This is a bounded initial workflow, not complete production importing or1.0 parity:
+32MiB/direct MP4 only, one worker, three manual attempts, no playlists/channels/
+YouTube page imports/bulk/schedules/quality/subtitle/artwork controls. Next extend
+source-aware online metadata and secure playlist/channel enumeration without
+weakening egress/destination authorization; then bulk/resource/retry/admin controls
+and remaining retained Phase1.4 requirements. All setup presets share features.
+
+
 ## Required native-CI setup recovery
 
 Inspection5fd129d4d3 passed the full local gate and native macOS CI. Linux CI was

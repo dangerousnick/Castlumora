@@ -12,8 +12,8 @@ using Microsoft.Extensions.Logging;
 namespace Jellyfin.Api.Castlumora;
 
 /// <summary>
-/// Private, bounded single-worker journal. No endpoint or worker is registered until the
-/// publication boundary is complete. The executor must be idempotent for a job ID.
+/// Private, bounded single-worker journal owned by the hosted import service.
+/// The executor must be idempotent for a job ID.
 /// </summary>
 internal sealed class ImportQueue : IAsyncDisposable
 {
@@ -70,6 +70,11 @@ internal sealed class ImportQueue : IAsyncDisposable
                 _jobs = journal.Jobs;
                 foreach (var job in _jobs)
                 {
+                    if (job is null)
+                    {
+                        throw new InvalidDataException("Invalid import journal entry; preserve it for recovery.");
+                    }
+
                     Validate(job.Source, job.DestinationId, job.Title, job.Rights, job.RequestedBy);
                     if (job.Id.Equals(Guid.Empty) || job.Attempts is < 0 or > 3 || !Enum.IsDefined(job.State)
                         || job.SourceKey != Key(job.Source, job.DestinationId)
@@ -119,6 +124,8 @@ internal sealed class ImportQueue : IAsyncDisposable
         Failed,
         Completed
     }
+
+    internal Task Completion => _worker ?? Task.CompletedTask;
 
     internal void Start()
     {

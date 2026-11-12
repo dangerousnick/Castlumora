@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import ImportJobs from './ImportJobs';
 import { useApp, useLoad } from '../state';
 import { Feedback } from '../components/Media';
 import { ActionStatus, useAction } from './Controls';
@@ -16,8 +17,8 @@ export default function Imports() {
     <div className="page">
       <h1>Imports & Sources</h1>
       <p>
-        This preview provides the managed media-import runtime. URL importing, queues and scheduled
-        sources are not available yet.
+        Install the reviewed runtime to import authorized direct-video sources into a local library.
+        Playlist, channel and scheduled imports remain planned.
       </p>
       <Feedback busy={busy} error={current ? '' : initial.error} />
       {runtime && (
@@ -81,6 +82,7 @@ export default function Imports() {
         Check runtime
       </button>
       <ActionStatus message={action.message} />
+      {runtime?.downloadJobsAvailable && <ImportJobs />}
     </div>
   );
 }

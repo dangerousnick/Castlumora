@@ -57,6 +57,8 @@ namespace Jellyfin.Server.Extensions
             serviceCollection.AddSingleton<Jellyfin.Api.Castlumora.RegistrationService>();
             serviceCollection.AddSingleton<Jellyfin.Api.Castlumora.ReaderStore>();
             serviceCollection.AddSingleton<Jellyfin.Api.Castlumora.YtDlpRuntime>();
+            serviceCollection.AddSingleton<Jellyfin.Api.Castlumora.ImportService>();
+            serviceCollection.AddHostedService(provider => provider.GetRequiredService<Jellyfin.Api.Castlumora.ImportService>());
             serviceCollection.AddTransient(provider => new Lazy<MediaBrowser.Controller.Session.ISessionManager>(provider.GetRequiredService<MediaBrowser.Controller.Session.ISessionManager>));
             serviceCollection.AddSingleton<Jellyfin.Api.Castlumora.SkipperService>();
             serviceCollection.AddSingleton<MediaBrowser.Controller.MediaSegments.IMediaSegmentProvider>(provider => provider.GetRequiredService<Jellyfin.Api.Castlumora.SkipperService>());

@@ -36,6 +36,19 @@ public sealed class CastlumoraImporterControllerTests : IClassFixture<JellyfinAp
         using var viewerInstall = await viewer.PostAsync("Castlumora/Imports/Runtime/Install", null, TestContext.Current.CancellationToken);
         Assert.Equal(HttpStatusCode.Forbidden, viewerInstall.StatusCode);
 
+        foreach (var endpoint in new[] { "Castlumora/Imports/Queue", "Castlumora/Imports/Jobs", "Castlumora/Imports/Jobs/00000000000000000000000000000001/Cancel", "Castlumora/Imports/Jobs/00000000000000000000000000000001/Retry" })
+        {
+            using var anonymousRequest = endpoint.EndsWith("Queue", System.StringComparison.Ordinal) ? await anonymous.GetAsync(endpoint, TestContext.Current.CancellationToken) : await anonymous.PostAsJsonAsync(endpoint, new { url = "https://127.0.0.1/private.mp4" }, TestContext.Current.CancellationToken);
+            Assert.Equal(HttpStatusCode.Unauthorized, anonymousRequest.StatusCode);
+            using var viewerRequest = endpoint.EndsWith("Queue", System.StringComparison.Ordinal) ? await viewer.GetAsync(endpoint, TestContext.Current.CancellationToken) : await viewer.PostAsJsonAsync(endpoint, new { url = "https://127.0.0.1/private.mp4" }, TestContext.Current.CancellationToken);
+            Assert.Equal(HttpStatusCode.Forbidden, viewerRequest.StatusCode);
+        }
+
+        using var missingRights = await admin.PostAsJsonAsync("Castlumora/Imports/Jobs", new { rightsConfirmed = false, destinationId = System.Guid.NewGuid() }, TestContext.Current.CancellationToken);
+        Assert.Equal(HttpStatusCode.BadRequest, missingRights.StatusCode);
+        using var injectedArguments = await admin.PostAsJsonAsync("Castlumora/Imports/Jobs", new { rightsConfirmed = true, destinationId = System.Guid.NewGuid(), executable = "/untrusted/command" }, TestContext.Current.CancellationToken);
+        Assert.Equal(HttpStatusCode.BadRequest, injectedArguments.StatusCode);
+
         var state = await admin.GetFromJsonAsync<JsonObject>("Castlumora/Imports/Runtime", TestContext.Current.CancellationToken);
         Assert.False(state!["ready"]!.GetValue<bool>());
         Assert.False(state["downloadJobsAvailable"]!.GetValue<bool>());

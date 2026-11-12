@@ -295,6 +295,21 @@ public sealed class ImportQueueTests : IDisposable
         Assert.False(Directory.Exists(Path.Combine(target, "queue")));
     }
 
+    [Fact]
+    public async Task NullJournalEntryFailsClosedAndPreservesTheOriginalFile()
+    {
+        await using (var queue = Open(CompleteAsync))
+        {
+            await SubmitAsync(queue);
+        }
+
+        var path = Path.Combine(_root, "queue.json");
+        const string broken = "{\"Version\":1,\"Jobs\":[null]}";
+        await File.WriteAllTextAsync(path, broken, _token);
+        Assert.Throws<InvalidDataException>(() => Open(CompleteAsync));
+        Assert.Equal(broken, await File.ReadAllTextAsync(path, _token));
+    }
+
     public void Dispose()
     {
         if (Directory.Exists(_root))
