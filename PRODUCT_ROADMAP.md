@@ -259,3 +259,38 @@ Complete-publishing gate: full format and Debug build passed; Release was blocke
 Publishing remains blocked: complete format and Debug/Release builds pass; full server suite4,341 pass/19 existing skips/1 environmental failure (unchanged backup requires5GiB free, executor has2.8GiB). No guard/test weakened or skipped; no new commits pushed. Need larger executor and full successful gate before publishing or resuming importer feature work.
 
 Storage investigation: safe cleanup recovered1.59GiB, raising available space to4.23GiB. The unchanged5GiB backup prerequisite remains unmet; no retry, gate bypass or application change. Need additional capacity/build headroom before full validation and publishing. See docs/verification-storage-cleanup.md.
+
+## Future 1.0 → 2.0 data continuity and migration architecture
+
+**Status:** Planned architecture requirement; not an instruction to divert Phase 1.4 or begin the 2.0 backend rewrite. The owner intends to operate a stable Castlumora 1.0 server while 2.0 is developed separately, potentially beginning 2.0 development around 2027. Dates are goals, not release commitments.
+
+**Core principle:** Replacing the inherited backend must not require households to rebuild their accounts, profiles, libraries, collections, or viewing history. Castlumora 1.0 remains supported and usable throughout 2.0 development and migration testing.
+
+### Preserve user and server state
+
+Plan explicit migration coverage for user identities and permissions; password-hash compatibility or secure reset; parental restrictions and profiles; libraries and media path mappings; media identity, artwork and metadata; collections, custom categories and presentation settings; watch progress, history, watchlists and playlists; Live TV sources, EPG mappings and DVR schedules; importer jobs and provenance; creator metadata corrections; plugin settings; and relevant server configuration. Document which state is currently inherited from Jellyfin and which Castlumora owns. Never export plaintext passwords or unprotected secrets.
+
+### Stable identity and versioned contracts
+
+- Preserve durable identifiers and relationships, including mappings from inherited IDs where necessary. Avoid making client APIs depend on replaceable database row IDs.
+- Define versioned, validated export/import schemas with a manifest recording application/export versions, included categories, timestamps, checksums and compatibility information.
+- Separate application-state exports from large media files by default; support optional inclusion when appropriate. Reuse the existing production-safe backup system rather than replacing it prematurely.
+- Version public client APIs and extension contracts as needed. Detect incompatible plugins; migrate portable settings when feasible without promising binary compatibility.
+
+### Safe migration and cutover
+
+1. Create and verify a complete 1.0 backup, including required configuration, metadata and database state.
+2. Install 2.0 separately and migrate from an isolated copy, never the sole writable 1.0 database.
+3. Validate schema versions, source checksums, record relationships, permissions, media-path resolution and migration counts; produce a human-readable report of omissions and incompatibilities.
+4. Allow safe retry of failed migrations without duplicate records or corruption.
+5. At final cutover, pause or freeze 1.0 writes, take a final backup, migrate final changes, verify playback and user access, then switch clients.
+6. Retain the original 1.0 installation and untouched data for rollback; never rely on reversing arbitrary 2.0 database writes.
+
+### Implementation timing
+
+**During 1.0:** Audit persistence and identifiers; document a concrete migration contract and low-risk forward-compatibility requirements; add focused regression coverage where useful. Do not rewrite the database or delay the active importer/Phase 1.4 milestones for speculative 2.0 work.
+
+**During 2.0:** Implement and exercise the migration engine against representative 1.0 backups; test authentication, media, watch history, settings, plugins, interrupted migration, rollback and side-by-side operation before any production cutover. Maintain 1.0 security/stability updates while the new backend matures.
+
+**Success criterion:** A household can continue using 1.0 while 2.0 is built and later migrate with verified preservation of supported state, clear reporting for unsupported items, and a reliable rollback path.
+
