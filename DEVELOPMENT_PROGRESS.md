@@ -7,6 +7,84 @@ Permanent source of truth: [docs/CASTLUMORA_PRODUCT_REQUIREMENTS.md](docs/CASTLU
 
 
 
+
+
+
+## Required macOS fixture correction — 2026-11-12
+
+Published source d6d5299f040f05e717dc133b13964432b21e3a07 passed native Linux
+(job130936398868), Windows advisory, Format/OpenAPI/ABI and verified preview.
+**macOS failed** exactly one API test: publication fixture compared its raw
+/var/folders path with production's correctly normalized /private/var/folders path
+(ImportPublicationTests line90). Native Mac full-server import/index/media/restart
+and other assertions completed; do not represent the overall required job as passed.
+Failure: Tests43143678923, job130936398795,366API passes/3platform skips/1failure.
+
+Normalize the fixture's verified Apple system-root alias at setup using the existing
+strict mapping. Keep exact path equality, actual file bytes, provenance, metadata,
+scan and every symlink/security assertion; no test skips or CI weakening. The
+portable mapping tests already exercise approved/rejected aliases; native Mac CI
+must verify the corrected fixture. No production behavior changed for this repair.
+Rerun full normal pre-push gate and inspect exact Linux/macOS CI before starting
+packaged-import expansion. The published Linux preview remains verified at its
+exact source, but Phase1.4 milestone acceptance remains pending required Mac success.
+Usage status: Not accessible. Preserve all commits/stash/source; no main merge.
+
+
+## Verified downloadable integrated preview
+
+Source: `d6d5299f040f05e717dc133b13964432b21e3a07`.
+Download: https://github.com/dangerousnick/Castlumora/actions/runs/43143678890/artifacts/13910807536
+Archive: `Castlumora-1.0-dev-d6d5299f040f-linux-x64.tar.gz`.
+SHA-256: `428b968127cd5887ea3fe4d74ee3dd93b4ef31a9126fc3ac3253091ea669bf97`.
+GitHub sign-in required; expires2026-12-12. Preview43143678890 passed real extracted-
+package setup/auth/restart/library/movie-playback/runtime/queue-form browser checks.
+Independent connector download verified outer digest63de6250c8e1c6cbf744c128bbfa908b52c86135e9db7588280042333cabe772,
+inner checksum, exact source/manifest, native executable/runtime, compiled importer
+UI, GPL bytes, import/installation/checklist docs and all16branding files. No extra
+extracted copy was left on the constrained disk. Verification report:
+`/tmp/castlumora-single-video-preview-verified.json`.
+
+Format43143678898, OpenAPI43143678932 and ABI43143678877 passed. Required native
+Linux/macOS tests43143678923 are still running at this checkpoint, not yet a pass.
+PR3 title/body now describe the actual integrated workflow, verified download,
+local gate, pending required checks and bounded/unfinished functionality.
+Next: inspect required CI; only then extend normal packaged import/playback using
+the pinned owned GPL HTTPS fixture identified below. Usage remains Not accessible.
+
+
+## Published single-video milestone — exact checkpoint
+
+Latest published commit: `d6d5299f040f05e717dc133b13964432b21e3a07`.
+Feature commit: `fbea85f83c752a4ace288113b0b9c27bdfbdeaf8`.
+Branch: `development/castlumora-web-1.3`; PR3 open; no main merge/deployment.
+The complete normal pre-push gate passed on this exact corrected source:
+2,428formatted files/zero changes/no workspace warnings; zero-warning/error
+.NET10 Debug server/Release solution;17backend projects4,438passed/19existing
+platform skips; Node24 typecheck/lint/build +60tests; hook/native-fixture/bundler/
+report-handler checks. Real backup tests remain enabled and pass under the isolated
+fixture policy; production storage safeguards are unchanged.
+Logs: /tmp/castlumora-prepush.iw95p8MY and
+/tmp/castlumora-single-video-fixed-push.log. Previous rejected attempt remains
+recorded below; no known failing source was published.
+
+Exact-source GitHub runs started: Tests43143678923; Format43143678898;
+ABI43143678877; OpenAPI43143678932; Preview43143678890. Native Linux/macOS and
+actual-package outcomes must be inspected before marking this milestone fully
+verified or starting another feature push. PR3 comment records these results.
+
+Next exact task after required CI passes: extend the extracted-package browser
+workflow to create a Home Videos library, submit the repository's owned GPL
+synthetic direct HTTPS clip through the normal elevated importer, observe durable
+completion/indexing, and play it through Castlumora Web. No test-only production
+network bypass. Existing public fixture (HTTP200,11,734bytes verified):
+https://raw.githubusercontent.com/dangerousnick/Castlumora/36cf2b44a01c0f88c6f5c9ec979161790f03d8a1/tests/Jellyfin.Api.Tests/Fixtures/import-owned.mp4
+Then verify the new artifact/checksum/source/branding/licenses and update PR3.
+Retain all broader importer/metadata and Phase1.4/full1.0 requirements.
+Usage status: Not accessible. Resume by fetching origin, inspecting this section,
+current Git status and exact workflow outcomes; preserve existing commits/work.
+
+
 ## Required gate correction — 2026-11-12
 
 Local feature commit: `fbea85f83c752a4ace288113b0b9c27bdfbdeaf8`.

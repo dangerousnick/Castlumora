@@ -33,6 +33,13 @@ public sealed class ImportPublicationTests : IDisposable
 
     public ImportPublicationTests()
     {
+        if (OperatingSystem.IsMacOS())
+        {
+            // Compare physical paths, not Apple's verified /var -> /private/var
+            // system alias. Ordinary symlinks remain rejected by the publication tests.
+            _root = ImportQueue.MacDataDirectory(_root, path => new DirectoryInfo(path).ResolveLinkTarget(returnFinalTarget: true)?.FullName);
+        }
+
         Directory.CreateDirectory(Data);
         Directory.CreateDirectory(Library);
     }
