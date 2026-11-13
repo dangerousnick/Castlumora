@@ -13,6 +13,33 @@ Permanent source of truth: [docs/CASTLUMORA_PRODUCT_REQUIREMENTS.md](docs/CASTLU
 
 
 
+## Resume checkpoint — 2026-11-13, exact-HEAD validation pending
+
+Current branch: `development/castlumora-web-1.3`; PR3 remains open, no merge into main.
+Last completed implementation: actionable, redacted persistent import failures,
+commit `b6a891a9ff910dc5fff780d212827c9c2ee8d2d6`. Full mandatory local gate passed
+for that exact commit: restored solution formatting2430files/0changes, .NET10 Debug
+and Release0warnings/errors, all17backend suites4464passed/19existing skips,
+Node24 typecheck/lint/61frontend tests/build, native dependency/workflow/hook tests.
+Evidence: `/tmp/castlumora-prepush.4GbeooA5`.
+
+The subsequent push was rejected non-fast-forward, not for a failed check. Fetched
+and preserved the owner's roadmap-only commit
+`c91d90d084a4898c88fdd7c6ce1d9fcf2996146f` through a normal merge; no force push,
+rebase, lost commits or migration implementation. The prior application preview
+and required-CI baseline remains `dc3147c523357be4819d95a25fea3ade1c9417a3`;
+the remote also contains the owner's roadmap commit. The merged exact snapshot
+must pass the entire normal pre-push gate again before publication.
+
+Next exact steps: push normally with .NET10/Node24/reviewed native fixtures, inspect
+required Linux/macOS/shared checks and the three-workflow packaged preview for the
+published merge SHA, verify the downloadable package/hash/branding/GPL/failure guide,
+and update PR3. Then complete controlled retry/backoff before larger source expansion.
+No uncommitted implementation remains at this checkpoint. Usage status: Not accessible.
+Recovery: `git fetch origin`, inspect `git status` and `git log --all -8`, preserve
+local work, read this file and the permanent specs, install repository hooks and
+resume exact-HEAD validation; never reapply the retained publication stash.
+
 ## Actionable failure-reporting checkpoint — verified locally, awaiting publication
 
 Baseline published dc3147c523357be4819d95a25fea3ade1c9417a3 remains verified with
