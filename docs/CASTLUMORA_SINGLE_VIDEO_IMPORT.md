@@ -15,9 +15,11 @@ Only authenticated elevated administrators can list, submit, cancel or retry job
 No source download is delegated to the browser; jobs belong to the server host.
 
 The initial scope is a single direct H264/AAC MP4, at most32MiB and three minutes
-of downloader execution, with one worker and at most three explicitly requested
-attempts. Playlists, channels, YouTube page URLs, scheduled synchronization, format
-selection and automatic backoff are not available in this increment. They remain
+of downloader execution, with one worker and at most three total attempts. Existing
+jobs and new submissions default to manual retries. Administrators may explicitly
+opt in to bounded transient retries; see CASTLUMORA_IMPORT_RETRIES.md. Playlists,
+channels, YouTube page URLs, scheduled synchronization and format selection remain
+unavailable. They remain
 mandatory future work. All setup presets use the same functionality.
 
 Eligible destinations are real Videos/Home Videos libraries with exactly one

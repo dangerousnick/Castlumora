@@ -30,6 +30,8 @@ export interface ImportJob {
   sha256?: string;
   error?: string;
   createdAt: string;
+  automaticRetries?: boolean;
+  nextAttemptAt?: string;
 }
 export interface ImportQueue {
   available: boolean;
@@ -46,6 +48,7 @@ export function importQueueApi(api: Api) {
       title: string;
       rights: string;
       rightsConfirmed: boolean;
+      automaticRetries?: boolean;
     }) =>
       api.request<ImportJob>('Castlumora/Imports/Jobs', {
         method: 'POST',

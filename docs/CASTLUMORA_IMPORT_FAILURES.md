@@ -9,7 +9,9 @@ executable pins, process lifetime or download/resource limits.
 
 Administration → Imports & Sources shows a fixed explanation beside each failed
 job and retains its job ID/attempt count. Correct the cause before manually
-retrying. Existing three-attempt limits and persisted rights/destinations apply.
+retrying. Optional bounded transient retries are described in
+[the retry policy](CASTLUMORA_IMPORT_RETRIES.md); they share the same three-attempt
+budget and persisted rights/destinations.
 
 | Code | Meaning and action |
 | --- | --- |

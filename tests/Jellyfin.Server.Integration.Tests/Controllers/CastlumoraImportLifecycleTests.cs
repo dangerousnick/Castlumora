@@ -36,11 +36,13 @@ public sealed class CastlumoraImportLifecycleTests
         var state = await admin.GetFromJsonAsync<JsonObject>("Castlumora/Imports/Queue", token);
         Assert.True(state!["available"]!.GetValue<bool>());
         var destination = Assert.Single(state["destinations"]!.AsArray())!["id"]!.GetValue<string>();
-        var body = new { url = source.Source, destinationId = destination, title = "Owned imported clip", rights = "Generated Castlumora test clip", rightsConfirmed = true };
+        var body = new { url = source.Source, destinationId = destination, title = "Owned imported clip", rights = "Generated Castlumora test clip", rightsConfirmed = true, automaticRetries = true };
         using var submit = await admin.PostAsJsonAsync("Castlumora/Imports/Jobs", body, token);
         submit.EnsureSuccessStatusCode();
         var submitted = await submit.Content.ReadFromJsonAsync<JsonObject>(token);
         var id = submitted!["id"]!.GetValue<string>();
+        Assert.True(submitted["automaticRetries"]!.GetValue<bool>());
+        Assert.Null(submitted["nextAttemptAt"]);
         Assert.DoesNotContain("signed-secret", submitted.ToJsonString(), StringComparison.Ordinal);
         using var deadline = CancellationTokenSource.CreateLinkedTokenSource(token);
         deadline.CancelAfter(TimeSpan.FromSeconds(90));
@@ -101,6 +103,8 @@ public sealed class CastlumoraImportLifecycleTests
         Assert.Equal(id, restored["id"]!.GetValue<string>());
         Assert.Equal("completed", restored["state"]!.GetValue<string>());
         Assert.Equal(1, restored["attempts"]!.GetValue<int>());
+        Assert.True(restored["automaticRetries"]!.GetValue<bool>());
+        Assert.Null(restored["nextAttemptAt"]);
         Assert.DoesNotContain("signed-secret", recovered.ToJsonString(), StringComparison.Ordinal);
         using var resumed = await returning.GetAsync("Items/" + itemId + "/Download", token);
         resumed.EnsureSuccessStatusCode();

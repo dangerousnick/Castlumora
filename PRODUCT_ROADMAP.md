@@ -1,5 +1,19 @@
 # Castlumora product roadmap
 
+## Verified failure guidance; transient retry increment under verification
+
+Latest published required-CI baseline: e271d70985a0fdba0b6270af12cb24c8a0439ef8.
+Linux/macOS, Format/OpenAPI/ABI and the actual packaged preview passed; current
+Windows advisory CI also passed. Fixed redacted persistent failure guidance is
+complete. The owner migration-roadmap commit c91d90d084 is preserved.
+
+Current increment adds administrator opt-in, durable transient retry deadlines,
+nonblocking backoff/cancellation/recovery and the unchanged three-attempt ceiling.
+See [retry contract](docs/CASTLUMORA_IMPORT_RETRIES.md) and DEVELOPMENT_PROGRESS.md
+for exact verification/publication. Manual defaults and all safeguards remain.
+The full1.0 importer/source/metadata/resource and other requirements are unchanged.
+
+
 ## Public imported-media playback verified; actionable failures in progress
 
 Publisheddc3147c523 passes required Linux/macOS/shared CI and three actual package

@@ -38,9 +38,9 @@ public sealed class CastlumoraImporterControllerTests : IClassFixture<JellyfinAp
 
         foreach (var endpoint in new[] { "Castlumora/Imports/Queue", "Castlumora/Imports/Jobs", "Castlumora/Imports/Jobs/00000000000000000000000000000001/Cancel", "Castlumora/Imports/Jobs/00000000000000000000000000000001/Retry" })
         {
-            using var anonymousRequest = endpoint.EndsWith("Queue", System.StringComparison.Ordinal) ? await anonymous.GetAsync(endpoint, TestContext.Current.CancellationToken) : await anonymous.PostAsJsonAsync(endpoint, new { url = "https://127.0.0.1/private.mp4" }, TestContext.Current.CancellationToken);
+            using var anonymousRequest = endpoint.EndsWith("Queue", System.StringComparison.Ordinal) ? await anonymous.GetAsync(endpoint, TestContext.Current.CancellationToken) : await anonymous.PostAsJsonAsync(endpoint, new { url = "https://127.0.0.1/private.mp4", automaticRetries = true }, TestContext.Current.CancellationToken);
             Assert.Equal(HttpStatusCode.Unauthorized, anonymousRequest.StatusCode);
-            using var viewerRequest = endpoint.EndsWith("Queue", System.StringComparison.Ordinal) ? await viewer.GetAsync(endpoint, TestContext.Current.CancellationToken) : await viewer.PostAsJsonAsync(endpoint, new { url = "https://127.0.0.1/private.mp4" }, TestContext.Current.CancellationToken);
+            using var viewerRequest = endpoint.EndsWith("Queue", System.StringComparison.Ordinal) ? await viewer.GetAsync(endpoint, TestContext.Current.CancellationToken) : await viewer.PostAsJsonAsync(endpoint, new { url = "https://127.0.0.1/private.mp4", automaticRetries = true }, TestContext.Current.CancellationToken);
             Assert.Equal(HttpStatusCode.Forbidden, viewerRequest.StatusCode);
         }
 
@@ -48,6 +48,9 @@ public sealed class CastlumoraImporterControllerTests : IClassFixture<JellyfinAp
         Assert.Equal(HttpStatusCode.BadRequest, missingRights.StatusCode);
         using var injectedArguments = await admin.PostAsJsonAsync("Castlumora/Imports/Jobs", new { rightsConfirmed = true, destinationId = System.Guid.NewGuid(), executable = "/untrusted/command" }, TestContext.Current.CancellationToken);
         Assert.Equal(HttpStatusCode.BadRequest, injectedArguments.StatusCode);
+
+        using var invalidRetry = await admin.PostAsJsonAsync("Castlumora/Imports/Jobs", new { rightsConfirmed = true, destinationId = System.Guid.NewGuid(), automaticRetries = "untrusted" }, TestContext.Current.CancellationToken);
+        Assert.Equal(HttpStatusCode.BadRequest, invalidRetry.StatusCode);
 
         var state = await admin.GetFromJsonAsync<JsonObject>("Castlumora/Imports/Runtime", TestContext.Current.CancellationToken);
         Assert.False(state!["ready"]!.GetValue<bool>());

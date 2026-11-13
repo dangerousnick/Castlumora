@@ -14,6 +14,7 @@ export default function ImportJobs() {
   const [library, setLibrary] = useState('');
   const [rights, setRights] = useState('');
   const [confirmed, setConfirmed] = useState(false);
+  const [automaticRetries, setAutomaticRetries] = useState(false);
   const action = useAction();
   useEffect(() => {
     let active = true;
@@ -74,11 +75,13 @@ export default function ImportJobs() {
                   destinationId,
                   rights,
                   rightsConfirmed: confirmed,
+                  automaticRetries,
                 });
                 setUrl('');
                 setTitle('');
                 setRights('');
                 setConfirmed(false);
+                setAutomaticRetries(false);
                 await refresh();
               }, 'Import saved on the server. You can leave this page; progress survives a server restart.');
             }}
@@ -133,6 +136,14 @@ export default function ImportJobs() {
               />
               I have the rights and permission to download and retain this source.
             </label>
+            <label>
+              <input
+                type="checkbox"
+                checked={automaticRetries}
+                onChange={(e) => setAutomaticRetries(e.target.checked)}
+              />
+              Automatically retry temporary network or rate-limit failures (three attempts total).
+            </label>
             <button
               type="submit"
               disabled={action.busy || !queue.available || !destinationId || !confirmed}
@@ -154,6 +165,15 @@ export default function ImportJobs() {
                 </p>
                 <small>Job {job.id}</small>
                 {job.error && <p>{importFailureText(job.error)}</p>}
+                {job.nextAttemptAt && job.state === 'queued' && (
+                  <p>
+                    Automatic retry scheduled for{' '}
+                    <time dateTime={job.nextAttemptAt}>
+                      {new Date(job.nextAttemptAt).toLocaleString()}
+                    </time>
+                    . You can cancel while waiting.
+                  </p>
+                )}
                 {['queued', 'running'].includes(job.state) && (
                   <button
                     disabled={action.busy}

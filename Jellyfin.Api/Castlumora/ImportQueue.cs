@@ -26,13 +26,14 @@ internal sealed class ImportQueue : IAsyncDisposable
     private readonly CancellationTokenSource _shutdown = new();
     private readonly Func<Job, Action<long>, CancellationToken, Task<Receipt>> _execute;
     private readonly ILogger _logger;
+    private readonly TimeProvider _clock;
     private readonly List<Job> _jobs;
     private readonly Dictionary<Guid, long> _progress = [];
     private Action? _cancelActive;
     private Guid _activeId;
     private Task? _worker;
 
-    internal ImportQueue(string data, Func<Job, Action<long>, CancellationToken, Task<Receipt>> execute, ILogger logger)
+    internal ImportQueue(string data, Func<Job, Action<long>, CancellationToken, Task<Receipt>> execute, ILogger logger, TimeProvider? clock = null)
     {
         var directory = Path.GetFullPath(data);
         _directory = OperatingSystem.IsMacOS()
@@ -47,6 +48,7 @@ internal sealed class ImportQueue : IAsyncDisposable
         _journal = Path.Combine(_directory, "queue.json");
         _execute = execute;
         _logger = logger;
+        _clock = clock ?? TimeProvider.System;
         var ownership = Path.Combine(_directory, "queue.lock");
         YtDlpPlatform.RejectLink(ownership);
         _ownership = new FileStream(ownership, FileMode.OpenOrCreate, FileAccess.ReadWrite, FileShare.None);
@@ -79,7 +81,8 @@ internal sealed class ImportQueue : IAsyncDisposable
                     if (job.Id.Equals(Guid.Empty) || job.Attempts is < 0 or > 3 || !Enum.IsDefined(job.State)
                         || job.SourceKey != Key(job.Source, job.DestinationId)
                         || (job.State == State.Completed && !ValidReceipt(job.Sha256, job.Bytes))
-                        || (job.State == State.Queued && job.Attempts >= 3))
+                        || (job.State == State.Queued && job.Attempts >= 3)
+                        || (job.NextAttemptAt is not null && (job.State != State.Queued || !job.AutomaticRetries || ImportRetryPolicy.Delay(job.Error, job.Attempts) is null)))
                     {
                         throw new InvalidDataException("Invalid import journal; preserve it for recovery.");
                     }
@@ -138,7 +141,7 @@ internal sealed class ImportQueue : IAsyncDisposable
         Wake();
     }
 
-    internal async Task<Job> SubmitAsync(string source, Guid destinationId, string title, string rights, Guid requestedBy, CancellationToken token)
+    internal async Task<Job> SubmitAsync(string source, Guid destinationId, string title, string rights, Guid requestedBy, CancellationToken token, bool automaticRetries = false)
     {
         source = Validate(source, destinationId, title, rights, requestedBy);
         await _gate.WaitAsync(token).ConfigureAwait(false);
@@ -156,7 +159,7 @@ internal sealed class ImportQueue : IAsyncDisposable
                 throw new InvalidOperationException("The import history limit is reached; retain the journal and review storage before adding jobs.");
             }
 
-            var job = new Job(Guid.NewGuid(), source, key, destinationId, title, rights, requestedBy, DateTimeOffset.UtcNow);
+            var job = new Job(Guid.NewGuid(), source, key, destinationId, title, rights, requestedBy, _clock.GetUtcNow(), AutomaticRetries: automaticRetries);
             _jobs.Add(job);
             try
             {
@@ -198,8 +201,9 @@ internal sealed class ImportQueue : IAsyncDisposable
             var job = Find(id);
             if (job.State is State.Queued or State.Running)
             {
-                job = job with { State = job.State == State.Running ? State.Cancelling : State.Cancelled };
+                job = job with { State = job.State == State.Running ? State.Cancelling : State.Cancelled, NextAttemptAt = null };
                 Replace(job);
+                Wake();
                 if (_activeId.Equals(id))
                 {
                     _cancelActive?.Invoke();
@@ -226,7 +230,7 @@ internal sealed class ImportQueue : IAsyncDisposable
                 throw new InvalidOperationException("Only failed or cancelled jobs with fewer than three attempts and no duplicate can be retried.");
             }
 
-            job = job with { State = State.Queued, Error = null, Bytes = 0 };
+            job = job with { State = State.Queued, Error = null, Bytes = 0, NextAttemptAt = null };
             Replace(job);
             Wake();
             return job;
@@ -278,9 +282,11 @@ internal sealed class ImportQueue : IAsyncDisposable
     {
         try
         {
+            var wait = Timeout.InfiniteTimeSpan;
             while (true)
             {
-                await _wake.WaitAsync(_shutdown.Token).ConfigureAwait(false);
+                await _wake.WaitAsync(wait, _shutdown.Token).ConfigureAwait(false);
+                wait = Timeout.InfiniteTimeSpan;
                 while (!_shutdown.IsCancellationRequested)
                 {
                     Job? job;
@@ -288,13 +294,21 @@ internal sealed class ImportQueue : IAsyncDisposable
                     await _gate.WaitAsync(_shutdown.Token).ConfigureAwait(false);
                     try
                     {
-                        job = _jobs.Find(candidate => candidate.State == State.Queued);
+                        var now = _clock.GetUtcNow();
+                        job = _jobs.Find(candidate => candidate.State == State.Queued && (candidate.NextAttemptAt is null || candidate.NextAttemptAt <= now));
                         if (job is null)
                         {
+                            // Poll only while a persisted retry is waiting. A new submission or
+                            // cancellation wakes immediately; backoff never occupies the worker.
+                            if (_jobs.Any(candidate => candidate.State == State.Queued))
+                            {
+                                wait = TimeSpan.FromSeconds(1);
+                            }
+
                             break;
                         }
 
-                        job = job with { State = State.Running, Attempts = job.Attempts + 1, Error = null };
+                        job = job with { State = State.Running, Attempts = job.Attempts + 1, Error = null, NextAttemptAt = null };
                         Replace(job);
                         _cancelActive = stop.Cancel;
                         _activeId = job.Id;
@@ -333,7 +347,14 @@ internal sealed class ImportQueue : IAsyncDisposable
                         var state = receipt is not null ? State.Completed
                             : current.State == State.Cancelling ? State.Cancelled
                             : _shutdown.IsCancellationRequested ? State.Running : State.Failed;
-                        Replace(current with { State = state, Sha256 = receipt?.Sha256, Bytes = receipt?.Bytes ?? 0, Error = failureCode });
+                        DateTimeOffset? nextAttempt = null;
+                        if (state == State.Failed && current.AutomaticRetries && ImportRetryPolicy.Delay(failureCode, current.Attempts) is { } delay)
+                        {
+                            state = State.Queued;
+                            nextAttempt = _clock.GetUtcNow().Add(delay);
+                        }
+
+                        Replace(current with { State = state, Sha256 = receipt?.Sha256, Bytes = receipt?.Bytes ?? 0, Error = failureCode, NextAttemptAt = nextAttempt });
                         _progress.Remove(job.Id);
                         _cancelActive = null;
                         _activeId = Guid.Empty;
@@ -448,7 +469,7 @@ internal sealed class ImportQueue : IAsyncDisposable
 
     internal sealed record Receipt(string Sha256, long Bytes);
 
-    internal sealed record Job(Guid Id, string Source, string SourceKey, Guid DestinationId, string Title, string Rights, Guid RequestedBy, DateTimeOffset CreatedAt, State State = State.Queued, int Attempts = 0, long Bytes = 0, string? Sha256 = null, string? Error = null);
+    internal sealed record Job(Guid Id, string Source, string SourceKey, Guid DestinationId, string Title, string Rights, Guid RequestedBy, DateTimeOffset CreatedAt, State State = State.Queued, int Attempts = 0, long Bytes = 0, string? Sha256 = null, string? Error = null, bool AutomaticRetries = false, DateTimeOffset? NextAttemptAt = null);
 
     private sealed record Journal(int Version, List<Job> Jobs);
 }

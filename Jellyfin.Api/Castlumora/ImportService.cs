@@ -150,11 +150,16 @@ public sealed class ImportService : IHostedService, IAsyncDisposable
     /// <returns>Existing duplicate or new persistent job, with private query values omitted.</returns>
     public async Task<JsonObject> SubmitAsync(JsonObject value, Guid administrator, CancellationToken token)
     {
-        if (value.Any(pair => pair.Key is not ("url" or "destinationId" or "title" or "rights" or "rightsConfirmed"))
+        if (value.Any(pair => pair.Key is not ("url" or "destinationId" or "title" or "rights" or "rightsConfirmed" or "automaticRetries"))
             || value["rightsConfirmed"]?.GetValue<bool>() != true
             || !Guid.TryParse(value["destinationId"]?.GetValue<string>(), out var library))
         {
             throw new InvalidDataException("Confirm source rights and select an eligible destination; executable, path and downloader arguments are not accepted.");
+        }
+
+        if (value.ContainsKey("automaticRetries") && (value["automaticRetries"] is not JsonValue retryValue || !retryValue.TryGetValue<bool>(out _)))
+        {
+            throw new InvalidDataException("Automatic retries must be an explicit boolean.");
         }
 
         var queue = Required();
@@ -165,7 +170,7 @@ public sealed class ImportService : IHostedService, IAsyncDisposable
             throw new InvalidOperationException("Install and verify the bundled managed runtime before submitting an import.");
         }
 
-        var job = await queue.SubmitAsync(value["url"]?.GetValue<string>() ?? string.Empty, library, value["title"]?.GetValue<string>() ?? string.Empty, value["rights"]?.GetValue<string>() ?? string.Empty, administrator, token).ConfigureAwait(false);
+        var job = await queue.SubmitAsync(value["url"]?.GetValue<string>() ?? string.Empty, library, value["title"]?.GetValue<string>() ?? string.Empty, value["rights"]?.GetValue<string>() ?? string.Empty, administrator, token, value["automaticRetries"]?.GetValue<bool>() ?? false).ConfigureAwait(false);
         return View(job);
     }
 
@@ -236,6 +241,8 @@ public sealed class ImportService : IHostedService, IAsyncDisposable
         ["bytes"] = job.Bytes,
         ["sha256"] = job.Sha256,
         ["error"] = ImportFailure.PublicCode(job.Error),
+        ["automaticRetries"] = job.AutomaticRetries,
+        ["nextAttemptAt"] = job.NextAttemptAt?.ToString("O", CultureInfo.InvariantCulture),
         ["createdAt"] = job.CreatedAt.ToString("O", CultureInfo.InvariantCulture)
     };
 }

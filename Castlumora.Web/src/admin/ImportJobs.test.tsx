@@ -58,7 +58,7 @@ it('requires rights confirmation and submits typed library identity without file
   fireEvent.change(screen.getByLabelText('Rights / permission record'), {
     target: { value: 'My own export' },
   });
-  fireEvent.click(screen.getByRole('checkbox'));
+  fireEvent.click(screen.getByRole('checkbox', { name: /I have the rights/ }));
   fireEvent.click(submit);
   await waitFor(() =>
     expect(request).toHaveBeenCalledWith('Castlumora/Imports/Jobs', {
@@ -69,13 +69,16 @@ it('requires rights confirmation and submits typed library identity without file
         destinationId: 'library',
         rights: 'My own export',
         rightsConfirmed: true,
+        automaticRetries: false,
       }),
     }),
   );
   await waitFor(() =>
     expect((screen.getByLabelText('Source URL') as HTMLInputElement).value).toBe(''),
   );
-  expect((screen.getByRole('checkbox') as HTMLInputElement).checked).toBe(false);
+  expect(
+    (screen.getByRole('checkbox', { name: /I have the rights/ }) as HTMLInputElement).checked,
+  ).toBe(false);
 });
 it('renders untrusted titles as text and invokes server cancellation/retry only for eligible states', async () => {
   const base = {
@@ -141,4 +144,59 @@ it('explains whitelisted failures and does not echo unknown diagnostic text', as
   expect(await screen.findByText(/Check DNS, firewall and direct HTTPS egress/)).toBeTruthy();
   expect(screen.getByText(/do not share private URLs or tokens/)).toBeTruthy();
   expect(document.body.textContent).not.toContain('do-not-display');
+});
+
+it('submits explicit opt-in and displays cancellable scheduled retry time', async () => {
+  const request = setup([
+    {
+      id: 'waiting',
+      title: 'Waiting clip',
+      sourceHost: 'example.test',
+      destinationId: 'library',
+      state: 'queued',
+      attempts: 1,
+      bytes: 0,
+      createdAt: '2026-11-13T00:00:00Z',
+      error: 'sourceRateLimited',
+      automaticRetries: true,
+      nextAttemptAt: '2030-01-01T00:01:00Z',
+    },
+  ]);
+  expect(await screen.findByText(/Automatic retry scheduled for/)).toBeTruthy();
+  expect(document.querySelector('time')?.getAttribute('datetime')).toBe('2030-01-01T00:01:00Z');
+  fireEvent.click(screen.getByRole('button', { name: 'Cancel Waiting clip' }));
+  await waitFor(() =>
+    expect(request).toHaveBeenCalledWith('Castlumora/Imports/Jobs/waiting/Cancel', {
+      method: 'POST',
+    }),
+  );
+  fireEvent.change(screen.getByLabelText('Source URL'), {
+    target: { value: 'https://example.test/own.mp4' },
+  });
+  fireEvent.change(screen.getByLabelText('Imported title'), { target: { value: 'Owned' } });
+  fireEvent.change(screen.getByLabelText('Rights / permission record'), {
+    target: { value: 'My own media' },
+  });
+  fireEvent.click(screen.getByRole('checkbox', { name: /I have the rights/ }));
+  fireEvent.click(screen.getByRole('checkbox', { name: /Automatically retry/ }));
+  await waitFor(() =>
+    expect(
+      (screen.getByRole('button', { name: 'Queue authorized video' }) as HTMLButtonElement)
+        .disabled,
+    ).toBe(false),
+  );
+  fireEvent.click(screen.getByRole('button', { name: 'Queue authorized video' }));
+  await waitFor(() =>
+    expect(request).toHaveBeenCalledWith('Castlumora/Imports/Jobs', {
+      method: 'POST',
+      body: JSON.stringify({
+        url: 'https://example.test/own.mp4',
+        title: 'Owned',
+        destinationId: 'library',
+        rights: 'My own media',
+        rightsConfirmed: true,
+        automaticRetries: true,
+      }),
+    }),
+  );
 });

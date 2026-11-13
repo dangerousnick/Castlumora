@@ -13,6 +13,57 @@ Permanent source of truth: [docs/CASTLUMORA_PRODUCT_REQUIREMENTS.md](docs/CASTLU
 
 
 
+## Transient-retry continuation — implementation under verification
+
+Last completed milestone: safe persistent importer failure codes/admin guidance.
+Latest published commit: `e271d70985a0fdba0b6270af12cb24c8a0439ef8`.
+Branch: `development/castlumora-web-1.3`; PR3 open, main unmerged.
+
+Exact baseline gate: /tmp/castlumora-prepush.oNwbGNiH; format2430files/0changes,
+.NET10 Debug/Release0warnings/errors;17backend suites4464passed/19existing skips;
+Node24 typecheck/lint/61tests/build plus hook/native/bundler/report tests.
+GitHub Tests43524371080 passed required Linux132226345160/macOS132226345203
+and advisory Windows132226344666; Format43524371199, ABI43524371110 and
+OpenAPI43524371165 passed. The older Windows cleanup failures remain historical
+process/handle-lifetime follow-up, not failures of this exact snapshot.
+
+Verified preview: https://github.com/dangerousnick/Castlumora/actions/runs/43524371105/artifacts/14084662522
+Archive Castlumora-1.0-dev-e271d70985a0-linux-x64.tar.gz;
+SHA256 a23a977dd2b2954721b7023f472f93edbbb72861d395719570c2022de4fec56d.
+All three extracted-package browser workflows passed, including public owned GPL
+import/hash/dedup/index/advancing playback. Independent download verified source,
+server/runtime, compiled Web/failure guidance, guides,16branding files and GPL.
+Expires2026-12-13; GitHub sign-in required. No Mint/macOS hardware certification.
+
+Current task: opt-in transient retry/backoff with durable deadlines, no worker
+blocking, cancellation/reload/duplicate safety and a shared three-attempt budget.
+Executed verification: 55 initial queue/policy cases, then 26 policy/native cases,
+including actual owned HTTPS503 → persisted backoff/restart → native inspected
+publication with exact bytes on attempt two. Two HTTP integration tests passed,
+including opt-in/restart persistence, indexing/download, viewer/anonymous denial
+and malformed-boolean rejection. Node24 typecheck/lint/62tests/build passed.
+Restored whole-solution formatting checked 2,432 files, zero changes. A fixture
+member-order analyzer error was corrected locally before the successful native run.
+
+Actual compiled app/Chromium passed opt-in/defaults, durable network retry time,
+duplicate preserving policy/deadline/attempts, safe guidance and cancellation before
+retry. A real process restart retained Cancelled/attempt1/automatic flag/no deadline.
+Both test-server processes stopped cleanly; no Coon access. Evidence:
+/tmp/castlumora-retry-native-focused2.log, /tmp/castlumora-retry-integration.log,
+/tmp/castlumora-retry-browser.log and /tmp/castlumora-retry-browser-result.json.
+
+This increment is not yet published. Next: commit/push through the entire normal
+gate, inspect exact required Linux/macOS/shared CI and updated three-workflow
+package checks, independently verify the new downloadable artifact and updatePR3.
+Then complete controlled resource/source expansion without reducing full1.0 scope.
+
+Usage status: Not accessible. Recovery: inspect Git status/log and this checkpoint,
+preserve uncommitted retry files, run the recorded tests/gate; do not restore the
+retained earlier publication stash. Safe cleanup removed51old ignored coverage
+folders (~438MiB), retaining latest2/project/logs/history/all preview packages;
+free space2.5GiB. Two exited downloader zombies owned by containerPID1 were observed,
+not active downloads; retain process-lifetime follow-up without weakening tests.
+
 ## Resume checkpoint — 2026-11-13, exact-HEAD validation pending
 
 Current branch: `development/castlumora-web-1.3`; PR3 remains open, no merge into main.

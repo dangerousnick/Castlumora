@@ -357,6 +357,66 @@ public sealed class YtDlpImportRunnerTests
         }
     }
 
+    [Fact]
+    public async Task RealTransientHttpsFailure_RestartsWithBackoffThenPublishesOwnedMedia()
+    {
+        await using var fixture = await Fixture.CreateAsync("transient");
+        var library = Path.Combine(Path.GetTempPath(), "castlumora-retry-library-" + Guid.NewGuid().ToString("N"));
+        Directory.CreateDirectory(library);
+        try
+        {
+            var clock = new RetryClock();
+            var scans = 0;
+            var publisher = new ImportPublication(
+                fixture.Root,
+                [],
+                _ => library,
+                (job, progress, token) => fixture.Runner.RunAsync(job.Source, token, progress),
+                _ => scans++,
+                Environment.GetEnvironmentVariable("CASTLUMORA_TEST_FFPROBE")!,
+                Environment.GetEnvironmentVariable("CASTLUMORA_TEST_FFMPEG")!,
+                NullLogger.Instance);
+            ImportQueue.Job waiting;
+            var data = Path.Combine(fixture.Root, "retry-queue");
+            await using (var queue = new ImportQueue(data, publisher.ExecuteAsync, NullLogger.Instance, clock))
+            {
+                var submitted = await queue.SubmitAsync(fixture.Source, Guid.NewGuid(), "Owned retry clip", "Generated test clip", Guid.NewGuid(), TestContext.Current.CancellationToken, automaticRetries: true);
+                queue.Start();
+                using var timeout = CancellationTokenSource.CreateLinkedTokenSource(TestContext.Current.CancellationToken);
+                timeout.CancelAfter(TimeSpan.FromSeconds(30));
+                do
+                {
+                    await Task.Delay(20, timeout.Token);
+                    waiting = Assert.Single(await queue.ListAsync(timeout.Token));
+                }
+                while (waiting.NextAttemptAt is null);
+
+                Assert.Equal(submitted.Id, waiting.Id);
+                Assert.Equal("sourceNetwork", waiting.Error);
+                Assert.Equal(1, waiting.Attempts);
+                fixture.AssertNoStaging();
+            }
+
+            fixture.MakeAvailable();
+            clock.Advance(TimeSpan.FromSeconds(15));
+            await using var restored = new ImportQueue(data, publisher.ExecuteAsync, NullLogger.Instance, clock);
+            Assert.Equal(waiting, Assert.Single(await restored.ListAsync(TestContext.Current.CancellationToken)));
+            restored.Start();
+            await WaitForQueueStateAsync(restored, ImportQueue.State.Completed);
+            var completed = Assert.Single(await restored.ListAsync(TestContext.Current.CancellationToken));
+            Assert.Equal(waiting.Id, completed.Id);
+            Assert.Equal(2, completed.Attempts);
+            Assert.Null(completed.NextAttemptAt);
+            Assert.Equal(1, scans);
+            Assert.Equal(fixture.Payload, await File.ReadAllBytesAsync(Assert.Single(Directory.GetFiles(library, "*.mp4", SearchOption.AllDirectories)), TestContext.Current.CancellationToken));
+            fixture.AssertNoStaging();
+        }
+        finally
+        {
+            Directory.Delete(library, true);
+        }
+    }
+
     private static async Task WaitForQueueStateAsync(ImportQueue queue, ImportQueue.State expected)
     {
         using var deadline = CancellationTokenSource.CreateLinkedTokenSource(TestContext.Current.CancellationToken);
@@ -367,6 +427,15 @@ public sealed class YtDlpImportRunnerTests
         }
     }
 
+    private sealed class RetryClock : TimeProvider
+    {
+        private long _ticks = DateTimeOffset.UtcNow.Ticks;
+
+        public override DateTimeOffset GetUtcNow() => new(Interlocked.Read(ref _ticks), TimeSpan.Zero);
+
+        internal void Advance(TimeSpan duration) => Interlocked.Add(ref _ticks, duration.Ticks);
+    }
+
     private sealed class Fixture : IAsyncDisposable
     {
         private readonly CancellationTokenSource _stop = CancellationTokenSource.CreateLinkedTokenSource(TestContext.Current.CancellationToken);
@@ -375,13 +444,14 @@ public sealed class YtDlpImportRunnerTests
         private readonly string _mode;
         private Task _server = Task.CompletedTask;
         private int _connections;
+        private int _unavailable = 1;
 
         private Fixture(string mode)
         {
             _mode = mode;
             Root = Path.Combine(Path.GetTempPath(), "castlumora-runner-test-" + Guid.NewGuid().ToString("N"));
             YtDlpPlatform.PrivateDirectory(Root);
-            Payload = mode == "media" ? File.ReadAllBytes(Path.Combine(AppContext.BaseDirectory, "Fixtures", "import-owned.mp4"))
+            Payload = mode is "media" or "transient" ? File.ReadAllBytes(Path.Combine(AppContext.BaseDirectory, "Fixtures", "import-owned.mp4"))
                 : mode == "streamLarge" ? new byte[2097152] : Encoding.ASCII.GetBytes("Owned transport bytes; playable-container validation belongs before library commit.");
             _stop.CancelAfter(TimeSpan.FromSeconds(90));
         }
@@ -399,6 +469,8 @@ public sealed class YtDlpImportRunnerTests
         internal int Connections => Volatile.Read(ref _connections);
 
         internal TaskCompletionSource RequestReceived { get; } = new(TaskCreationOptions.RunContinuationsAsynchronously);
+
+        internal void MakeAvailable() => Volatile.Write(ref _unavailable, 0);
 
         internal static async Task<Fixture> CreateAsync(string mode)
         {
@@ -506,7 +578,8 @@ public sealed class YtDlpImportRunnerTests
                             await Task.Delay(Timeout.InfiniteTimeSpan, _stop.Token);
                         }
 
-                        var status = _mode == "denied" ? "403 Forbidden" : "200 OK";
+                        var status = _mode == "denied" ? "403 Forbidden"
+                            : _mode == "transient" && Volatile.Read(ref _unavailable) != 0 ? "503 Service Unavailable" : "200 OK";
                         var length = _mode == "streamLarge" ? string.Empty : $"Content-Length: {Payload.Length}\r\n";
                         await tls.WriteAsync(Encoding.ASCII.GetBytes($"HTTP/1.1 {status}\r\nContent-Type: video/mp4\r\n{length}Connection: close\r\n\r\n"), _stop.Token);
                         if (!header.ToString().StartsWith("HEAD ", StringComparison.Ordinal))

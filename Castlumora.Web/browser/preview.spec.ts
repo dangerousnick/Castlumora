@@ -210,10 +210,12 @@ test('packaged preview: authorized public import indexes, deduplicates and plays
       new URL(response.url()).pathname.endsWith('/Castlumora/Imports/Jobs') &&
       response.request().method() === 'POST',
   );
+  await page.getByRole('checkbox', { name: /Automatically retry temporary/ }).check();
   await page.getByRole('button', { name: 'Queue authorized video', exact: true }).click();
   const response = await submitted;
   expect(response.ok()).toBe(true);
   const job = await response.json();
+  expect(job.automaticRetries).toBe(true);
   await expect
     .poll(
       async () => {
@@ -230,6 +232,8 @@ test('packaged preview: authorized public import indexes, deduplicates and plays
   const completed = (await get('Castlumora/Imports/Queue')).jobs.find(
     (item: { id: string }) => item.id === job.id,
   );
+  expect(completed.automaticRetries).toBe(true);
+  expect(completed.nextAttemptAt).toBeNull();
   expect(completed.sourceHost).toBe('raw.githubusercontent.com');
   expect(completed.bytes).toBe(11734);
   expect(completed.sha256).toBe('8f56e298a9ceaacc3f34126546eeb3cd9d8368c85f3e2c719c63aaa98a55e554');
