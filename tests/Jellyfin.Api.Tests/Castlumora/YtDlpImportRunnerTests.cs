@@ -51,11 +51,13 @@ public sealed class YtDlpImportRunnerTests
         if (mode == "untrusted")
         {
             Assert.Contains("certificate", error.Message, StringComparison.OrdinalIgnoreCase);
+            Assert.Equal("certificateRejected", ImportFailure.Code(error));
         }
 
         if (mode == "denied")
         {
             Assert.Contains("denied", error.Message, StringComparison.OrdinalIgnoreCase);
+            Assert.Equal("sourceDenied", ImportFailure.Code(error));
         }
 
         if (mode is "declaredLarge" or "streamLarge" or "metadataLarge")

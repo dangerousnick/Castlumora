@@ -81,25 +81,20 @@ internal sealed class YtDlpImportRunner
             var outcome = await ImportProcess.RunAsync(info, uri.AbsoluteUri, _limits.Duration, 16384, token => MonitorAsync(work, progress, token), stop.Token).ConfigureAwait(false);
             if (outcome.ExitCode != 0)
             {
-                throw new InvalidDataException(outcome.ErrorCode switch
-                {
-                    "certificateRejected" => "Source HTTPS certificate validation failed.",
-                    "sizeLimit" => "The source exceeds the import size limit.",
-                    "sourceDenied" => "The source denied access; verify source permissions.",
-                    _ => "The source download failed; verify its availability and supported format."
-                });
+                var code = outcome.ErrorCode == "downloadFailed" && tunnel.HasConnectionFailure ? "sourceNetwork" : outcome.ErrorCode;
+                throw ImportFailure.Download(code);
             }
 
             var finalBytes = CheckFiles(work);
             progress?.Invoke(finalBytes);
             if (!File.Exists(staged.MediaPath) || !File.Exists(staged.MetadataPath) || new FileInfo(staged.MediaPath).Length == 0)
             {
-                throw new InvalidDataException("No complete media and metadata pair was produced; source format or size policy may reject this source.");
+                throw ImportFailure.Download("incompleteOutput");
             }
 
             if (File.Exists(staged.MediaPath + ".part"))
             {
-                throw new InvalidDataException("The source left an incomplete download.");
+                throw ImportFailure.Download("incompleteOutput");
             }
 
             var stream = new FileStream(staged.MediaPath, FileMode.Open, FileAccess.Read, FileShare.Read, 65536, FileOptions.Asynchronous | FileOptions.SequentialScan);
@@ -188,7 +183,7 @@ internal sealed class YtDlpImportRunner
             var name = Path.GetFileName(path);
             if (Directory.Exists(path) || !OutputNames.Contains(name, StringComparer.Ordinal))
             {
-                throw new InvalidDataException("Unexpected downloader output was rejected.");
+                throw ImportFailure.Download("unexpectedOutput");
             }
 
             var limit = name == "media.info.json" || name.EndsWith(".ytdl", StringComparison.Ordinal) ? 2097152 : _limits.MediaBytes;
@@ -202,7 +197,7 @@ internal sealed class YtDlpImportRunner
 
                 if (length > limit)
                 {
-                    throw new InvalidDataException("Import output exceeded its size limit.");
+                    throw ImportFailure.Download("sizeLimit");
                 }
             }
             catch (FileNotFoundException)

@@ -1,5 +1,17 @@
 # Castlumora product roadmap
 
+## Public imported-media playback verified; actionable failures in progress
+
+Publisheddc3147c523 passes required Linux/macOS/shared CI and three actual package
+browser workflows, including rights-confirmed public GPL import/hash/dedup/index/
+codec metadata/browser playback. New source is at the fixed failure-vocabulary /
+private diagnostics milestone (under verification, not yet published). See
+[operator codes and limits](docs/CASTLUMORA_IMPORT_FAILURES.md) and the exact
+checkpoint in DEVELOPMENT_PROGRESS.md. Windows staging cleanup remains advisory.
+Broader retry/resources/playlist/channel/bulk/online metadata and all remaining1.0
+requirements stay mandatory; the bounded preview is not stable or full parity.
+
+
 ## Packaged authorized-import verification continuation
 
 Published3726c3314c passes required Linux/macOS/shared CI. Ordinary compiled-server

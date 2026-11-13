@@ -25,6 +25,7 @@ Use an isolated installation and copies/authorized fixtures. Record BUILD_INFO.j
 | Advanced legacy | Existing client opens help unless compatible compiled legacy assets are attached | Not bundled; see INSTALL_TEST_BUILD.md; no false parity claim |
 | Managed importer runtime | Admin → Imports & Sources; install bundled executable; check health; reload | Native pinned/hash/version lifecycle implemented; Linux real-binary tests pass; macOS native CI required; Windows advisory; integrated job capability also requires initialized FFmpeg/FFprobe |
 | Authorized direct video | Admin → Imports & Sources; choose one-folder Home Videos library; submit owned HTTPS H264/AAC MP4≤32MiB with rights; monitor/cancel/retry; reload/restart; browse/play imported item | Real TLS/native queue/publication/index/media-bytes/restart and role tests pass locally; packaged/UI evidence is recorded separately. Source queries stay private. Full YouTube/playlist/channel/bulk/schedule provider work remains mandatory unfinished work |
+| Import failure guidance | Imports & Sources; inspect failed owned job; correct cause before manual retry | Fixed redacted codes, persisted failure/reload and safe UI guidance are verified locally; final gate/native CI reported per source. Never disable TLS/SSRF checks or raise limits to bypass errors. |
 | Restart/removal | Ctrl+C; restart same state; verify account/layout; stop and delete only preview folder/state | Package smoke required; do not touch original media/another server |
 
 ## Report a bug

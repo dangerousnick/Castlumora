@@ -12,7 +12,7 @@ namespace Jellyfin.Api.Castlumora;
 
 /// <summary>
 /// Per-job authenticated loopback CONNECT transport. TLS remains end-to-end and must be
-/// validated by the downloader. Not registered or exposed until queue supervision is implemented.
+/// validated by the downloader. Source connection failures expose only a fixed diagnostic flag.
 /// </summary>
 internal sealed class ImportTunnel : IAsyncDisposable
 {
@@ -24,6 +24,7 @@ internal sealed class ImportTunnel : IAsyncDisposable
     private readonly byte[] _authorization;
     private readonly Task _accept;
     private long _remaining;
+    private int _connectionFailed;
 
     internal ImportTunnel(ImportNetworkPolicy policy, CancellationToken cancellationToken, long byteLimit = 67108864)
     {
@@ -42,6 +43,8 @@ internal sealed class ImportTunnel : IAsyncDisposable
 
     // Contains a per-job secret: never log this value or persist it in job history.
     internal Uri Proxy { get; }
+
+    internal bool HasConnectionFailure => Volatile.Read(ref _connectionFailed) != 0;
 
     /// <inheritdoc />
     public async ValueTask DisposeAsync()
@@ -100,7 +103,17 @@ internal sealed class ImportTunnel : IAsyncDisposable
                 var downstream = client.GetStream();
                 var header = await ReadHeaderAsync(downstream, headerTimeout.Token).ConfigureAwait(false);
                 var target = ParseHeader(header);
-                var upstream = await _policy.ConnectAsync(target, _stop.Token).ConfigureAwait(false);
+                Stream upstream;
+                try
+                {
+                    upstream = await _policy.ConnectAsync(target, _stop.Token).ConfigureAwait(false);
+                }
+                catch (Exception exception) when (!_stop.IsCancellationRequested && exception is SocketException or IOException or OperationCanceledException)
+                {
+                    Interlocked.Exchange(ref _connectionFailed, 1);
+                    throw;
+                }
+
                 await using var upstreamScope = upstream.ConfigureAwait(false);
                 await downstream.WriteAsync("HTTP/1.1 200 Connection Established\r\n\r\n"u8.ToArray(), headerTimeout.Token).ConfigureAwait(false);
                 using var tunnel = CancellationTokenSource.CreateLinkedTokenSource(_stop.Token);
@@ -119,7 +132,7 @@ internal sealed class ImportTunnel : IAsyncDisposable
             catch (Exception exception) when (exception is IOException or InvalidDataException or OperationCanceledException or SocketException or UnauthorizedAccessException or ObjectDisposedException)
             {
                 // Fail closed. Do not reflect credentials, source URLs, DNS details or remote errors.
-                // Caller observes a closed proxy connection; the future runner supplies a safe job error.
+                // Caller observes a closed proxy connection; the runner consumes only the fixed failure flag.
             }
             finally
             {

@@ -305,7 +305,7 @@ internal sealed class ImportQueue : IAsyncDisposable
                     }
 
                     Receipt? receipt = null;
-                    var failed = false;
+                    string? failureCode = null;
                     try
                     {
                         receipt = await _execute(job, bytes => Report(job.Id, bytes), stop.Token).ConfigureAwait(false);
@@ -321,9 +321,9 @@ internal sealed class ImportQueue : IAsyncDisposable
                     catch (Exception exception) when (exception is IOException or InvalidDataException or UnauthorizedAccessException or InvalidOperationException or TimeoutException or System.ComponentModel.Win32Exception or NotSupportedException)
                     {
                         receipt = null;
-                        failed = true;
+                        failureCode = ImportFailure.Code(exception);
                         // Deliberately exclude exception text, URLs, query tokens, filenames and raw subprocess output.
-                        _logger.LogWarning("Import {ImportId} attempt {Attempt} failed ({ErrorType})", job.Id, job.Attempts, exception.GetType().Name);
+                        _logger.LogWarning("Import {ImportId} attempt {Attempt} failed ({ErrorCode}, {ErrorType})", job.Id, job.Attempts, failureCode, exception.GetType().Name);
                     }
 
                     await _gate.WaitAsync(CancellationToken.None).ConfigureAwait(false);
@@ -333,7 +333,7 @@ internal sealed class ImportQueue : IAsyncDisposable
                         var state = receipt is not null ? State.Completed
                             : current.State == State.Cancelling ? State.Cancelled
                             : _shutdown.IsCancellationRequested ? State.Running : State.Failed;
-                        Replace(current with { State = state, Sha256 = receipt?.Sha256, Bytes = receipt?.Bytes ?? 0, Error = failed ? "executionFailed" : null });
+                        Replace(current with { State = state, Sha256 = receipt?.Sha256, Bytes = receipt?.Bytes ?? 0, Error = failureCode });
                         _progress.Remove(job.Id);
                         _cancelActive = null;
                         _activeId = Guid.Empty;

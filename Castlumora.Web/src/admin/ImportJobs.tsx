@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { useApp, errorText } from '../state';
 import { Feedback } from '../components/Media';
 import { ActionStatus, useAction } from './Controls';
-import { importQueueApi } from './importerApi';
+import { importFailureText, importQueueApi } from './importerApi';
 import type { ImportQueue } from './importerApi';
 
 export default function ImportJobs() {
@@ -153,12 +153,7 @@ export default function ImportJobs() {
                   {Math.round(job.bytes / 1024)} KiB · attempt {job.attempts}/3
                 </p>
                 <small>Job {job.id}</small>
-                {job.error && (
-                  <p>
-                    Import failed ({job.error}). Check the server import diagnostics using this job
-                    ID.
-                  </p>
-                )}
+                {job.error && <p>{importFailureText(job.error)}</p>}
                 {['queued', 'running'].includes(job.state) && (
                   <button
                     disabled={action.busy}

@@ -18,6 +18,30 @@ public sealed class ImportQueueTests : IDisposable
     private readonly Guid _admin = Guid.NewGuid();
     private readonly CancellationToken _token = TestContext.Current.CancellationToken;
 
+    [Theory]
+    [InlineData("certificateRejected")]
+    [InlineData("sourceDenied")]
+    [InlineData("sourceNetwork")]
+    [InlineData("sourceRateLimited")]
+    [InlineData("sizeLimit")]
+    public async Task KnownFailureCode_IsPersistedAcrossReloadWithoutRawDiagnostics(string code)
+    {
+        Guid id;
+        await using (var queue = Open((_, _, _) => throw ImportFailure.Download(code)))
+        {
+            id = (await SubmitAsync(queue)).Id;
+            queue.Start();
+            Assert.Equal(code, (await WaitAsync(queue, id, ImportQueue.State.Failed)).Error);
+        }
+
+        await using var reopened = Open(CompleteAsync);
+        var restored = Assert.Single(await reopened.ListAsync(_token));
+        Assert.Equal(id, restored.Id);
+        Assert.Equal(ImportQueue.State.Failed, restored.State);
+        Assert.Equal(code, restored.Error);
+        Assert.Equal(1, restored.Attempts);
+    }
+
     [Fact]
     public async Task PendingJobsAndPrivateRightsSurviveReload_ThenExecuteOnceAndDeduplicate()
     {

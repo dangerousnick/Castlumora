@@ -11,6 +11,86 @@ Permanent source of truth: [docs/CASTLUMORA_PRODUCT_REQUIREMENTS.md](docs/CASTLU
 
 
 
+
+
+## Actionable failure-reporting checkpoint — verified locally, awaiting publication
+
+Baseline published dc3147c523357be4819d95a25fea3ade1c9417a3 remains verified with
+required Linux/macOS/shared CI and real public-import/index/dedup/browser playback.
+Current increment implements fixed persistent failure codes, safe API history
+clamping, actionable administrator guidance and a non-reflecting internal tunnel
+connection-failure flag. No DNS/TLS/auth/process/resource or attempt limits changed.
+
+Executed: initial focused69backend cases; final policy/persistence50cases; final
+tunnel/classification35cases; real TLS certificate/denial assertions retained.
+Node24 typecheck/lint/61frontend tests/production build pass. Full restored format
+2430files0changes before final tunnel addition; final Release build0warnings/errors.
+A locally detected separator blank line was fixed before any push.
+
+Actual compiled server: saved owned job ab40f751e0c8423d876f29327c5abb80 used its
+last allowed retry, persisted sourceNetwork (attempt3) under the independently
+verified cloud direct-egress refusal. Real Chromium then showed fixed network
+help and jobID, no source URL/private path/proxy output, and no Retry button after
+exhaustion. Logs: /tmp/castlumora-live-error-code-result2.log and
+/tmp/castlumora-import-error-browser.log. Intermediate downloadFailed exposed only
+safe generic output; authoritative connection flag corrected diagnosis without
+returning raw errors or modifying policy. No production source/secret was used.
+The marked loopback server is stopped before final full-gate validation.
+
+Next exact steps: normal commit/push through full gate; inspect exact required
+Linux/macOS/shared CI and three-workflow preview (including real public import);
+verify new artifact/source/checksum/branding/GPL and update PR3. Then implement
+controlled retry/backoff/resource/source enumeration milestones, preserving full
+1.0 scope. Windows private staging cleanup remains advisory and retained for
+future native handle/process-lifetime review. Usage status: Not accessible.
+
+
+## Verified public import checkpoint and active failure-reporting milestone
+
+Latest published/required-CI verified commit:
+`dc3147c523357be4819d95a25fea3ade1c9417a3`.
+Full local gate /tmp/castlumora-prepush.gjOEErLz passed; required Linux130968123933
+and macOS130968124197, Format/OpenAPI/ABI and Preview43153546755 passed.
+The extracted package actually imported the owner-authorized public GPL clip with
+default production networking, exact11734bytes/SHA,deduplication, automatic native
+indexing/H264-AAC metadata and advancing browser playback (8.6seconds). Three
+packaged browser workflows passed. This resolves the previously pending positive
+GitHub execution; cloud-local direct egress remains separately blocked/refused.
+
+Verified download:
+https://github.com/dangerousnick/Castlumora/actions/runs/43153546755/artifacts/13914787865
+Archive Castlumora-1.0-dev-dc3147c52335-linux-x64.tar.gz.
+SHA256:56bcf751ed9084105490e5e6d92330b4188ba68f2f306e93e36bc7bb75a66a71.
+Expires2026-12-12; sign-in required. Independent download verified envelope digest
+035ebb17fd3edb1eefcb56680b64f8eeb2794c42e4fc5ca09bcdcb4a42fdc638,
+manifest/source, server/runtime, compiled Web/importer, GPL and all16branding files.
+Report /tmp/castlumora-public-import-preview-verified.json. PR3 updated.
+
+Windows advisory130968124111 reported four staging-cleanup assertion failures
+following cancellation/oversized metadata. Reviewed logs: directory residue, not a
+Linux/macOS failure; Windows hosted importing remains disabled/deferred. Preserve
+failures/diagnostics and investigate native handle/process shutdown before claiming
+Windows support. No tests or shared security checks were weakened.
+
+Current coherent increment: fixed persistent failure codes and actionable native
+admin guidance without raw exceptions/URLs/paths/stdout/stderr. Existing exception
+types and limits remain. Completed focused run69cases plus final policy50cases;
+Node24 typecheck/lint/61tests/build pass; full restored format2430files0changes
+before the final tunnel flag addition. A local live retry correctly stored safe
+but generic downloadFailed; improve diagnosis with the tunnel's fixed numeric-
+connection-failure flag, never by reflecting remote errors or changing policy.
+Tests/build for that final change are running; do not claim its live proof yet.
+One locally caught missing separation blank line was corrected before publication.
+
+Next exact steps: finish tunnel/classification tests and Release build; run the
+saved failed owned job's remaining manual retry to verify sourceNetwork through
+normal API and browser, then stop only the marked fixture server. Run complete
+normal pre-push gate/publish; inspect required Linux/macOS and new preview; verify
+artifact/update PR3. Continue safe retry/resource policies, broader authorized
+source enumeration/metadata and the retained full Phase1.4/1.0 requirements.
+Usage status: Not accessible. Preserve source/history/stash; no merge/deployment.
+
+
 ## Active packaged-import verification increment — 2026-11-12
 
 Latest published/required-CI verified commit:

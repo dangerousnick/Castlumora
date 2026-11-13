@@ -15,6 +15,18 @@ namespace Jellyfin.Api.Tests.Castlumora;
 
 public sealed class ImportTunnelTests
 {
+    [Fact]
+    public async Task RefusedValidatedSource_RecordsOnlyFailureFlagAndClosesConnection()
+    {
+        await using var proxy = new ImportTunnel(
+            Policy(() => throw new SocketException((int)SocketError.ConnectionRefused)),
+            TestContext.Current.CancellationToken);
+        using var client = await Client(proxy);
+        await Write(client.GetStream(), "CONNECT example.org:443 HTTP/1.1\r\n" + Auth(proxy) + "\r\n");
+        Assert.Equal(0, await Closed(client.GetStream()));
+        Assert.True(proxy.HasConnectionFailure);
+    }
+
     [Theory]
     [InlineData("GET https://example.org/ HTTP/1.1\r\n")]
     [InlineData("CONNECT example.org:80 HTTP/1.1\r\n")]
@@ -36,6 +48,7 @@ public sealed class ImportTunnelTests
         await Write(client.GetStream(), request + Auth(proxy) + "\r\n");
         Assert.Equal(0, await Closed(client.GetStream()));
         Assert.Equal(0, calls);
+        Assert.False(proxy.HasConnectionFailure);
     }
 
     [Fact]
@@ -57,6 +70,7 @@ public sealed class ImportTunnelTests
         }
 
         Assert.Equal(0, calls);
+        Assert.False(proxy.HasConnectionFailure);
     }
 
     [Fact]

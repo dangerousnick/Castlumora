@@ -235,7 +235,7 @@ public sealed class ImportService : IHostedService, IAsyncDisposable
         ["attempts"] = job.Attempts,
         ["bytes"] = job.Bytes,
         ["sha256"] = job.Sha256,
-        ["error"] = job.Error,
+        ["error"] = ImportFailure.PublicCode(job.Error),
         ["createdAt"] = job.CreatedAt.ToString("O", CultureInfo.InvariantCulture)
     };
 }

@@ -112,3 +112,33 @@ it('renders untrusted titles as text and invokes server cancellation/retry only 
   expect(screen.queryByRole('button', { name: 'Cancel Completed clip' })).toBeNull();
   expect(screen.getByText(/Imported · library scan requested/)).toBeTruthy();
 });
+
+it('explains whitelisted failures and does not echo unknown diagnostic text', async () => {
+  setup([
+    {
+      id: 'network',
+      title: 'Network clip',
+      sourceHost: 'example.test',
+      destinationId: 'library',
+      state: 'failed',
+      attempts: 1,
+      bytes: 0,
+      createdAt: '2026-11-13T00:00:00Z',
+      error: 'sourceNetwork',
+    },
+    {
+      id: 'unknown',
+      title: 'Unknown clip',
+      sourceHost: 'example.test',
+      destinationId: 'library',
+      state: 'failed',
+      attempts: 1,
+      bytes: 0,
+      createdAt: '2026-11-13T00:00:00Z',
+      error: 'https://private.invalid/?token=do-not-display',
+    },
+  ]);
+  expect(await screen.findByText(/Check DNS, firewall and direct HTTPS egress/)).toBeTruthy();
+  expect(screen.getByText(/do not share private URLs or tokens/)).toBeTruthy();
+  expect(document.body.textContent).not.toContain('do-not-display');
+});

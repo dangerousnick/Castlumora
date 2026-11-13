@@ -130,7 +130,7 @@ internal static class ImportProcess
         }
     }
 
-    private static string Classify(string error)
+    internal static string Classify(string error)
     {
         if (error.Contains("CERTIFICATE_VERIFY_FAILED", StringComparison.OrdinalIgnoreCase))
         {
@@ -145,6 +145,24 @@ internal static class ImportProcess
         if (error.Contains("max-filesize", StringComparison.OrdinalIgnoreCase) || error.Contains("larger than max", StringComparison.OrdinalIgnoreCase))
         {
             return "sizeLimit";
+        }
+
+        if (error.Contains("HTTP Error 429", StringComparison.OrdinalIgnoreCase))
+        {
+            return "sourceRateLimited";
+        }
+
+        if (error.Contains("Unsupported URL", StringComparison.OrdinalIgnoreCase))
+        {
+            return "unsupportedSource";
+        }
+
+        foreach (var marker in new[] { "HTTP Error 502", "HTTP Error 503", "HTTP Error 504", "Tunnel connection failed: 502", "Connection refused", "Network is unreachable", "Name or service not known", "Temporary failure in name resolution", "timed out" })
+        {
+            if (error.Contains(marker, StringComparison.OrdinalIgnoreCase))
+            {
+                return "sourceNetwork";
+            }
         }
 
         return "downloadFailed";
