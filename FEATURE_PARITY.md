@@ -13,6 +13,13 @@ feature status; a development preview does not establish stable-release readines
 Linux-only server policy and mandatory validation remain in effect. Never merge
 main or deploy to Coon Media automatically.
 
+## OpenAPI reporting correction
+
+The report consumer distinguishes explicitly skipped generation from a missing
+required artifact; producer upload fails for missing files. Regression checks and
+v4 artifact pairing preserve real failures. Default-branch workflow adoption still
+requires review; no automatic main merge. Resume profile editing/recovery next.
+
 ## Verified media-default preview — sourceda1f2829ec
 
 Self-scoped audio/subtitle/source-audio/mode editing updates four existing user

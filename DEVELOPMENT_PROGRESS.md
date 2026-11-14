@@ -13,6 +13,29 @@ feature status; a development preview does not establish stable-release readines
 Linux-only server policy and mandatory validation remain in effect. Never merge
 main or deploy to Coon Media automatically.
 
+## OpenAPI artifact lifecycle correction (2026-11-15)
+
+- Root cause confirmed against run43654249381: scope succeeded while Generate
+  Report, Head/ Base Artifact and Common Ancestor were intentionally skipped.
+  A successful workflow does not imply that an optional report was generated.
+- Reporting now checks the triggering run's latest jobs before downloading; only
+  explicitly skipped Generate Report suppresses consumption. Missing/duplicate/
+  failed generation is an error. A successful producer still requires the real
+  report artifact; no placeholder or continue-on-error was introduced.
+- Producer waits for head/base and now fails if its report file is absent. Both
+  sides use exact openapi-report naming and compatible upload/download-artifact@v4;
+  cross-run download retains its run-id and authenticated token.
+- Local actionlint passed for all three changed workflows; actual embedded-script
+  regression checks cover success, intentional skip, missing/duplicate/failing/
+  cancelled jobs and strict producer/consumer wiring. Normal gate and exact-SHA
+  CI results will be recorded after publication. Backend application unchanged.
+- Deployment limitation: workflow_run uses the default branch implementation.
+  Main still has the older unconditional downloader and separate bot-token use;
+  this development-branch fix cannot change that active workflow until reviewed
+  adoption on main. Do not merge main automatically or rerun the same broken job.
+- Phase1.4 next task remains managed profile editing/non-destructive recovery.
+  Usage status: Not accessible. Existing verified application/preview unchanged.
+
 ## Verified media-preference checkpoint — language defaults and playback
 
 - Last completed milestone: isolated audio/subtitle language, source-default audio

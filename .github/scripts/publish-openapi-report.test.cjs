@@ -76,3 +76,48 @@ test('bounds large comments and points readers to the complete artifact', async 
   assert.ok(calls[0][1].body.length < 65536);
   assert.match(calls[0][1].body, /Report truncated/);
 });
+
+// Exercise the actual workflow script, including intentionally absent artifacts.
+const fs = require('node:fs');
+const vm = require('node:vm');
+const workflow = fs.readFileSync('.github/workflows/openapi-workflow-run.yml', 'utf8');
+const generationScript = workflow.split('        script: |\n')[1].split('    - name: Get Pull Request Number')[0]
+  .split('\n').map(line => line.replace(/^          /, '')).join('\n');
+
+async function reportExpected(jobs) {
+  const notices = [];
+  const run = vm.runInNewContext(`(async () => { ${generationScript} })`, {
+    github: { rest: { actions: { listJobsForWorkflowRun: {} } },
+      paginate: async (_method, args) => {
+        assert.equal(args.run_id, 123);
+        assert.equal(args.filter, 'latest');
+        return jobs;
+      } },
+    context: { repo: { owner: 'dangerousnick', repo: 'Castlumora' }, payload: { workflow_run: { id: 123 } } },
+    core: { notice: message => notices.push(message) },
+  });
+  return { expected: await run(), notices };
+}
+
+test('skips artifact consumption only when report generation was intentionally skipped', async () => {
+  const skipped = await reportExpected([{ name: 'Generate Report', conclusion: 'skipped' }]);
+  assert.equal(skipped.expected, false);
+  assert.equal(skipped.notices.length, 1);
+  assert.equal((await reportExpected([{ name: 'Generate Report', conclusion: 'success' }])).expected, true);
+  for (const jobs of [[], [{ name: 'Generate Report', conclusion: 'failure' }],
+    [{ name: 'Generate Report', conclusion: 'cancelled' }],
+    [{ name: 'Generate Report', conclusion: 'success' }, { name: 'Generate Report', conclusion: 'skipped' }]]) {
+    await assert.rejects(reportExpected(jobs));
+  }
+});
+
+test('artifact producer and cross-run consumer retain strict matching contracts', () => {
+  const producer = fs.readFileSync('.github/workflows/openapi-pull-request.yml', 'utf8');
+  assert.match(producer, /needs:\n    - head\n    - base/);
+  assert.match(producer, /uses: actions\/upload-artifact@v4\n      with:\n        name: openapi-report\n        path: \/tmp\/openapi-report\/openapi-report.md\n        if-no-files-found: error/);
+  assert.match(workflow, /needs.metadata.outputs.report_expected == 'true'/);
+  assert.match(workflow, /uses: actions\/download-artifact@v4\n      with:\n        name: openapi-report/);
+  assert.match(workflow, /run-id: \$\{\{ github.event.workflow_run.id }}/);
+  assert.match(workflow, /github-token: \$\{\{ secrets.GITHUB_TOKEN }}/);
+  assert.doesNotMatch(workflow, /continue-on-error/);
+});
