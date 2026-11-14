@@ -1,30 +1,49 @@
 # Castlumora Web Phase 1.3 development progress
 
-## Current increment — persistent single-video YouTube workflow
+## Published application — persistent single-video YouTube workflow
 
-- Implemented: administrator preview/receipt/rights/destination confirmation; native
-  Web controls; durable source-ID deduplication and resource snapshots; private
-  H264/AAC downloads; local fragmented-stream remux; strict final inspection;
-  creator/original-title/provenance persistence; safe existing publication/scanning;
-  cancellation/retry/restart integration and marked staging reclamation.
-- Focused verification:124backend passes/1explicit external-fixture skip;2server
-  authorization/real-owned-media queue-to-index/playback integration tests passed;
-  new UI tests and existing import form tests8passed. The upstream nullable-audio-
-  height regression also passed. Final formatting/full gate,
-  exact-SHA GitHub CI and new preview are pending, not claimed successful yet.
-- Actual authorized video remains unverified. Direct source connections failed;
-  numeric upstream CONNECT and normal TLS succeeded in a separate diagnostic, but
-  its watch page returnedHTTP403. No security/authentication/proxy policy changed.
-- Last published checkpoint:1bcf896d71541fc1969a410fd02db6c14f768b24; tested app47
-  below remains recoverable. Current branch development/castlumora-web-1.3, PR3.
-- Next exact action: finish full formatting/Debug/Release/backend/frontend gate;
-  publish only if passing; verify exact-SHA Linux/shared CI and real preview;
-  then external source verification and thumbnail/subtitle enrichment before bulk/
-  playlist/channel synchronization. See docs/CASTLUMORA_YOUTUBE_IMPORT.md.
-- Usage/reset information: Not accessible. Preserve this increment if interrupted;
-  inspect status/log before continuing, do not recreate it or reapply old stashes.
-  No main merge/Coon Media deployment; all original1.0 requirements retained.
-
+- Latest published application: `1ac55a6c423eef11738e70b95e3b304fe49bef19`.
+  Feature commitfbf2ceb3c3; full Debug formatting correction0d5fa68f87;
+  upstream audio-only/null-height schema regression1ac55a6c42.
+  Branch development/castlumora-web-1.3; PR3; no main merge/Coon deployment.
+- Completed increment: administrator preview/receipt/rights/destination confirmation;
+  native Web controls; durable canonical source-ID deduplication/resource snapshots;
+  private H264/AAC downloads; bounded local fragmented-stream remux; strict final
+  inspection; creator/original-title/provenance persistence; existing atomic safe
+  publication/scanning; cancellation/retry/restart and marked staging reclamation.
+- Full normal local gate passed: restored format2,447files/zero changes/no workspace
+  warning; .NET10 SDK10.0.403 Debug/Release0warnings/errors; all17backend suites
+  4,555passed/20skips; Node24.22.1 typecheck/lint/66tests/build; existing hook/native/
+  security/backup/migration/handler coverage. Logs /tmp/castlumora-prepush.1pKN7IMe.
+  The first formatting gate correctly blocked; reported diagnostics were fixed.
+  An obsolete run was stopped when upstream inspection exposed nullable audio-only
+  height; that regression was fixed/tested before publication. No checks weakened.
+- Exact application1acGitHub Linux job132406182436 passed4,555backend tests/
+  20skips. Format43581212324, ABI43581212529, OpenAPI43581212486 and
+  Preview43581212381 passed. Three actual-package browser workflows passed;
+  independently downloaded archive verified exact source, compiled YouTube form,
+  all16castle assets, GPL/runtime/Node licenses and outer/inner checksums.
+  Download: https://github.com/dangerousnick/Castlumora/actions/runs/43581212381/artifacts/14108238748
+  Archive Castlumora-1.0-dev-1ac55a6c423e-linux-x64.tar.gz;
+  SHA256 b10cc7f7cf57daa807ae7a9d3fdfcd921db6881d648c0a10fa8e0e02563886ac.
+  GitHub sign-in/30-day retention apply. This is an intermediate development preview.
+- Current small follow-up: actual packaged-browser coverage of the new YouTube
+  form's unsafe-URL rejection/no-job guarantee, plus safe fixed guidance for rejected,
+  unavailable or timed-out previews. The focused3UI tests passed; final frontend
+  gate/package CI are pending. Application C# is unchanged; retain1acbackend evidence.
+- Actual external YouTube access is unverified. Owner-authorized4Xsn6oe-AEg failed
+  direct connections; numeric upstream CONNECT and normal TLS subsequently worked
+  in a diagnostic, but its watch page returnedHTTP403. No importer proxy/TLS/auth
+  policy or cookies changed. Owned/native/API contracts are not a real YouTube
+  success claim; the build manifest explicitly marks external verification false.
+- Next exact actions: publish/verify the small browser follow-up and its preview,
+  preserving1ac's unchanged backend results. Then thumbnail/subtitle enrichment and
+  actual authorized external verification where allowed, followed by playlists/
+  channels/bulk/synchronization and independent online creator metadata.
+- Usage/reset information: Not accessible. Recovery: fetch origin, inspect status/
+  newer commits, read this record and docs/CASTLUMORA_YOUTUBE_IMPORT.md; retain all
+  work and continue the next milestone. Do not recreate the queue or reapply old
+  stashes. All original1.0 scope and prior requirements/history remain intact.
 
 ## Published checkpoint — reviewed YouTube source/runtime prerequisite
 

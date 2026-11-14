@@ -3,7 +3,7 @@ import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/re
 import { afterEach, expect, it, vi } from 'vitest';
 import { AppContext } from '../state';
 import type { AppState } from '../state';
-import { Api } from '../api/client';
+import { Api, ApiError } from '../api/client';
 import YouTubeImport from './YouTubeImport';
 
 afterEach(cleanup);
@@ -74,5 +74,21 @@ it('invalidates a confirmation whenever the source or resource choices change', 
   fireEvent.click(screen.getByRole('button', { name: 'Preview YouTube video' }));
   await screen.findByRole('button', { name: 'Queue confirmed YouTube video' });
   fireEvent.change(screen.getByLabelText('Maximum import size'), { target: { value: '256' } });
+  expect(screen.queryByRole('button', { name: 'Queue confirmed YouTube video' })).toBeNull();
+});
+
+it('explains a rejected preview without reflecting arbitrary server diagnostics or offering a queue action', async () => {
+  const { request } = setup();
+  request.mockRejectedValueOnce(
+    new ApiError(400, 'untrusted diagnostic containing private details'),
+  );
+  fireEvent.change(screen.getByLabelText('YouTube video URL'), {
+    target: { value: 'https://127.0.0.1/private' },
+  });
+  fireEvent.click(screen.getByRole('button', { name: 'Preview YouTube video' }));
+  await waitFor(() =>
+    expect(screen.getByRole('status').textContent).toContain('Preview rejected.'),
+  );
+  expect(screen.getByRole('status').textContent).not.toContain('private details');
   expect(screen.queryByRole('button', { name: 'Queue confirmed YouTube video' })).toBeNull();
 });

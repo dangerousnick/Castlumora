@@ -33,3 +33,22 @@ Use an isolated installation and copies/authorized fixtures. Record BUILD_INFO.j
 ## Report a bug
 
 Open a GitHub issue with exact commit/package/checksum, environment, numbered steps, expected/observed behavior, timestamp, relevant redacted log excerpt and optional screenshot. Include whether a feature was verified/experimental, media codec/container (not copyrighted files), and whether direct or compatible playback failed. Never include passwords, access tokens, private media URLs, databases or invitation links.
+
+## YouTube single-video development workflow
+
+Find Administration → Imports & Sources → Import a YouTube video. Install the
+managed runtime and select an eligible Home Videos library first. Preview a video
+you own/have permission to retain; verify creator/video identity, quality and size
+budget, then confirm rights and queue it. Expect persistent history, cancellation,
+bounded retries, creator metadata and library scanning/playback after success.
+Changing the source/destination/resource choice requires another preview.
+
+Security check: a loopback/private URL must be rejected, without a confirmation or
+new job. The current follow-up adds this to the real packaged-browser test. Native
+policy/remux/queue/publication and owned-media API tests passed at application1ac;
+public YouTube extraction/download remains unverified because workspace source
+access failed/returnedHTTP403. Do not count that restriction as a successful test.
+Thumbnails/subtitles, playlists/channels/synchronization and independent online
+creator metadata remain unfinished. Report error code/job ID, logs, source
+permission/availability, server/browser versions and reproduction steps; omit
+passwords, cookies, tokens and private URLs.

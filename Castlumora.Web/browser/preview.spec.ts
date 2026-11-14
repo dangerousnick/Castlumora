@@ -191,6 +191,33 @@ test('packaged preview: authorized public import indexes, deduplicates and plays
   await page
     .getByRole('combobox', { name: 'Destination library', exact: true })
     .selectOption({ label: name });
+  await test.step('YouTube form rejects unsafe source without creating a persistent job', async () => {
+    const youtube = page.getByRole('region', { name: 'Authorized YouTube import', exact: true });
+    await expect(
+      youtube.getByRole('heading', { name: 'Import a YouTube video', exact: true }),
+    ).toBeVisible();
+    await youtube
+      .getByLabel('YouTube destination library', { exact: true })
+      .selectOption({ label: name });
+    await youtube
+      .getByLabel('YouTube video URL', { exact: true })
+      .fill('https://127.0.0.1/private');
+    const previous = (await get('Castlumora/Imports/Queue')).jobs.length;
+    const rejected = page.waitForResponse(
+      (response) =>
+        new URL(response.url()).pathname.endsWith('/Castlumora/Imports/YouTube/Preview') &&
+        response.request().method() === 'POST',
+    );
+    await youtube.getByRole('button', { name: 'Preview YouTube video', exact: true }).click();
+    const rejectedResponse = await rejected;
+    expect(rejectedResponse.status()).toBe(400);
+    expect(await rejectedResponse.text()).toContain('publicly routable');
+    await expect(youtube.getByRole('status')).toContainText('Preview rejected.');
+    expect((await get('Castlumora/Imports/Queue')).jobs).toHaveLength(previous);
+    await expect(
+      youtube.getByRole('button', { name: 'Queue confirmed YouTube video', exact: true }),
+    ).toHaveCount(0);
+  });
   const source =
     'https://raw.githubusercontent.com/dangerousnick/Castlumora/36cf2b44a01c0f88c6f5c9ec979161790f03d8a1/tests/Jellyfin.Api.Tests/Fixtures/import-owned.mp4';
   await page.getByLabel('Source URL', { exact: true }).fill(source);

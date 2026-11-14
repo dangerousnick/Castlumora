@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { ApiError } from '../api/client';
 import { useApp } from '../state';
 import { ActionStatus, useAction } from './Controls';
 import { importQueueApi } from './importerApi';
@@ -37,12 +38,28 @@ export default function YouTubeImport({
           event.preventDefault();
           setPreview(undefined);
           void action.run(async () => {
-            const result = await importQueueApi(api).previewYouTube({
-              url,
-              destinationId,
-              maximumHeight: height,
-              maximumMiB: size,
-            });
+            const result = await importQueueApi(api)
+              .previewYouTube({
+                url,
+                destinationId,
+                maximumHeight: height,
+                maximumMiB: size,
+              })
+              .catch((error: unknown) => {
+                if (error instanceof ApiError && error.status === 400)
+                  throw new Error(
+                    'Preview rejected. Check the plain YouTube link, source permission/availability, supported format and server HTTPS access.',
+                  );
+                if (error instanceof ApiError && error.status === 409)
+                  throw new Error(
+                    'Preview unavailable. Verify the managed runtime and destination library, then retry.',
+                  );
+                if (error instanceof ApiError && error.status === 504)
+                  throw new Error(
+                    'The source preview timed out. Check server HTTPS access and source availability.',
+                  );
+                throw error;
+              });
             setPreview(result);
             setTitle(result.title);
             setConfirmed(false);

@@ -1,10 +1,14 @@
 # Feature parity inventory — Phase 1.3
 
-## Single-video YouTube queue — current development increment
+## Published single-video YouTube workflow — verification checkpoint
 
 Preview/rights/destination confirmation, durable source-ID/policy snapshots, native
 UI, bounded local remux/publication and creator provenance are implemented. Focused
-native/API/owned-media tests pass; full gate/publication/CI/preview are pending.
+native/API/owned-media tests pass. Application1ac55a6c423eef11738e70b95e3b304fe49bef19
+is published after full restored formatting, zero-warning Debug/Release,4,555backend
+passes/20skips and66frontend passes. Exact-SHA Linux/shared CI and the new actual-package preview passed; its download
+was independently hash/source/compiled-UI/GPL/branding verified. A small browser
+follow-up adds explicit unsafe YouTube-source/no-job coverage without changing C#.
 Actual authorized public extraction remains unverified (network failure/HTTP403).
 This is not production certification or complete Phase1.4. Thumbnail/subtitle
 retention, playlists/channels/synchronization and independent online metadata remain
