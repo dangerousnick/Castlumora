@@ -1,11 +1,17 @@
-﻿name: ABI Compatibility
+name: ABI Compatibility
 on:
   pull_request:
 
 permissions: {}
 
 jobs:
+  scope:
+    permissions:
+      contents: read
+    uses: ./.github/workflows/change-scope.yml
   abi-head:
+    needs: scope
+    if: needs.scope.outputs.application == 'true'
     name: ABI - HEAD
     runs-on: ubuntu-latest
     permissions: read-all
@@ -35,7 +41,8 @@ jobs:
 
   abi-base:
     name: ABI - BASE
-    if: ${{ github.base_ref != '' }}
+    needs: scope
+    if: needs.scope.outputs.application == 'true' && github.base_ref != ''
     runs-on: ubuntu-latest
     permissions: read-all
     steps:

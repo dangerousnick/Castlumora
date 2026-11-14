@@ -3,6 +3,7 @@ import os
 from pathlib import Path
 import shutil
 import subprocess
+import sys
 import tempfile
 import unittest
 
@@ -24,7 +25,7 @@ class PrePushTests(unittest.TestCase):
         self.git("init", str(self.repo), cwd=self.root)
         self.git("config", "user.name", "Fixture")
         self.git("config", "user.email", "fixture@example.invalid")
-        for name in ["scripts/validate-before-push.sh", "scripts/install-git-hooks.sh", ".githooks/pre-push"]:
+        for name in ["scripts/validate-before-push.sh", "scripts/install-git-hooks.sh", ".githooks/pre-push", ".github/scripts/change_scope.py"]:
             target = self.repo / name
             target.parent.mkdir(parents=True, exist_ok=True)
             shutil.copy2(SOURCE / name, target)
@@ -53,7 +54,85 @@ if [ "$1" = test ] && [ "${CASTLUMORA_GATE_TEST_FAILURE:-}" = tests ]; then exit
         self.tool("ffprobe", "echo native-hook-fixture")
         self.env["CASTLUMORA_TEST_FFPROBE"] = str(self.tools / "ffprobe")
         self.tool("npm", "")
-        self.tool("python3", 'if [ "$1" = -c ]; then echo "Free bytes: 1024; informational only"; fi')
+        self.tool("python3", 'if [ "$1" = .github/scripts/change_scope.py ]; then exec '+sys.executable+' "$@"; fi\nif [ "$1" = -c ]; then echo "Free bytes: 1024; informational only"; fi')
+
+    def test_documentation_only_push_does_not_rebuild_application(self):
+        self.git("push", "origin", "HEAD:refs/heads/development")
+        (self.root / "commands").write_text("")
+        (self.repo / "README.md").write_text("# Owned documentation\n")
+        self.git("add", ".")
+        self.git("commit", "-m", "documentation")
+        self.git("push", "origin", "HEAD:refs/heads/development")
+        commands = (self.root / "commands").read_text()
+        self.assertIn("--check-docs", commands)
+        self.assertNotIn("dotnet", commands)
+        self.assertNotIn("npm", commands)
+
+    def test_final_docs_commit_cannot_hide_unpublished_application_changes(self):
+        self.git("push", "origin", "HEAD:refs/heads/development")
+        (self.repo / "Castlumora.Web/package.json").write_text('{"changed":true}')
+        self.git("add", ".")
+        self.git("commit", "-m", "application")
+        (self.repo / "README.md").write_text("# Final docs\n")
+        self.git("add", ".")
+        self.git("commit", "-m", "docs")
+        self.env["CASTLUMORA_GATE_TEST_FAILURE"] = "tests"
+        result = self.git("push", "origin", "HEAD:refs/heads/development", check=False)
+        self.assertNotEqual(result.returncode, 0)
+
+    def docs_blocked(self, text):
+        self.git("push", "origin", "HEAD:refs/heads/development")
+        base = self.git("rev-parse", "HEAD").stdout.strip()
+        (self.repo / "README.md").write_text(text)
+        self.git("add", ".")
+        self.git("commit", "-m", "bad docs")
+        result = self.git("push", "origin", "HEAD:refs/heads/development", check=False)
+        self.assertNotEqual(result.returncode, 0)
+        self.assertEqual(self.git("--git-dir="+str(self.remote), "rev-parse", "refs/heads/development").stdout.strip(), base)
+
+    def test_documentation_conflict_blocks_push(self):
+        self.docs_blocked("<<<<<<< unfinished\n")
+
+    def test_documentation_whitespace_error_blocks_push(self):
+        self.docs_blocked("unfinished trailing space \n")
+
+    def test_policy_changes_require_application_validation(self):
+        self.git("push", "origin", "HEAD:refs/heads/development")
+        (self.repo / "AGENTS.md").write_text("policy change\n")
+        self.git("add", ".")
+        self.git("commit", "-m", "policy")
+        self.env["CASTLUMORA_GATE_TEST_FAILURE"] = "tests"
+        self.assertNotEqual(self.git("push", "origin", "HEAD:refs/heads/development", check=False).returncode, 0)
+
+    def test_symlink_cannot_masquerade_as_documentation(self):
+        self.git("push", "origin", "HEAD:refs/heads/development")
+        outside = self.root / "outside"
+        outside.write_text("owned fixture")
+        (self.repo / "README.md").symlink_to(outside)
+        self.git("add", ".")
+        self.git("commit", "-m", "symlink")
+        self.env["CASTLUMORA_GATE_TEST_FAILURE"] = "tests"
+        self.assertNotEqual(self.git("push", "origin", "HEAD:refs/heads/development", check=False).returncode, 0)
+
+    def test_untrusted_base_option_defaults_to_application(self):
+        result = subprocess.run([sys.executable, ".github/scripts/change_scope.py", "--base=--output=untrusted"], cwd=self.repo, text=True, capture_output=True, check=True)
+        self.assertEqual(result.stdout.strip(), "application")
+        self.assertFalse((self.repo / "untrusted").exists())
+
+    def test_changed_merge_target_cannot_reuse_docs_only_validation(self):
+        base = self.git("rev-parse", "HEAD").stdout.strip()
+        branch = self.git("branch", "--show-current").stdout.strip()
+        self.git("checkout", "-b", "changed-target")
+        (self.repo / "server.cs").write_text("target branch application change")
+        self.git("add", ".")
+        self.git("commit", "-m", "target change")
+        target = self.git("rev-parse", "HEAD").stdout.strip()
+        self.git("checkout", branch)
+        (self.repo / "README.md").write_text("# Docs\n")
+        self.git("add", ".")
+        self.git("commit", "-m", "docs")
+        result = subprocess.run([sys.executable, ".github/scripts/change_scope.py", "--base", base, "--target-base", target], cwd=self.repo, text=True, capture_output=True, check=True)
+        self.assertEqual(result.stdout.strip(), "application")
 
     def test_missing_native_inspection_fixture_blocks_push(self):
         self.env["CASTLUMORA_TEST_FFPROBE"] = str(self.root / "missing-native-probe")

@@ -142,37 +142,60 @@ internal sealed class ImportQueue : IAsyncDisposable
     }
 
     internal async Task<Job> SubmitAsync(string source, Guid destinationId, string title, string rights, Guid requestedBy, CancellationToken token, bool automaticRetries = false)
+        => (await SubmitManyAsync([(source, title)], destinationId, rights, requestedBy, token, automaticRetries).ConfigureAwait(false))[0];
+
+    internal async Task<Job[]> SubmitManyAsync((string Source, string Title)[] entries, Guid destinationId, string rights, Guid requestedBy, CancellationToken token, bool automaticRetries = false)
     {
-        source = Validate(source, destinationId, title, rights, requestedBy);
+        if (entries.Length is < 1 or > 25)
+        {
+            throw new InvalidDataException("Submit between one and twenty-five authorized direct MP4 entries.");
+        }
+
+        var validated = entries.Select(entry => (Source: Validate(entry.Source, destinationId, entry.Title, rights, requestedBy), entry.Title)).ToArray();
         await _gate.WaitAsync(token).ConfigureAwait(false);
         try
         {
-            var key = Key(source, destinationId);
-            var duplicate = _jobs.Find(job => job.SourceKey == key && job.State is State.Queued or State.Running or State.Cancelling or State.Completed);
-            if (duplicate is not null)
+            var pending = new List<Job>(_jobs);
+            var results = new List<Job>();
+            foreach (var entry in validated)
             {
-                return duplicate;
+                var key = Key(entry.Source, destinationId);
+                var duplicate = pending.Find(job => job.SourceKey == key && job.State is State.Queued or State.Running or State.Cancelling or State.Completed);
+                if (duplicate is not null)
+                {
+                    results.Add(duplicate);
+                    continue;
+                }
+
+                if (pending.Count >= MaximumJobs)
+                {
+                    throw new InvalidOperationException("The import history limit is reached; the batch was not saved. Review retained history before adding jobs.");
+                }
+
+                var job = new Job(Guid.NewGuid(), entry.Source, key, destinationId, entry.Title, rights, requestedBy, _clock.GetUtcNow(), AutomaticRetries: automaticRetries);
+                pending.Add(job);
+                results.Add(job);
             }
 
-            if (_jobs.Count >= MaximumJobs)
+            token.ThrowIfCancellationRequested();
+            var originalCount = _jobs.Count;
+            if (pending.Count > originalCount)
             {
-                throw new InvalidOperationException("The import history limit is reached; retain the journal and review storage before adding jobs.");
+                _jobs.AddRange(pending.Skip(originalCount));
+                try
+                {
+                    Save();
+                }
+                catch
+                {
+                    _jobs.RemoveRange(originalCount, _jobs.Count - originalCount);
+                    throw;
+                }
+
+                Wake();
             }
 
-            var job = new Job(Guid.NewGuid(), source, key, destinationId, title, rights, requestedBy, _clock.GetUtcNow(), AutomaticRetries: automaticRetries);
-            _jobs.Add(job);
-            try
-            {
-                Save();
-            }
-            catch
-            {
-                _jobs.Remove(job);
-                throw;
-            }
-
-            Wake();
-            return job;
+            return results.ToArray();
         }
         finally
         {

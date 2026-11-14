@@ -64,6 +64,52 @@ public sealed class CastlumoraImportLifecycleTests
         duplicate.EnsureSuccessStatusCode();
         Assert.Equal(id, (await duplicate.Content.ReadFromJsonAsync<JsonObject>(token))!["id"]!.GetValue<string>());
         Assert.Single(Directory.GetFiles(source.Library, "*.mp4", SearchOption.AllDirectories));
+        using var invalidBatch = await admin.PostAsJsonAsync(
+            "Castlumora/Imports/Jobs/Batch",
+            new
+            {
+                entries = new[] { new { url = source.Source + "&variant=two", title = "Owned second source" }, new { url = "https://127.0.0.1/unsafe.mp4", title = "Unsafe" } },
+                destinationId = destination,
+                rights = "Owned generated fixture",
+                rightsConfirmed = true
+            },
+            token);
+        Assert.Equal(HttpStatusCode.BadRequest, invalidBatch.StatusCode);
+        Assert.Single((await admin.GetFromJsonAsync<JsonObject>("Castlumora/Imports/Queue", token))!["jobs"]!.AsArray());
+        using var batch = await admin.PostAsJsonAsync(
+            "Castlumora/Imports/Jobs/Batch",
+            new
+            {
+                entries = new[] { new { url = source.Source, title = "Do not replace original" }, new { url = source.Source + "&variant=two", title = "Owned second source" } },
+                destinationId = destination,
+                rights = "Owned generated fixture",
+                rightsConfirmed = true,
+                automaticRetries = false
+            },
+            token);
+        batch.EnsureSuccessStatusCode();
+        var accepted = (await batch.Content.ReadFromJsonAsync<JsonObject>(token))!["jobs"]!.AsArray();
+        Assert.Equal(2, accepted.Count);
+        Assert.Equal(id, accepted[0]!["id"]!.GetValue<string>());
+        Assert.True(accepted[0]!["automaticRetries"]!.GetValue<bool>());
+        var secondId = accepted[1]!["id"]!.GetValue<string>();
+        while (true)
+        {
+            var current = await admin.GetFromJsonAsync<JsonObject>("Castlumora/Imports/Queue", deadline.Token);
+            var second = current!["jobs"]!.AsArray().Single(job => job!["id"]!.GetValue<string>() == secondId)!;
+            Assert.DoesNotContain("signed-secret", current.ToJsonString(), StringComparison.Ordinal);
+            Assert.NotEqual("failed", second["state"]!.GetValue<string>());
+            if (second["state"]!.GetValue<string>() == "completed")
+            {
+                Assert.Equal(11734, second["bytes"]!.GetValue<long>());
+                Assert.Equal(accepted[0]!["sha256"]!.GetValue<string>(), second["sha256"]!.GetValue<string>());
+                break;
+            }
+
+            await Task.Delay(100, deadline.Token);
+        }
+
+        Assert.Single(Directory.GetFiles(source.Library, "*.mp4", SearchOption.AllDirectories));
         string? itemId = null;
         while (itemId is null)
         {
@@ -99,7 +145,9 @@ public sealed class CastlumoraImportLifecycleTests
         using var returning = restarted.CreateClient();
         returning.DefaultRequestHeaders.AddAuthHeader(accessToken);
         var recovered = await returning.GetFromJsonAsync<JsonObject>("Castlumora/Imports/Queue", token);
-        var restored = Assert.Single(recovered!["jobs"]!.AsArray())!;
+        Assert.Equal(2, recovered!["jobs"]!.AsArray().Count);
+        var restored = recovered["jobs"]!.AsArray().Single(job => job!["id"]!.GetValue<string>() == id)!;
+        Assert.Equal("completed", recovered["jobs"]!.AsArray().Single(job => job!["id"]!.GetValue<string>() == secondId)!["state"]!.GetValue<string>());
         Assert.Equal(id, restored["id"]!.GetValue<string>());
         Assert.Equal("completed", restored["state"]!.GetValue<string>());
         Assert.Equal(1, restored["attempts"]!.GetValue<int>());

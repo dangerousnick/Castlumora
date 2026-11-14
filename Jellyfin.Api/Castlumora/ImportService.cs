@@ -139,7 +139,9 @@ public sealed class ImportService : IHostedService, IAsyncDisposable
             ["maxMediaBytes"] = 33554432,
             ["concurrency"] = 1,
             ["playlistsAvailable"] = false,
-            ["channelsAvailable"] = false
+            ["channelsAvailable"] = false,
+            ["batchImportsAvailable"] = Available,
+            ["maxBatchEntries"] = 25
         };
     }
 
@@ -150,28 +152,49 @@ public sealed class ImportService : IHostedService, IAsyncDisposable
     /// <returns>Existing duplicate or new persistent job, with private query values omitted.</returns>
     public async Task<JsonObject> SubmitAsync(JsonObject value, Guid administrator, CancellationToken token)
     {
-        if (value.Any(pair => pair.Key is not ("url" or "destinationId" or "title" or "rights" or "rightsConfirmed" or "automaticRetries"))
-            || value["rightsConfirmed"]?.GetValue<bool>() != true
-            || !Guid.TryParse(value["destinationId"]?.GetValue<string>(), out var library))
+        if (value.Any(pair => pair.Key is not ("url" or "destinationId" or "title" or "rights" or "rightsConfirmed" or "automaticRetries")))
         {
-            throw new InvalidDataException("Confirm source rights and select an eligible destination; executable, path and downloader arguments are not accepted.");
+            throw new InvalidDataException("Only source, title, library, rights and retry options are accepted.");
         }
 
-        if (value.ContainsKey("automaticRetries") && (value["automaticRetries"] is not JsonValue retryValue || !retryValue.TryGetValue<bool>(out _)))
-        {
-            throw new InvalidDataException("Automatic retries must be an explicit boolean.");
-        }
-
-        var queue = Required();
-        _publication!.ValidateDestination(administrator, library);
-        var runtime = await _runtime.StatusAsync(token).ConfigureAwait(false);
-        if (runtime["ready"]?.GetValue<bool>() != true)
-        {
-            throw new InvalidOperationException("Install and verify the bundled managed runtime before submitting an import.");
-        }
-
-        var job = await queue.SubmitAsync(value["url"]?.GetValue<string>() ?? string.Empty, library, value["title"]?.GetValue<string>() ?? string.Empty, value["rights"]?.GetValue<string>() ?? string.Empty, administrator, token, value["automaticRetries"]?.GetValue<bool>() ?? false).ConfigureAwait(false);
+        var options = ReadOptions(value);
+        var queue = await PrepareAsync(administrator, options.Library, token).ConfigureAwait(false);
+        var job = await queue.SubmitAsync(Text(value, "url"), options.Library, Text(value, "title"), options.Rights, administrator, token, options.Automatic).ConfigureAwait(false);
         return View(job);
+    }
+
+    /// <summary>Atomically persists up to twenty-five rights-confirmed direct-video entries.</summary>
+    /// <param name="value">Entries, library, common rights and retry options.</param>
+    /// <param name="administrator">Authenticated administrator.</param>
+    /// <param name="token">Submission cancellation.</param>
+    /// <returns>One job reference per entry; duplicates retain their existing identity and policy.</returns>
+    public async Task<JsonObject> SubmitBatchAsync(JsonObject value, Guid administrator, CancellationToken token)
+    {
+        if (value.Any(pair => pair.Key is not ("entries" or "destinationId" or "rights" or "rightsConfirmed" or "automaticRetries"))
+            || value["entries"] is not JsonArray entries || entries.Count is < 1 or > 25)
+        {
+            throw new InvalidDataException("Submit one to twenty-five entries with an eligible library and confirmed rights.");
+        }
+
+        var parsed = entries.Select(entry =>
+        {
+            if (entry is not JsonObject item || item.Any(pair => pair.Key is not ("url" or "title")))
+            {
+                throw new InvalidDataException("Each entry accepts only a direct URL and title.");
+            }
+
+            return (Source: Text(item, "url"), Title: Text(item, "title"));
+        }).ToArray();
+        var options = ReadOptions(value);
+        var queue = await PrepareAsync(administrator, options.Library, token).ConfigureAwait(false);
+        var jobs = await queue.SubmitManyAsync(parsed, options.Library, options.Rights, administrator, token, options.Automatic).ConfigureAwait(false);
+        var result = new JsonArray();
+        foreach (var job in jobs)
+        {
+            result.Add(View(job));
+        }
+
+        return new JsonObject { ["jobs"] = result };
     }
 
     /// <summary>Cancels one job or explicitly retries a failed/cancelled job.</summary>
@@ -205,6 +228,39 @@ public sealed class ImportService : IHostedService, IAsyncDisposable
             }
         }
     }
+
+    private async Task<ImportQueue> PrepareAsync(Guid administrator, Guid library, CancellationToken token)
+    {
+        var queue = Required();
+        _publication!.ValidateDestination(administrator, library);
+        var runtime = await _runtime.StatusAsync(token).ConfigureAwait(false);
+        if (runtime["ready"]?.GetValue<bool>() != true)
+        {
+            throw new InvalidOperationException("Install and verify the bundled managed runtime before submitting an import.");
+        }
+
+        return queue;
+    }
+
+    private static (Guid Library, string Rights, bool Automatic) ReadOptions(JsonObject value)
+    {
+        if (value["rightsConfirmed"] is not JsonValue confirmed || !confirmed.TryGetValue<bool>(out var rights) || !rights
+            || !Guid.TryParse(Text(value, "destinationId"), out var library))
+        {
+            throw new InvalidDataException("Confirm rights and select an eligible destination library.");
+        }
+
+        var automatic = false;
+        if (value.ContainsKey("automaticRetries") && (value["automaticRetries"] is not JsonValue retry || !retry.TryGetValue<bool>(out automatic)))
+        {
+            throw new InvalidDataException("Automatic retries must be an explicit boolean.");
+        }
+
+        return (library, Text(value, "rights"), automatic);
+    }
+
+    private static string Text(JsonObject value, string key)
+        => value[key] is JsonValue text && text.TryGetValue<string>(out var result) ? result : throw new InvalidDataException("Required import fields must be text.");
 
     private async Task<ImportQueue.Receipt> ExecuteAsync(ImportQueue.Job job, Action<long> progress, CancellationToken token)
     {

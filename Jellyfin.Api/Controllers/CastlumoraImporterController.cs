@@ -56,6 +56,14 @@ public sealed class CastlumoraImporterController : BaseJellyfinApiController
     [RequestSizeLimit(32768)]
     public Task<ActionResult<JsonObject>> SubmitImport([FromBody] JsonObject value, CancellationToken cancellationToken) => QueueAction(() => _imports.SubmitAsync(value, User.GetUserId(), cancellationToken));
 
+    /// <summary>Atomically submits up to twenty-five authorized direct-video URLs.</summary>
+    /// <param name="value">Entries, destination and explicit rights confirmation.</param>
+    /// <param name="cancellationToken">Submission cancellation.</param>
+    /// <returns>Persistent job references without private source queries.</returns>
+    [HttpPost("Jobs/Batch")]
+    [RequestSizeLimit(196608)]
+    public Task<ActionResult<JsonObject>> SubmitBatch([FromBody] JsonObject value, CancellationToken cancellationToken) => QueueAction(() => _imports.SubmitBatchAsync(value, User.GetUserId(), cancellationToken));
+
     /// <summary>Cancels only the selected import and its owned process.</summary>
     /// <param name="id">Persistent job ID.</param>
     /// <param name="cancellationToken">Request cancellation.</param>

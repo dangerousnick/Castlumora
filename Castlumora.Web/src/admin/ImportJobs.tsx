@@ -10,6 +10,7 @@ export default function ImportJobs() {
   const [queue, setQueue] = useState<ImportQueue>();
   const [error, setError] = useState('');
   const [url, setUrl] = useState('');
+  const [bulk, setBulk] = useState(false);
   const [title, setTitle] = useState('');
   const [library, setLibrary] = useState('');
   const [rights, setRights] = useState('');
@@ -68,40 +69,88 @@ export default function ImportJobs() {
             className="settings-fields"
             onSubmit={(event) => {
               event.preventDefault();
-              void action.run(async () => {
-                await importQueueApi(api).submit({
-                  url,
-                  title,
-                  destinationId,
-                  rights,
-                  rightsConfirmed: confirmed,
-                  automaticRetries,
-                });
-                setUrl('');
-                setTitle('');
-                setRights('');
-                setConfirmed(false);
-                setAutomaticRetries(false);
-                await refresh();
-              }, 'Import saved on the server. You can leave this page; progress survives a server restart.');
+              void action.run(
+                async () => {
+                  const options = {
+                    destinationId,
+                    rights,
+                    rightsConfirmed: confirmed,
+                    automaticRetries,
+                  };
+                  if (bulk) {
+                    const sources = url
+                      .split(/\r?\n/)
+                      .map((line) => line.trim())
+                      .filter(Boolean);
+                    if (!sources.length || sources.length > (queue.maxBatchEntries ?? 25))
+                      throw new Error(
+                        'Enter between one and twenty-five direct MP4 URLs. Nothing was submitted.',
+                      );
+                    await importQueueApi(api).submitBatch({
+                      ...options,
+                      entries: sources.map((source, index) => ({
+                        url: source,
+                        title: `${title} ${index + 1}`,
+                      })),
+                    });
+                  } else {
+                    await importQueueApi(api).submit({ url, title, ...options });
+                  }
+                  setUrl('');
+                  setTitle('');
+                  setRights('');
+                  setConfirmed(false);
+                  setAutomaticRetries(false);
+                  await refresh();
+                },
+                bulk
+                  ? 'Batch saved atomically. Duplicate entries reuse existing jobs. Downloads run independently; progress survives restart.'
+                  : 'Import saved on the server. You can leave this page; progress survives a server restart.',
+              );
             }}
           >
+            {queue.batchImportsAvailable && (
+              <label>
+                <input
+                  type="checkbox"
+                  checked={bulk}
+                  onChange={(e) => {
+                    setBulk(e.target.checked);
+                    setUrl('');
+                  }}
+                />
+                Import multiple URLs (up to 25)
+              </label>
+            )}
+            {bulk ? (
+              <label>
+                Source URLs (one per line)
+                <textarea
+                  required
+                  maxLength={110000}
+                  rows={5}
+                  value={url}
+                  onChange={(e) => setUrl(e.target.value)}
+                />
+              </label>
+            ) : (
+              <label>
+                Source URL
+                <input
+                  type="url"
+                  required
+                  autoComplete="off"
+                  maxLength={4096}
+                  value={url}
+                  onChange={(e) => setUrl(e.target.value)}
+                />
+              </label>
+            )}
             <label>
-              Source URL
-              <input
-                type="url"
-                required
-                autoComplete="off"
-                maxLength={4096}
-                value={url}
-                onChange={(e) => setUrl(e.target.value)}
-              />
-            </label>
-            <label>
-              Imported title
+              {bulk ? 'Title prefix' : 'Imported title'}
               <input
                 required
-                maxLength={200}
+                maxLength={bulk ? 196 : 200}
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
               />
@@ -148,7 +197,7 @@ export default function ImportJobs() {
               type="submit"
               disabled={action.busy || !queue.available || !destinationId || !confirmed}
             >
-              Queue authorized video
+              {bulk ? 'Queue authorized batch' : 'Queue authorized video'}
             </button>
           </form>
           <ActionStatus message={action.message} />

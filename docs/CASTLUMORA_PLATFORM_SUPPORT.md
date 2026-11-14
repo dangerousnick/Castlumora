@@ -1,44 +1,44 @@
 # Platform policy and verification evidence
 
-Owner-approved strategy, 2026-11-11: Linux-first, macOS supported where verified;
-Windows compatibility deferred for Phase1.4 and initial stable1.0 acceptance.
-All previously agreed1.0 feature requirements remain mandatory. Inherited Windows
-code and tests remain, with diagnostic failures visible for later investigation.
+## Authoritative Linux-only server policy — 2026-11-13
 
-| Platform | Release strategy | Actual evidence / remaining verification |
-| --- | --- | --- |
-| Mint22.3 / Ubuntu-compatible Linux x64 | Primary required target | Ubuntu24.04 CI rebuilds/extracts the self-contained preview and tests setup/authentication, restart, library/scanning/playback and tool installation. Physical Mint installation and GPU/tuner certification remain unverified. |
-| Debian / other supported Linux | Required target | Debian13 cloud packaged runtime/browser/media verification exists. Other distributions, native dependencies and architecture coverage require separate certification. |
-| Docker / Linux NAS | Required target | Preserve existing container/backend support; new Castlumora integrated-image installation, persistent volumes, permissions and NAS/hardware workflows still need verification. |
-| macOS | Required managed build/test checks; runtime support where verified | Debug/Release and all 17 backend projects passed at 8aa77c0cc9. Native ARM64 verified-tool installation, health, TLS/transport and abort tests passed (API 295/3). x64 manifest/universal header verified, but x64 execution and full desktop installation/runtime certification remain pending. No standalone macOS app preview delivered. |
-| Windows / Windows Server | Deferred; advisory compatibility CI | Inherited implementation/tests retained. Five abort/file-lock cleanup failures at 0293885c4b remain recorded; they did not recur in the passing advisory 8aa77c0cc9 run after fixture scheduling isolation (API 294/4). No Windows release readiness or complete containment claim. Investigate shared/security implications before exposing jobs. |
+Castlumora1.0 targets Linux servers only: Mint22.3/newer compatible versions, Ubuntu
+LTS, Debian, Docker on Linux and compatible Linux NAS. macOS and Windows server
+support are deferred indefinitely, including CI/release/packaging acceptance.
+Preserve inherited cross-platform code and clients where practical; no unnecessary
+platform-removal refactoring. Linux security, integrity and functionality remain
+mandatory. This supersedes older platform requirements below; all original1.0
+features and the future1.0→2.0 migration plan remain in scope. No backend rewrite.
 
-Passing CI alone never establishes full OS support. Mint hardware, macOS desktop,
-NAS permissions, Docker storage mappings, FFmpeg drivers and supported codecs
-must be tested and reported independently. Development previews are not stable1.0.
+Use focused feature tests, full backend validation for substantial application
+increments, relevant frontend/native checks, and lightweight documentation-only
+validation. Classify the whole unpublished range, fail closed on mixed/unknown
+changes, and preserve unique security/backup/migration/regression coverage. Do not
+repeatedly rebuild unchanged source or create needless documentation checkpoints.
 
-## CI and branch protection
+## Current acceptance and evidence
 
-The existing matrix contexts `run-tests (ubuntu-latest)` and
-`run-tests (macos-latest)` remain failure-blocking. The Windows matrix job alone
-uses job-level `continue-on-error`; fail-fast remains disabled. All tests still run,
-including failures. Windows TRX results upload on success or failure and normal
-Actions logs remain available. Formatting, ABI and shared security/API checks are
-preserved. Explicit Debug server and Release solution builds run on required hosts.
+Linux is the only required server CI/release target. Ubuntu-hosted checks cover
+Debug/Release, full backend security/backup/migration/native regressions and actual
+extracted-package browser workflows. Mint hardware, Debian distribution coverage,
+Docker/NAS volumes/permissions, drivers and real tuners still require installation
+and runtime evidence; a green CI job alone does not certify those environments.
 
-Repository-level main branch protection could not be inspected: GitHub returned
-HTTP403 `Resource not accessible by integration`. Ruleset listing returned an empty
-list; this is not proof that branch protection is absent. No settings were changed.
-A repository administrator should preserve existing restrictions and ensure these
-required test contexts are selected, together with existing formatting/ABI/security
-checks; remove Windows from required contexts if present. Do not claim this was
-configured without verifying settings. CI jobs remain mandatory regardless of
-whether branch-protection administration is accessible.
+macOS/Windows builds passed at883d1e60ba, retained as historical evidence only.
+Neither is a1.0 server support or packaging obligation. Their compatibility code,
+platform manifests and tests remain available for future work without automatic
+runner cost. Clients on those operating systems are not intentionally broken.
 
-The pre-push gate runs full local formatting, Debug/Release, all backend tests,
-frontend and handler/bundler checks. macOS now prepares its reviewed universal executable under the native
-architecture package path and runs the real-tool tests; no managed test is excluded. A Linux workspace cannot claim local macOS execution. Real disk I/O
-failures remain fatal, but no production-backup reserve is imposed on test fixtures.
+CI retains the required context run-tests (ubuntu-latest), formatting/ABI/API/security
+checks and all unique Linux tests. Documentation-only synchronize events validate
+only the whole changed range; unknown or application changes run the application
+checks. Hooks classify the full remote-to-HEAD range, so a final documentation
+commit cannot hide application changes. Actual failures remain fatal.
+
+Repository protection was previously inaccessible (HTTP403); do not claim changes
+to it without verifying. An administrator must retain required Linux/shared checks
+and remove obsolete macOS/Windows required contexts if configured. No automatic
+merge into main or weakening of shared checks is authorized.
 
 ## Separate report-workflow version issue
 

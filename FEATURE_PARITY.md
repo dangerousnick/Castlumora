@@ -1,5 +1,42 @@
 # Feature parity inventory — Phase 1.3
 
+## Current direction — Linux-only and atomic multiple URLs
+
+Owner instruction (2026-11-13): Linux servers only for1.0; macOS/Windows servers
+are deferred indefinitely. Preserve practical cross-platform code/clients and all
+original1.0 features, including future1.0→2.0 data migration preparation. See
+[the retained owner policy](docs/CASTLUMORA_LINUX_WORKFLOW_POLICY.md).
+
+Latest verified published checkpoint:883d1e60ba943ea6edff72a63ca5e613fbe96acb
+(full gate4,490backend/19existing skips,62frontend; Linux/shared CI and verified
+preview). Older mandatory-macOS/Windows statements below are historical, superseded.
+
+Current increment: atomic acceptance of up to25 explicit authorized direct MP4
+entries through the existing queue, preserving duplicate rights/retry identity,
+independent per-job download/cancel/retry and library publication. Linux-only CI
+retains all backend security/backup/migration/native coverage. Documentation-only
+pushes validate the entire unpublished range; unknown/mixed/policy/symlink changes
+fail closed to application checks. A changed merge target also forces application
+CI. No source checks, production reserves or feature requirements are weakened.
+
+Executed:18hook/scope cases passed;64frontend tests/typecheck/lint/build passed;
+workflow actionlint passed.65focused queue/batch/retry tests and2actual HTTP/native
+integration tests passed, including safe publication/indexing/restart and atomic
+unsafe-batch rejection. Full restored formatting corrected one fixture layout;
+final fixture compile/parameter layout fixes were verified before publishing.
+Repository branch-protection inspection returned403; no repository settings changed.
+An administrator must remove obsolete macOS/Windows required contexts if configured,
+retaining Linux/shared checks. Source/CI policy is Linux-only; historical3OS success
+is evidence, not a continuing release obligation.
+Next exact steps: one full application pre-push validation,
+publish this coherent feature/policy increment, verify required Linux/shared CI and
+actual bulk-import package/browser workflow, updatePR3. Then implement secure
+YouTube/playlist/channel enumeration and independent creator metadata according to
+the retained requirements; resource/creator/business/cloud/storage scope remains.
+Usage information: Not accessible. Working branch remains development/castlumora-web-1.3.
+Do not restore old stashes, restart completed work, merge main or deploy Coon Media.
+
+
 ## Verified persistent transient retries — current checkpoint
 
 Published application57129188fac4288002e4240cd311bf89059085e9 passes the full local

@@ -16,6 +16,8 @@ function setup(jobs: ImportJob[] = []) {
   const api = new Api('https://example.test/base');
   const queue: ImportQueue = {
     available: true,
+    batchImportsAvailable: true,
+    maxBatchEntries: 25,
     message: 'Direct video preview',
     destinations: [{ id: 'library', name: 'Owned videos' }],
     jobs,
@@ -199,4 +201,55 @@ it('submits explicit opt-in and displays cancellable scheduled retry time', asyn
       }),
     }),
   );
+});
+
+it('submits explicit multi-URL entries through the atomic batch endpoint', async () => {
+  const request = setup();
+  await screen.findByRole('button', { name: 'Queue authorized video' });
+  fireEvent.click(screen.getByRole('checkbox', { name: /Import multiple URLs/ }));
+  fireEvent.change(screen.getByLabelText('Source URLs (one per line)'), {
+    target: { value: 'https://example.test/one.mp4\nhttps://example.test/two.mp4' },
+  });
+  fireEvent.change(screen.getByLabelText('Title prefix'), { target: { value: 'Owned batch' } });
+  fireEvent.change(screen.getByLabelText('Rights / permission record'), {
+    target: { value: 'My exports' },
+  });
+  fireEvent.click(screen.getByRole('checkbox', { name: /I have the rights/ }));
+  fireEvent.click(screen.getByRole('button', { name: 'Queue authorized batch' }));
+  await waitFor(() =>
+    expect(request).toHaveBeenCalledWith('Castlumora/Imports/Jobs/Batch', {
+      method: 'POST',
+      body: JSON.stringify({
+        destinationId: 'library',
+        rights: 'My exports',
+        rightsConfirmed: true,
+        automaticRetries: false,
+        entries: [
+          { url: 'https://example.test/one.mp4', title: 'Owned batch 1' },
+          { url: 'https://example.test/two.mp4', title: 'Owned batch 2' },
+        ],
+      }),
+    }),
+  );
+  expect(await screen.findByText(/Batch saved atomically/)).toBeTruthy();
+});
+it('rejects more than twenty-five entries locally without partial submission', async () => {
+  const request = setup();
+  await screen.findByRole('button', { name: 'Queue authorized video' });
+  fireEvent.click(screen.getByRole('checkbox', { name: /Import multiple URLs/ }));
+  fireEvent.change(screen.getByLabelText('Source URLs (one per line)'), {
+    target: {
+      value: Array.from({ length: 26 }, (_, i) => `https://example.test/${i}.mp4`).join('\n'),
+    },
+  });
+  fireEvent.change(screen.getByLabelText('Title prefix'), { target: { value: 'Owned' } });
+  fireEvent.change(screen.getByLabelText('Rights / permission record'), {
+    target: { value: 'Own exports' },
+  });
+  fireEvent.click(screen.getByRole('checkbox', { name: /I have the rights/ }));
+  fireEvent.click(screen.getByRole('button', { name: 'Queue authorized batch' }));
+  expect(await screen.findByText(/Nothing was submitted/)).toBeTruthy();
+  expect(
+    request.mock.calls.filter(([path]) => path === 'Castlumora/Imports/Jobs/Batch'),
+  ).toHaveLength(0);
 });

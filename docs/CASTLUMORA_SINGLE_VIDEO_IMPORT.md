@@ -6,6 +6,13 @@ The integrated workflow is a bounded development preview. Refer to DEVELOPMENT_P
 the exact published commit and verification status, rather than treating this
 contract as a production-readiness claim.
 
+## Multiple explicit URLs
+
+The native administrator form also accepts up to25 direct URLs with atomic queue
+acceptance. See [batch semantics and limits](CASTLUMORA_ATOMIC_IMPORT_BATCHES.md).
+Downloads remain independently cancellable/retriable; no playlist/channel capability
+is implied. Linux-only server policy supersedes historical platform requirements.
+
 ## Administrator workflow
 
 In Administration → Media → Imports & Sources, install/check the bundled managed

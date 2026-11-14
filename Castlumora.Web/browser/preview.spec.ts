@@ -249,6 +249,59 @@ test('packaged preview: authorized public import indexes, deduplicates and plays
   });
   expect(repeat.ok()).toBe(true);
   expect((await repeat.json()).id).toBe(job.id);
+  // Acceptance is atomic; downloads subsequently complete independently.
+  const previousCount = (await get('Castlumora/Imports/Queue')).jobs.length;
+  await page.getByRole('checkbox', { name: /Import multiple URLs/ }).check();
+  await page
+    .getByLabel('Source URLs (one per line)', { exact: true })
+    .fill(`${source}?bulk=one\nhttps://127.0.0.1/private.mp4`);
+  await page.getByLabel('Title prefix', { exact: true }).fill('Owned batch');
+  await page
+    .getByLabel('Rights / permission record', { exact: true })
+    .fill('Owner-authorized repository GPL synthetic clip');
+  await page.getByRole('checkbox', { name: /I have the rights/ }).check();
+  const invalid = page.waitForResponse(
+    (r) =>
+      new URL(r.url()).pathname.endsWith('/Castlumora/Imports/Jobs/Batch') &&
+      r.request().method() === 'POST',
+  );
+  await page.getByRole('button', { name: 'Queue authorized batch', exact: true }).click();
+  expect((await invalid).status()).toBe(400);
+  expect((await get('Castlumora/Imports/Queue')).jobs).toHaveLength(previousCount);
+  await page
+    .getByLabel('Source URLs (one per line)', { exact: true })
+    .fill(`${source}?bulk=one\n${source}?bulk=two`);
+  const savedBatch = page.waitForResponse(
+    (r) =>
+      new URL(r.url()).pathname.endsWith('/Castlumora/Imports/Jobs/Batch') &&
+      r.request().method() === 'POST',
+  );
+  await page.getByRole('button', { name: 'Queue authorized batch', exact: true }).click();
+  const batchResponse = await savedBatch;
+  expect(batchResponse.ok()).toBe(true);
+  const batchJobs = (await batchResponse.json()).jobs;
+  expect(batchJobs).toHaveLength(2);
+  expect(new Set(batchJobs.map((entry: { id: string }) => entry.id)).size).toBe(2);
+  await expect
+    .poll(
+      async () => {
+        const history = (await get('Castlumora/Imports/Queue')).jobs;
+        return batchJobs.map(
+          (entry: { id: string }) =>
+            history.find((current: { id: string }) => current.id === entry.id)?.state,
+        );
+      },
+      { timeout: 75000 },
+    )
+    .toEqual(['completed', 'completed']);
+  const bulkHistory = (await get('Castlumora/Imports/Queue')).jobs;
+  for (const entry of batchJobs) {
+    const current = bulkHistory.find((candidate: { id: string }) => candidate.id === entry.id);
+    expect(current.bytes).toBe(completed.bytes);
+    expect(current.sha256).toBe(completed.sha256);
+    expect(JSON.stringify(current)).not.toContain(source);
+  }
+
   let item:
     | { Id: string; Type: string; Name: string; MediaStreams: { Type: string; Codec: string }[] }
     | undefined;

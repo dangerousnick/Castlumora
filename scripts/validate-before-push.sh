@@ -33,6 +33,19 @@ run() {
         return 1
     fi
 }
+base=""
+if [[ $# -gt 0 ]]; then
+    [[ $# == 2 && $1 == --base ]] || { echo 'Invalid validation arguments' >&2; exit 1; }
+    base=$2
+fi
+command -v python3 >/dev/null
+scope=$(python3 .github/scripts/change_scope.py --base "$base" --head "$head")
+if [[ "$scope" == docs ]]; then
+    run documentation python3 .github/scripts/change_scope.py --base "$base" --head "$head" --check-docs
+    assert_snapshot
+    echo "PASS: documentation-only $head; application source unchanged from $base. No application build/test pass is claimed."
+    exit 0
+fi
 command -v dotnet >/dev/null
 command -v node >/dev/null
 command -v npm >/dev/null

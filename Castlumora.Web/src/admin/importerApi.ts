@@ -34,6 +34,8 @@ export interface ImportJob {
   nextAttemptAt?: string;
 }
 export interface ImportQueue {
+  batchImportsAvailable?: boolean;
+  maxBatchEntries?: number;
   available: boolean;
   message: string;
   destinations: { id: string; name: string }[];
@@ -51,6 +53,17 @@ export function importQueueApi(api: Api) {
       automaticRetries?: boolean;
     }) =>
       api.request<ImportJob>('Castlumora/Imports/Jobs', {
+        method: 'POST',
+        body: JSON.stringify(value),
+      }),
+    submitBatch: (value: {
+      entries: { url: string; title: string }[];
+      destinationId: string;
+      rights: string;
+      rightsConfirmed: boolean;
+      automaticRetries?: boolean;
+    }) =>
+      api.request<{ jobs: ImportJob[] }>('Castlumora/Imports/Jobs/Batch', {
         method: 'POST',
         body: JSON.stringify(value),
       }),

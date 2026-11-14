@@ -1,4 +1,21 @@
 # CASTLUMORA — PHASE 1.3 MASTER DEVELOPMENT TASK
+
+## Authoritative Linux-only server policy — 2026-11-13
+
+Castlumora1.0 targets Linux servers only: Mint22.3/newer compatible versions, Ubuntu
+LTS, Debian, Docker on Linux and compatible Linux NAS. macOS and Windows server
+support are deferred indefinitely, including CI/release/packaging acceptance.
+Preserve inherited cross-platform code and clients where practical; no unnecessary
+platform-removal refactoring. Linux security, integrity and functionality remain
+mandatory. This supersedes older platform requirements below; all original1.0
+features and the future1.0→2.0 migration plan remain in scope. No backend rewrite.
+
+Use focused feature tests, full backend validation for substantial application
+increments, relevant frontend/native checks, and lightweight documentation-only
+validation. Classify the whole unpublished range, fail closed on mixed/unknown
+changes, and preserve unique security/backup/migration/regression coverage. Do not
+repeatedly rebuild unchanged source or create needless documentation checkpoints.
+
 ## Independent Web Platform, Full Server Compatibility & Cross-Device Foundation
 
 **Repository:** `dangerousnick/Castlumora`
