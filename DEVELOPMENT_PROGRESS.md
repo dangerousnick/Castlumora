@@ -34,7 +34,12 @@
   run failed before any preview request at a wrapped-label select locator. Actual
   local Chromium reproduced zero exact-label matches and a valid accessible role;
   the correction uses that combobox role without changing assertions/timeouts.
-  Corrected package CI is pending. C# is unchanged; retain1acbackend evidence.
+  Its corrected run reached the expected browser400, then Playwright's browser
+  response-body read hung. The client deliberately does not consume error bodies.
+  Policy-reason coverage now uses an identical authenticated API request, retaining
+  browser status, safe visible guidance and no-job assertions. Actual React/local
+  Chromium verified that replacement flow. Final package CI is pending; C# is
+  unchanged and1acbackend evidence is retained. No assertion/timeout weakened.
 - Actual external YouTube access is unverified. Owner-authorized4Xsn6oe-AEg failed
   direct connections; numeric upstream CONNECT and normal TLS subsequently worked
   in a diagnostic, but its watch page returnedHTTP403. No importer proxy/TLS/auth

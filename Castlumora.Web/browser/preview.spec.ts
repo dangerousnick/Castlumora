@@ -211,7 +211,14 @@ test('packaged preview: authorized public import indexes, deduplicates and plays
     await youtube.getByRole('button', { name: 'Preview YouTube video', exact: true }).click();
     const rejectedResponse = await rejected;
     expect(rejectedResponse.status()).toBe(400);
-    expect(await rejectedResponse.text()).toContain('publicly routable');
+    // The client intentionally discards error bodies; inspect the same policy response
+    // through the authenticated API context rather than a paused browser body stream.
+    const policyResponse = await request.post(rejectedResponse.url(), {
+      headers,
+      data: rejectedResponse.request().postDataJSON(),
+    });
+    expect(policyResponse.status()).toBe(400);
+    expect(await policyResponse.text()).toContain('publicly routable');
     await expect(youtube.getByRole('status')).toContainText('Preview rejected.');
     expect((await get('Castlumora/Imports/Queue')).jobs).toHaveLength(previous);
     await expect(
