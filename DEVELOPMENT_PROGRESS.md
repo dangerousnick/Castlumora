@@ -13,28 +13,55 @@ feature status; a development preview does not establish stable-release readines
 Linux-only server policy and mandatory validation remain in effect. Never merge
 main or deploy to Coon Media automatically.
 
-## Current task — managed-profile lifecycle (unpublished)
+## Verified lifecycle checkpoint — administrator profile deletion
 
-- Scope: administrator inventory and disabled-first deletion/revocation, durable
-  cleanup/retry/orphan handling, native confirmation UI, account/media preservation
-  and inclusion of the account guide/feature manifest in the next preview.
-- Working tree builds on published checkpoint040381c422 / application503434e4a2.
-  Nine focused service tests, four profile/admin UI tests and the expanded real
-  HTTP workflow passed, including live child-token rejection and account/file
-  preservation. Typecheck/lint passed; restored formatting loaded2,451files and
-  changed zero. Packaging shell syntax passed. The full gate is next.
-  A chained HTTP invocation first lacked the SDK PATH and did not run; it was
-  restarted correctly, without treating the infrastructure error as a test pass.
-- Added actual-package assertions for confirmed deletion, missing child identity
-  and subsequent movie playback. Those new assertions are not yet a claimed pass.
-- Completion: finish focused HTTP/formatting, run the normal full gate, publish,
-  verify exact Linux/shared CI and new downloadable package, update PR3/checkpoint.
-- Unfinished changes: current service/controller/UI/tests/docs/packaging edits are
-  local and must be preserved. Do not recreate completed profiles or change main.
-- Usage/reset information: Not accessible. If interrupted, inspect git status/log,
-  retain these files, read this and the permanent requirements, then complete this
-  task before starting media preferences or other roadmap work. Existing503 download
-  below remains verified and available. No automatic background resume is claimed.
+- Last completed milestone: administrator inventory and disabled-first profile
+  deletion/revocation, durable mapping cleanup, failure retry and orphan handling.
+- Latest published application: `c1a2d85d1ff5b837ad5b207aaae22925de531fae`.
+  Branch `development/castlumora-web-1.3`; PR3 open. Builds on503434e4a2 and
+  checkpoint040381c422. No main merge or Coon Media deployment.
+- Implemented: administrator-only safe inventory (including unavailable/orphaned
+  records); confirmation UI; reject ordinary-user inventory/deletion and owner IDs;
+  persist unavailability before disabling/revoking/deleting the child, then durably
+  remove its mapping. Failures preserve an unavailable retryable record; missing
+  users allow orphan cleanup. Owning accounts, media files and key remain intact.
+  New preview includes the account guide and explicit create/switch/delete manifest.
+- Full normal gate: restored formatting2,451files/zero changes/no workspace warning;
+  .NET10 Debug/Release0warnings/errors; all17backend suites4,566passed/20skips;
+  Node24.22.1 typecheck/lint/71tests/build; security/native/backup/migration/hook/
+  handler checks. Logs: /tmp/castlumora-prepush.tqSUC1xs. Nine focused service tests
+  and the expanded actual HTTP workflow passed, including live-token rejection,
+  parent/file preservation, denied child management and protected account IDs.
+- Exact GitHub Linux job132543620213 matched4,566passes/20skips. Tests43626535525,
+  Format43626535413, ABI43626535462 and OpenAPI43626535484 passed. No failing
+  required check was bypassed or disabled. Production backup reserve is unchanged.
+- Actual extracted-package preview43626535451 / job132543568484 passed all four
+  browser workflows, now including confirmed managed-profile deletion, missing
+  child identity and retained movie decode/advancing playback after deletion.
+  The earlier creation/switch/reload/preferences/permission/token assertions remain.
+- Verified new download: https://github.com/dangerousnick/Castlumora/actions/runs/43626535451/artifacts/14126186740
+  Archive `Castlumora-1.0-dev-c1a2d85d1ff5-linux-x64.tar.gz`.
+  SHA256 `489d3f9fa02799f879db9da3e1279c4e4c16480d7492047b18b48b69721f46be`.
+  Independent download verified outer/inner checksums, exact source/manifest,
+  compiled profile controls, bundled guide at both documented locations, no private
+  profile key/registry in package, original GPL,16branding assets and runtime modes/
+  notices. Report: /tmp/castlumora-linux-profiles-delete-preview-verified.json.
+  Sign-in/30-day retention apply. This is an intermediate preview, not stable1.0.
+- Unfinished application changes: none. Remaining account work: safe self-service
+  media preferences, profile editing/non-destructive pending recovery, invitation/
+  registration edge cases, account-wide session/device controls and broader real
+  restart/multi-device/history coverage. Full installed-system restore and physical
+  Mint/NAS/GPU/tuner certification remain unverified. Initial managed LiveTV/DVR
+  restrictions and deferred YouTube/creator-metadata work remain documented.
+- Next exact task: safe profile-specific audio/subtitle preferences using inherited
+  user configuration and playback selection. Whitelist harmless fields; preserve
+  blocked identity/password/policy edits and account isolation. Verify server
+  persistence, authorization and actual playback defaults before exposing controls.
+  Then remaining account security and the permanent release roadmap, one published
+  tested increment at a time. Do not recreate completed code.
+- Usage/reset: Not accessible. Recovery: fetch origin, inspect status/log and these
+  requirements; preserve newer/unfinished work, retain installed hooks and continue
+  this branch. No automatic usage-reset/background continuation is claimed.
 
 ## Verified accounts checkpoint — managed creation and switching
 
