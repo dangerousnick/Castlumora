@@ -9,7 +9,8 @@
   cancellation/retry/restart integration and marked staging reclamation.
 - Focused verification:124backend passes/1explicit external-fixture skip;2server
   authorization/real-owned-media queue-to-index/playback integration tests passed;
-  new UI tests and existing import form tests8passed. Final formatting/full gate,
+  new UI tests and existing import form tests8passed. The upstream nullable-audio-
+  height regression also passed. Final formatting/full gate,
   exact-SHA GitHub CI and new preview are pending, not claimed successful yet.
 - Actual authorized video remains unverified. Direct source connections failed;
   numeric upstream CONNECT and normal TLS succeeded in a separate diagnostic, but

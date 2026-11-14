@@ -43,7 +43,9 @@ remote components/plugins, ambient configuration, cookies and arbitrary runtimes
 are disabled. The official Node archive, ELF executable and license are checksum-
 pinned in packaging/node/release.json, embedded into the server and shipped with
 upstream notices. No ambient Node installation or frontend build is needed by users.
-The upstream yt-dlp FFmpegMergerPP implementation was consulted for stream-copy
+The pinned upstream yt-dlp YouTube extractor was also consulted to preserve its
+nullable audio-only height schema, with a specific parser regression test. The
+upstream yt-dlp FFmpegMergerPP implementation was consulted for stream-copy
 mapping; Castlumora performs a stricter, local-only bounded mux using its existing
 configured encoder. Upstream yt-dlp source/licenses remain bundled; Castlumora's
 GPL license, inherited notices and history remain intact. No extraction engine is

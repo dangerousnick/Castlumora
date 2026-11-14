@@ -124,7 +124,7 @@ internal static class YouTubeMetadataPreview
                         continue;
                     }
 
-                    var height = item.TryGetProperty("height", out var h) && h.TryGetInt32(out var value) ? value : 0;
+                    var height = item.TryGetProperty("height", out var h) && h.ValueKind == JsonValueKind.Number && h.TryGetInt32(out var value) ? value : 0;
                     if (audioOnly || height is > 0 and <= 2160)
                     {
                         formats.Add(new Format(id, height, audioOnly, videoOnly));

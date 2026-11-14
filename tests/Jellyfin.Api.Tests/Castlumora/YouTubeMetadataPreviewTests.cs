@@ -12,6 +12,20 @@ public sealed class YouTubeMetadataPreviewTests
     private const string VideoId = "4Xsn6oe-AEg";
 
     [Fact]
+    public void Parse_AcceptsUpstreamAudioOnlyNullHeight_AndSelectsPairedStreams()
+    {
+        var input = Valid();
+        input["formats"] = new JsonArray(
+            new JsonObject { ["format_id"] = "136", ["protocol"] = "https", ["ext"] = "mp4", ["vcodec"] = "avc1.4d401f", ["acodec"] = "none", ["height"] = 720, ["has_drm"] = false },
+            new JsonObject { ["format_id"] = "140", ["protocol"] = "https", ["ext"] = "m4a", ["vcodec"] = "none", ["acodec"] = "mp4a.40.2", ["height"] = null, ["has_drm"] = false });
+        var metadata = YouTubeMetadataPreview.Parse(input.ToJsonString(), new YouTubeVideoSource(VideoId));
+        var options = YouTubeImportOptions.Select(metadata, 720, 128);
+        Assert.Equal("136", options.VideoFormat);
+        Assert.Equal("140", options.AudioFormat);
+        Assert.Equal(720, options.Height);
+    }
+
+    [Fact]
     public void Parse_ReturnsIdentityAndSafeFormatsWithoutSignedUrls()
     {
         var input = Valid();
