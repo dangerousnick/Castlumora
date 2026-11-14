@@ -1,28 +1,48 @@
 # Castlumora Web Phase 1.3 development progress
 
-## In progress — reviewed YouTube source/runtime prerequisite
+## Published checkpoint — reviewed YouTube source/runtime prerequisite
 
-- Branch remains `development/castlumora-web-1.3`, PR3. Last published checkpoint
-  `64667e175ceb108a063e28b0339f92c7d2dd1c03`; this increment awaits the mandatory
-  application gate and publication. No main merge or Coon Media deployment.
-- Implemented internal canonical YouTube single-video identity, bounded metadata
-  preview, pinned Node24.22.1 packaging/runtime verification and a real process
-  health-probe stdin correction. Public YouTube importing stays unavailable.
-- Focused verification:70passed/1explicit external-fixture skip, plus6owned-archive
-  security tests. Additional native sandbox assertion and final formatting/full
-  Debug/Release/backend/frontend gate are pending; do not infer their success.
-- Real owner-authorized `https://youtu.be/4Xsn6oe-AEg` was attempted through the
-  actual managed runtime and unchanged SSRF/TLS controls: failed `sourceNetwork`
-  after approximately14seconds. This workspace cannot currently establish the
-  required normal source connections. No successful YouTube E2E claim or bypass.
-- Remaining task: finish/verify the secure preview-to-persistent-download adapter,
-  administrator rights/destination confirmation, formats/resource limits, creator/
-  artwork/provenance publication, indexing and playback. Then playlists/channels.
-  Details/repro command: `docs/CASTLUMORA_YOUTUBE_IMPORT.md`. All1.0 scope remains.
-- Usage/reset information: Not accessible. Recovery: inspect status/log and retain
-  this increment; run the installed normal pre-push hook, publish only if passing,
-  then update the exact published SHA/results here. Do not recreate the adapter.
-
+- Latest published application: `47c47c3fa2c2a7d56f5983fc52ddeac2dac94c58`.
+  Branch `development/castlumora-web-1.3`, PR3; no main merge/Coon deployment.
+- Completed prerequisite: canonical YouTube single-video identity; internal bounded
+  metadata preview; pinned Node24.22.1 archive/binary/license verification and Linux
+  packaging; actual native Node permission-sandbox assertion; process-health stdin
+  correction. Existing direct/batch queue/publication remains intact. Public YouTube
+  importing is unavailable until its complete workflow is verified.
+- Full normal local gate passed: restored format2,439files/zero changes/no workspace
+  warning; .NET10 SDK10.0.403 Debug/Release0warnings/errors; all17backend suites
+  4,535passed/20skips; Node24.22.1 typecheck/lint/64tests/build;21hook tests,
+  6Node archive tests and existing native/security/backup/migration/handler checks.
+  Logs `/tmp/castlumora-prepush.nj2v1g5o`. Native Node version/sandbox actually ran.
+- Exact-SHA GitHub Format43565400750, ABI43565400657, OpenAPI43565400707 and
+  Linux Preview43565400684 passed. Required Linux Tests43565400756 / job
+  132358106466 passed all17backend suites:4,535passed/20skips, zero failures.
+- New actual GitHub download independently verified: outer/inner checksums, exact
+  manifest/source, compiled frontend, all16castle assets, original GPL bytes,
+  self-contained runtime, reviewed Node ELF executable/license and executable modes.
+  https://github.com/dangerousnick/Castlumora/actions/runs/43565400684/artifacts/14102740262
+  Archive `Castlumora-1.0-dev-47c47c3fa2c2-linux-x64.tar.gz`;
+  SHA256 `a7eb23622dd61c18d4b580db3a705ebf758f04930361352cccb6af0a7d994998`.
+  GitHub sign-in/30-day retention apply. Actual extracted-package browser workflows
+  passed setup/authentication; restart/library/playback; owned public direct import,
+  unsafe-batch rejection, two-URL imports, exact hashes, deduplication and playback.
+  These are direct-import workflows, not a successful YouTube end-to-end test.
+- Owner-authorized `https://youtu.be/4Xsn6oe-AEg` was attempted through the actual
+  reviewed runtimes and unchanged SSRF/TLS policy: failed `sourceNetwork` after
+  approximately14seconds. Required normal source connections could not be made.
+  Its metadata/download/indexing/playback are unverified; no auth/network bypass.
+  The opt-in external test is one separately recorded skip in the normal gate;
+  its explicit attempted failure is preserved, not represented as a pass.
+- Next development task: complete secure preview-to-persistent-download adapter,
+  administrator rights/destination confirmation, stable-ID deduplication, format/
+  resource controls, creator/artwork/provenance publication, scanning and playback.
+  Recheck the real authorized source where normal public egress is available;
+  keep YouTube private until full verification. Then playlist/channel enumeration
+  and independent creator metadata. All original1.0 scope remains mandatory.
+- Usage/reset information: Not accessible. Recovery: fetch origin; inspect status/
+  latest commits; retain newer work; install existing hooks; read this record and
+  `docs/CASTLUMORA_YOUTUBE_IMPORT.md`; continue the adapter, not its completed
+  prerequisite. Do not repeat unchanged full suites for documentation-only edits.
 
 ## Verified checkpoint — atomic multiple URLs and Linux-only workflow
 

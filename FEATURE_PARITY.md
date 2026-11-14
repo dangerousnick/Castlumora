@@ -1,9 +1,13 @@
 # Feature parity inventory — Phase 1.3
 
-## YouTube source prerequisite — verification in progress
+## Published YouTube prerequisite — full adapter still pending
 
 Internal source identity/metadata validation and a checksum-pinned Node24 dependency
-have been added, with native/archive/security tests. This does not enable or
+are published at47c47c3fa2c2a7d56f5983fc52ddeac2dac94c58. The full local gate
+passed4,535backend tests/20skips and64frontend tests, plus formatting, Debug/Release
+and native/archive/security coverage. Exact-SHA Linux/shared GitHub CI and the actual-package preview also passed.
+The new archive was independently downloaded and verified; see progress for its
+URL/checksum. This is a development preview, not complete Phase1.4 or stable1.0. This does not enable or
 complete YouTube importing. The owner's authorized real video failed normal
 outbound connections (`sourceNetwork`) in this workspace; actual download/library/
 playback remains unverified. Existing direct/batch importing is preserved.
