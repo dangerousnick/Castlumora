@@ -13,15 +13,24 @@ feature status; a development preview does not establish stable-release readines
 Linux-only server policy and mandatory validation remain in effect. Never merge
 main or deploy to Coon Media automatically.
 
-## In validation — safe profile media defaults
+## Verified media-default preview — sourceda1f2829ec
 
-Self-scoped audio/subtitle/source-audio/mode editing uses four existing user columns,
-preserves identity/policy restrictions and account isolation, and honors owner
-preference restrictions. Player negotiation respects server subtitle defaults and
-preferred alternate tracks.77frontend tests, real SQLite HTTP/security coverage and
-actual compiled-app decoded880Hz audio/VTT-cue proof passed locally. The shared
-package assertions are added but have not yet run on an uploaded build. See current
-progress for exact next validation/publication steps; c1 remains the verified preview.
+Self-scoped audio/subtitle/source-audio/mode editing updates four existing user
+columns, preserves identity/policy restrictions and respects administrator controls.
+Player negotiation honors server subtitles and preferred alternate tracks. The
+normal full gate and exact Linux/shared CI passed4,566backend tests/20skips,
+77frontend tests, full formatting and zero-warning Debug/Release. All four actual
+package browser workflows passed, including saved/reloaded preferences, measured
+Spanish880Hz audio, a real preferred VTT cue and retained profile lifecycle checks.
+The uploaded archive was independently source/hash/manifest/GPL/branding/guide
+verified with no private profile state. See DEVELOPMENT_PROGRESS.md for download,
+checksum, proof limits and exact recovery steps.
+
+Next: administrator profile editing/non-destructive pending recovery, broader
+invitation/session/device coverage, then the remaining permanent release roadmap.
+Full installed restore, physical platform/hardware certification and complete
+Phase1.4/stable1.0 readiness remain unfinished. YouTube/creator metadata development
+is deferred; existing code is preserved. This preview does not reduce1.0 scope.
 
 ## Verified lifecycle preview — sourcec1a2d85d1f
 

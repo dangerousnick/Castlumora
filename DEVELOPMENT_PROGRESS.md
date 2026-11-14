@@ -13,44 +13,65 @@ feature status; a development preview does not establish stable-release readines
 Linux-only server policy and mandatory validation remain in effect. Never merge
 main or deploy to Coon Media automatically.
 
-## Current task — profile media defaults (unpublished)
+## Verified media-preference checkpoint — language defaults and playback
 
-- Working tree extends checkpointf064a81608 / applicationc1a2d85d1f. Implemented
-  self-scoped audio/subtitle language, source-default-audio and subtitle-mode API/UI.
-  Only four existing user columns are tracked/updated; no full stale configuration
-  replacement, identity/password/policy editing, target-user parameter or global
-  defaults override. Ordinary/owner administrator preference restrictions remain.
-- Player now uses server subtitle defaults and negotiates compatible streaming for
-  preferred alternate tracks instead of silently playing the MP4 native default.
-  Actual selected indices are reported; manual choices remain supported.
-- Verification so far: actual SQLite HTTP workflow passed isolation, denied unsafe
-  fields/targets, preserved identity flags and restricted owner/child preference
-  writes. Frontend77tests/typecheck/lint/build passed. Restored formatting loaded
-  2,453files/zero changes. The shared CI browser measurement helper passed against
-  the real compiled working-tree server/web on disposable127.0.0.1:18097: persisted
-  preferences, decoded Spanish~880Hz audio, visible preferred VTT cue, HLS negotiation
-  and blocked identity editing. This is local actual-app evidence, not a package pass.
-- Investigated fixture assumptions: await initial setup/login readiness and complete
-  G-rated NFO scanning; match requested track IDs to scanned metadata (API audio3/
-  subtitle0 differ from container audio2). Assertions still verify decoded audio and
-  cue text. No parental, disk, FFmpeg, timeout or CI safeguards were weakened.
-- Storage: safely removed four obsolete preview archive copies,584closed test-host
-  directories and an unused PyInstaller extraction after checking open descriptors/
-  mappings. Reclaimed979,099,648bytes; source/Git/docs/reports/SDK/native fixtures
-  preserved. Free space reached2.05GiB, so normal production startup/FFmpeg validation
-  ran with FFmpeg7.1.5. CPU media proof only; no GPU certification. Cleanup inventory
-  /tmp/castlumora-media-proof-cleanup.json; proof result under
-  /tmp/castlumora-profile-media-proof/media-proof-result.json. Proof server stopped.
-- Added shared actual-package checks and owned two-language/VTT/G-rated fixtures;
-  the next package must pass these before upload. Full gate/Debug/Release/backend
-  regressions, commit/push, exact GitHub CI and package verification are next.
-- Unfinished application changes: this service/controller/player/UI/tests/packaging
-  increment is local; preserve it. Do not recreate completed account/lifecycle work.
-  Next after publication: profile editing/non-destructive pending recovery and
-  remaining account/session/device requirements, then the permanent release roadmap.
-- Usage/reset: Not accessible. Recovery: inspect status/log and these files; retain
-  the uncommitted increment, finish its full validation/publication, then continue.
-  Do not resume deferred YouTube/creator metadata or merge main/deploy to Coon Media.
+- Last completed milestone: isolated audio/subtitle language, source-default audio
+  and subtitle-mode API/UI with actual preferred-track playback.
+- Latest published application: `da1f2829eca26620d1b1f1ec219989131e9e093d`.
+  Branch `development/castlumora-web-1.3`; PR3 open. Prior completed account/lifecycle
+  checkpoints are retained below. No main merge or Coon Media deployment.
+- Implemented: current authenticated identity only, four tracked existing user
+  columns, no stale full-config replacement or identity/password/policy/target-user
+  override. Ordinary and managed-owner administrator preference restrictions remain.
+  Player respects server subtitle defaults, selects preferred alternate tracks via
+  compatible streaming, preserves manual choices and reports actual stream indices.
+- Full normal gate passed restored format2,453files/zero changes/no workspace
+  warning, .NET10 Debug/Release0warnings/errors, all17backend suites4,566passed/
+  20skips, Node24.22.1 typecheck/lint/77tests/build, security/native/backup/migration/
+  hook/handler checks. Logs: /tmp/castlumora-prepush.bP8B6dHx. Actual SQLite HTTP
+  coverage verifies scoped persistence, denied unsafe/target fields, preserved
+  identity flags and administrator restrictions for ordinary/managed users.
+- Exact GitHub Linux job132626671937 independently matched4,566passes/20skips.
+  Tests43653396888, Format43653396889, ABI43653396871 and OpenAPI43653396855 passed.
+  No required assertion/check or production backup/disk safeguard was weakened.
+- Actual extracted-package preview43653396881 / job132626638661 passed all four
+  browser workflows. The profile workflow now saves/reloads language defaults,
+  measures decoded Spanish~880Hz audio, verifies actual preferred VTT cue text and
+  negotiated indices, then retains switch/permission/token/deletion/media-playback
+  checks. Local actual compiled-server/shared-helper proof also passed on marked
+  loopback18097 with normal startup/FFmpeg7.1.5 validation; proof server is stopped.
+- New verified download: https://github.com/dangerousnick/Castlumora/actions/runs/43653396881/artifacts/14136752998
+  Archive `Castlumora-1.0-dev-da1f2829eca2-linux-x64.tar.gz`.
+  SHA256 `9d7e688a953034062b91c95d9814d4b4627aff51aabbb3d2883320aad4c44c4e`.
+  Independent download verified outer/inner hashes, exact source/manifest/compiled
+  controller/settings, bundled guide, no private profile state, original GPL,
+  all16branding assets, runtime notices and executable modes. Sign-in/30-day
+  retention apply. Report: /tmp/castlumora-linux-media-preferences-preview-verified.json.
+  Intermediate development preview, not stable1.0 or complete Phase1.4.
+- Investigated fixture assumptions: await initial page/complete G-rated NFO scan;
+  match API track identifiers to scanned metadata instead of container offsets
+  (audio3/subtitle0 map to container audio2). Decoded audio/cue assertions remain.
+  Safely reclaimed979,099,648bytes from four obsolete archive copies,584closed test
+  hosts and an unused extraction after checking descriptors/mappings. Source/Git/
+  docs/reports/SDK/native fixtures preserved; normal2GiB startup guard then passed.
+  Inventory: /tmp/castlumora-media-proof-cleanup.json. CPU proof only; no GPU claim.
+- Unfinished application changes: none. Remaining account work includes display/
+  preset editing, non-destructive pending recovery, broader invitation/registration
+  edges, account-wide device/session management and full real restart/multi-device/
+  history coverage. Full installed-system restore and physical Mint/NAS/GPU/tuner
+  certification remain unverified. Initial managed LiveTV/DVR restrictions remain;
+  ordinary accounts retain inherited capabilities. Remembered per-title track
+  choices can override defaults. Further YouTube/creator metadata work is deferred.
+- Next exact task: administrator-managed profile editing/recovery, preserving
+  reserved internal usernames, immutable ownership, keys, policy bounds and history;
+  update friendly names on client reload/switch and test role/ownership/invalid-name/
+  pending-state cases. Complete/publish that increment before the next roadmap
+  feature. Retain all remaining permanent1.0 requirements and tested preview work.
+- Usage/reset information: Not accessible. Recovery: git fetch origin; inspect
+  git status/log and these documents; preserve newer/unfinished changes; continue
+  the existing development branch with installed hooks. Never reset/recreate
+  completed features, merge main automatically or deploy to Coon Media. No automatic
+  usage-reset/background continuation is claimed.
 
 ## Verified lifecycle checkpoint — administrator profile deletion
 
