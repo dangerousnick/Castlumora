@@ -15,6 +15,7 @@ import Home from './pages/Home';
 import Browse from './pages/Browse';
 import Detail from './pages/Detail';
 import Live from './pages/Live';
+import Profiles from './pages/Profiles';
 import Administration from './admin/Administration';
 import { Feedback } from './components/Media';
 const Shelf = lazy(() => import('./shelf/Shelf'));
@@ -37,11 +38,14 @@ function Shell({
   api,
   session,
   logout,
+  replaceSession,
 }: {
   api: Api;
   session: Session;
   logout: () => Promise<void>;
+  replaceSession: (session: Session) => void;
 }) {
+  const viewingName = session.profileName || session.user.Name;
   const [layout, setLayout] = useState<Layout>(structuredClone(defaultLayout));
   const [preferences, setPreferences] = useState<Preferences>({ watchlist: [], hiddenResume: [] });
   const [notice, setNotice] = useState('');
@@ -103,7 +107,17 @@ function Shell({
   } as CSSProperties;
   return (
     <AppContext.Provider
-      value={{ api, session, layout, preferences, setPreferences, refreshLayout, logout, notice }}
+      value={{
+        api,
+        session,
+        layout,
+        preferences,
+        setPreferences,
+        refreshLayout,
+        logout,
+        replaceSession,
+        notice,
+      }}
     >
       <MusicProvider>
         <div className="app" style={style}>
@@ -141,10 +155,11 @@ function Shell({
               )}
               <details className="profile-menu">
                 <summary>
-                  <span className="avatar">{session.user.Name.slice(0, 1)}</span>
-                  <span>{session.user.Name}</span>
+                  <span className="avatar">{viewingName.slice(0, 1)}</span>
+                  <span>{viewingName}</span>
                 </summary>
                 <div className="menu">
+                  <Link to="/profiles">Viewing profiles</Link>
                   <Link to="/music">Music & playlists</Link>
                   <Link to="/shelf/photos">Photos</Link>
                   <Link to="/shelf/books">Books</Link>
@@ -158,7 +173,7 @@ function Shell({
                   </a>
                   <button onClick={() => void logout()}>
                     <LogOut size={15} />
-                    Sign out / switch profile
+                    Sign out
                   </button>
                 </div>
               </details>
@@ -175,6 +190,7 @@ function Shell({
               <Suspense fallback={<Feedback busy />}>
                 <Routes>
                   <Route path="/" element={<Home />} />
+                  <Route path="/profiles" element={<Profiles />} />
                   <Route path="/browse" element={<Browse />} />
                   <Route path="/search" element={<Browse />} />
                   <Route path="/list" element={<Browse />} />
@@ -237,7 +253,16 @@ export default function App() {
           path="*"
           element={
             session && api ? (
-              <Shell api={api} session={session} logout={logout} />
+              <Shell
+                key={session.user.Id}
+                api={api}
+                session={session}
+                logout={logout}
+                replaceSession={(value) => {
+                  sessionStorage.setItem('castlumora-session', JSON.stringify(value));
+                  setSession(value);
+                }}
+              />
             ) : (
               <Login
                 onLogin={(s) => {

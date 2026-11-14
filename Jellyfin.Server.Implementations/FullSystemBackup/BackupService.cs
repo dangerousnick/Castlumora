@@ -169,6 +169,23 @@ public class BackupService : IBackupService
             }
 
             CopyDirectory("Config", _applicationPaths.ConfigurationDirectoryPath);
+            if (!OperatingSystem.IsWindows())
+            {
+                var profiles = Path.Combine(_applicationPaths.ConfigurationDirectoryPath, "castlumora", "profiles");
+                if (Directory.Exists(profiles))
+                {
+                    File.SetUnixFileMode(profiles, UnixFileMode.UserRead | UnixFileMode.UserWrite | UnixFileMode.UserExecute);
+                    foreach (var name in new[] { "profiles.json", "credentials.key" })
+                    {
+                        var path = Path.Combine(profiles, name);
+                        if (File.Exists(path))
+                        {
+                            File.SetUnixFileMode(path, UnixFileMode.UserRead | UnixFileMode.UserWrite);
+                        }
+                    }
+                }
+            }
+
             CopyDirectory("Data", _applicationPaths.DataPath, exclude: ["metadata", "metadata-default"]);
             CopyDirectory("Root", _applicationPaths.RootFolderPath);
             CopyDirectory("Data/metadata", _applicationPaths.InternalMetadataPath);
@@ -319,7 +336,7 @@ public class BackupService : IBackupService
         try
         {
             _logger.LogInformation("Attempting to create a new backup at {BackupPath}", backupPath);
-            var fileStream = File.OpenWrite(backupPath);
+            var fileStream = OpenPrivateArchive(backupPath);
             await using (fileStream.ConfigureAwait(false))
             using (var zipArchive = new ZipArchive(fileStream, ZipArchiveMode.Create, false))
             {
@@ -439,6 +456,7 @@ public class BackupService : IBackupService
 
                 CopyDirectory(Path.Combine(_applicationPaths.ConfigurationDirectoryPath, "users"), Path.Combine("Config", "users"));
                 CopyDirectory(Path.Combine(_applicationPaths.ConfigurationDirectoryPath, "ScheduledTasks"), Path.Combine("Config", "ScheduledTasks"));
+                CopyDirectory(Path.Combine(_applicationPaths.ConfigurationDirectoryPath, "castlumora", "profiles"), Path.Combine("Config", "castlumora", "profiles"));
                 CopyDirectory(Path.Combine(_applicationPaths.RootFolderPath), "Root");
                 CopyDirectory(Path.Combine(_applicationPaths.DataPath, "collections"), Path.Combine("Data", "collections"));
                 CopyDirectory(Path.Combine(_applicationPaths.DataPath, "playlists"), Path.Combine("Data", "playlists"));
@@ -607,6 +625,36 @@ public class BackupService : IBackupService
             Trickplay = options.Trickplay,
             Database = options.Database
         };
+    }
+
+    private static FileStream OpenPrivateArchive(string path)
+    {
+        var options = new FileStreamOptions
+        {
+            Mode = FileMode.OpenOrCreate,
+            Access = FileAccess.Write,
+            Share = FileShare.None
+        };
+        if (!OperatingSystem.IsWindows())
+        {
+            options.UnixCreateMode = UnixFileMode.UserRead | UnixFileMode.UserWrite;
+        }
+
+        var stream = new FileStream(path, options);
+        try
+        {
+            if (!OperatingSystem.IsWindows())
+            {
+                File.SetUnixFileMode(path, UnixFileMode.UserRead | UnixFileMode.UserWrite);
+            }
+
+            return stream;
+        }
+        catch
+        {
+            stream.Dispose();
+            throw;
+        }
     }
 
     /// <summary>

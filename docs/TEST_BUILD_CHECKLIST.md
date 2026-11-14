@@ -6,7 +6,7 @@ Use an isolated installation and copies/authorized fixtures. Record BUILD_INFO.j
 | --- | --- | --- |
 | Fresh install | Extract; run start-castlumora; visit :28096/web; create admin; sign in | Actual packaged smoke required; local-only preview data, no service install |
 | Branding/navigation | Purple castle; Home/Browse/My List/Search; open native admin | Prior browser checks; compiled UI must load from packaged server |
-| Account security | Sign out/in; create limited user; deny admin routes/library not allowed | Inherited auth + prior HTTP/browser tests; linked profiles/presets unfinished |
+| Account security | Sign out/in; create limited user; deny admin routes/library not allowed | Inherited auth plus managed-profile API/service tests; use the linked profile checklist below for current build evidence |
 | Libraries | Admin → Libraries; add copied Movie/TV/music/photo/book folder; scan; Browse | Prior actual synthetic catalog/browser checks; packaged report distinguishes newly rerun workflows |
 | Metadata/artwork | Open movie/episode; verify title/artwork/tracks | Existing providers retained; online enrichment/artwork repair remains unfinished |
 | Local creator metadata | Home videos library; retain matching filename.info.json; scan/repair; Browse → Creator & home videos; play | Native strict sidecar ID/type/size/security tests and actual existing-file/lock/conflict/browser/playback checks pass; no downloading or full online provider |
@@ -53,3 +53,15 @@ Thumbnails/subtitles, playlists/channels/synchronization and independent online
 creator metadata remain unfinished. Report error code/job ID, logs, source
 permission/availability, server/browser versions and reproduction steps; omit
 passwords, cookies, tokens and private URLs.
+
+## Managed profiles (accounts-first increment)
+
+In Administration → Users & devices create a kids profile under a password-protected
+account, choosing explicit libraries. Use the profile menu → Viewing profiles and
+the account password to switch. Confirm the kids name survives reload, admin
+controls disappear, history/lists/preferences differ from the parent, and returning
+to the account again requires its password. Disabled owners must block linked
+profiles. Review ratings and blocked unrated content before granting child access.
+See CASTLUMORA_ACCOUNTS_AND_PROFILES.md for restrictions, recovery and unverified
+areas. Record the exact archive SHA, browser/device, expected/actual behavior and
+redacted logs when reporting issues; never attach credentials or the profile key.

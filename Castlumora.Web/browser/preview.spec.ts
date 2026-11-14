@@ -45,7 +45,7 @@ test('packaged preview: fresh setup, login, administration and logout', async ({
   });
   expect([401, 403]).toContain(setupAgain.status());
   await page.locator('.profile-menu summary').click();
-  await page.getByRole('button', { name: 'Sign out / switch profile', exact: true }).click();
+  await page.getByRole('button', { name: 'Sign out', exact: true }).click();
   await expect(page.getByRole('heading', { name: 'Welcome home' })).toBeVisible();
   expect(errors).toEqual([]);
 });
@@ -368,4 +368,91 @@ test('packaged preview: authorized public import indexes, deduplicates and plays
     })
     .toBeGreaterThan(0);
   await page.getByRole('link', { name: 'Back', exact: true }).click();
+});
+
+test('packaged preview: restart managed profiles isolate preferences and revoke prior sessions', async ({
+  page,
+  request,
+}) => {
+  test.skip(!preview || !password || process.env.CASTLUMORA_PREVIEW_RESTART !== '1');
+  const target = new URL(preview!);
+  if (target.hostname !== '127.0.0.1' || target.port !== '28096')
+    throw new Error('Dedicated isolated packaged preview required.');
+  test.setTimeout(90000);
+  page.setDefaultTimeout(20000);
+  await page.goto(preview!);
+  await page.getByLabel('Username', { exact: true }).fill('PreviewOwner');
+  await page.getByLabel('Password', { exact: true }).fill(password!);
+  await page.getByRole('button', { name: 'Sign in', exact: true }).click();
+  await expect(page.getByRole('link', { name: 'Administration', exact: true })).toBeVisible();
+  const session = () =>
+    page.evaluate(() => JSON.parse(sessionStorage.getItem('castlumora-session')!));
+  const headers = (token: string) => ({ Authorization: `MediaBrowser Token="${token}"` });
+  const endpoint = (path: string) => new URL('../' + path, preview!).href;
+  const owner = await session();
+  await page.getByRole('link', { name: 'Administration', exact: true }).click();
+  await page
+    .getByRole('navigation', { name: 'Administration sections' })
+    .getByRole('link', { name: 'Users & devices', exact: true })
+    .click();
+  await page
+    .getByRole('combobox', { name: 'Owning account', exact: true })
+    .selectOption(owner.user.Id);
+  await page.getByLabel('Profile name', { exact: true }).fill('Packaged Kids');
+  await page.getByRole('checkbox', { name: 'Packaged Fixture Movies', exact: true }).check();
+  await page.getByRole('button', { name: 'Create viewing profile', exact: true }).click();
+  await expect(
+    page.getByText('Profile created. Review its policy below or switch from the profile menu.', {
+      exact: true,
+    }),
+  ).toBeVisible();
+  const switchTo = async (label: string) => {
+    await page.locator('.profile-menu > summary').click();
+    await page.getByRole('link', { name: 'Viewing profiles', exact: true }).click();
+    await page
+      .getByRole('combobox', { name: 'Viewing profile', exact: true })
+      .selectOption({ label });
+    await page.getByLabel('Account password', { exact: true }).fill(password!);
+    await page.getByRole('button', { name: 'Switch viewing profile', exact: true }).click();
+  };
+  await switchTo('Packaged Kids (kids)');
+  await expect(page.locator('.profile-menu > summary')).toContainText('Packaged Kids');
+  await expect(page.getByRole('link', { name: 'Administration', exact: true })).toHaveCount(0);
+  await page.reload();
+  await expect(page.locator('.profile-menu > summary')).toContainText('Packaged Kids');
+  const child = await session();
+  expect(child.user.Id).not.toBe(owner.user.Id);
+  expect(child.token).not.toBe(owner.token);
+  expect(
+    (await request.get(endpoint('Users/Me'), { headers: headers(owner.token) })).status(),
+  ).toBe(401);
+  expect(
+    (
+      await request.post(endpoint('Users/New'), {
+        headers: headers(child.token),
+        data: { Name: 'Forbidden profile administrator' },
+      })
+    ).status(),
+  ).toBe(403);
+  const marker = '11111111222233334444555555555555';
+  expect(
+    (
+      await request.put(
+        endpoint('Castlumora/Presentation/Preferences/hiddenResume/' + marker + '?enabled=true'),
+        { headers: headers(child.token) },
+      )
+    ).ok(),
+  ).toBe(true);
+  await switchTo('PreviewOwner (account)');
+  await expect(page.getByRole('link', { name: 'Administration', exact: true })).toBeVisible();
+  const returned = await session();
+  expect(returned.user.Id).toBe(owner.user.Id);
+  const preferences = await request.get(endpoint('Castlumora/Presentation/Preferences'), {
+    headers: headers(returned.token),
+  });
+  expect(preferences.ok()).toBe(true);
+  expect((await preferences.json()).hiddenResume).not.toContain(marker);
+  expect(
+    (await request.get(endpoint('Users/Me'), { headers: headers(child.token) })).status(),
+  ).toBe(401);
 });

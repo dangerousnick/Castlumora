@@ -117,6 +117,37 @@ public sealed class BackupServiceTests : IDisposable
         Assert.Equal(validItemId, singleRow.GetProperty("ItemId").GetGuid());
     }
 
+    [Fact]
+    public async Task CreateBackupAsync_PreservesManagedProfileRegistryAndPrivateKey()
+    {
+        var token = TestContext.Current.CancellationToken;
+        var directory = Path.Combine(_configurationDirectoryPath, "castlumora", "profiles");
+        Directory.CreateDirectory(directory);
+        const string registry = "{\"Version\":1,\"Profiles\":[]}";
+        var key = new byte[32];
+        key[0] = 42;
+        await File.WriteAllTextAsync(Path.Combine(directory, "profiles.json"), registry, token);
+        await File.WriteAllBytesAsync(Path.Combine(directory, "credentials.key"), key, token);
+        var manifest = await CreateBackupService().CreateBackupAsync(new BackupOptionsDto());
+        if (!OperatingSystem.IsWindows())
+        {
+            Assert.Equal(UnixFileMode.UserRead | UnixFileMode.UserWrite, File.GetUnixFileMode(manifest.Path));
+        }
+
+        using var archive = await ZipFile.OpenReadAsync(manifest.Path, token);
+        var registryEntry = archive.GetEntry("Config/castlumora/profiles/profiles.json");
+        Assert.NotNull(registryEntry);
+        await using var registryStream = await registryEntry.OpenAsync(token);
+        using var reader = new StreamReader(registryStream);
+        Assert.Equal(registry, await reader.ReadToEndAsync(token));
+        var keyEntry = archive.GetEntry("Config/castlumora/profiles/credentials.key");
+        Assert.NotNull(keyEntry);
+        await using var keyStream = await keyEntry.OpenAsync(token);
+        using var bytes = new MemoryStream();
+        await keyStream.CopyToAsync(bytes, token);
+        Assert.Equal(key, bytes.ToArray());
+    }
+
     [Theory]
     [InlineData(-1L)]
     [InlineData(0L)]

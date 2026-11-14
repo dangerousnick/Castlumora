@@ -11,6 +11,7 @@ export interface AppState {
   setPreferences: (p: Preferences) => void;
   refreshLayout: () => Promise<void>;
   logout: () => Promise<void>;
+  replaceSession?: (session: Session) => void;
   notice: string;
 }
 export const AppContext = createContext<AppState | null>(null);

@@ -55,6 +55,7 @@ namespace Jellyfin.Server.Extensions
             // The default handler must be first so that it is evaluated first
             serviceCollection.AddSingleton<Jellyfin.Api.Castlumora.PresentationStore>();
             serviceCollection.AddSingleton<Jellyfin.Api.Castlumora.RegistrationService>();
+            serviceCollection.AddSingleton<Jellyfin.Api.Castlumora.ProfileService>();
             serviceCollection.AddSingleton<Jellyfin.Api.Castlumora.ReaderStore>();
             serviceCollection.AddSingleton<Jellyfin.Api.Castlumora.YtDlpRuntime>();
             serviceCollection.AddSingleton<Jellyfin.Api.Castlumora.ImportService>();

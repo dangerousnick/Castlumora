@@ -73,6 +73,7 @@ export interface QueryResult {
   TotalRecordCount: number;
 }
 export interface Session {
+  profileName?: string;
   server: string;
   token: string;
   user: User;

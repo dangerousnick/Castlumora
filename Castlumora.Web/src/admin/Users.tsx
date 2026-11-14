@@ -1,4 +1,5 @@
 import { useMemo, useState } from 'react';
+import ManagedProfiles from './ManagedProfiles';
 import { sameId } from '../api/client';
 import type { User } from '../api/types';
 import { useApp, useLoad } from '../state';
@@ -40,6 +41,7 @@ export default function Users() {
   return (
     <>
       <h1>Users, access & devices</h1>
+      <ManagedProfiles onCreated={() => setRefresh((value) => value + 1)} />
       <Feedback busy={users.busy} error={users.error} />
       <ActionStatus message={action.message} />
       <div className="filters">

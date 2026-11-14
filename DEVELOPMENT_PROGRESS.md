@@ -1,5 +1,51 @@
 # Castlumora Web Phase 1.3 development progress
 
+## Owner priority update — accounts through release readiness (2026-11-14)
+
+Defer further YouTube importing and creator-metadata development at the owner's
+request. Preserve its completed code, tests and known limitations; do not restart
+or remove it. Older "next task" importer entries below are historical checkpoints.
+Continue from the existing development branch and PR3, beginning with accounts,
+managed viewing profiles, permissions, invitations and session security. Then work
+through the remaining permanent roadmap toward release readiness in tested,
+committed and published increments. Retain all remaining requirements and honest
+feature status; a development preview does not establish stable-release readiness.
+Linux-only server policy and mandatory validation remain in effect. Never merge
+main or deploy to Coon Media automatically.
+
+## Current accounts milestone — verification in progress
+
+- Branch: `development/castlumora-web-1.3`; PR3. Preserve the existing application
+  checkpoint e3298e68ceec and documentation checkpoint0c0ed483e673. No main merge,
+  Coon deployment or recreation of completed work.
+- Implemented: private persistent linked identities, disabled-first provisioning,
+  bounded kids/adult policies, full password/session authentication, old-token
+  revocation, owner-policy checks, native administrator creation and client switch.
+  Real backup archives include the profile registry/key with private Linux archive
+  permissions; restore reapplies private profile modes. Production capacity
+  safeguards are unchanged. See docs/CASTLUMORA_ACCOUNTS_AND_PROFILES.md.
+- Focused verification: seven service tests passed; real HTTP workflow passed
+  creation/switching/separate preferences/admin and rename denial/old-token revocation
+  plus actual owner-disable rejection while ordinary administrator access survived.
+  Node24 typecheck/lint/69tests passed before the added administrator-form test.
+- Investigated corrections: initial provisioning lost required core provider IDs;
+  these now preserve each new user's actual providers. Negative HTTP tests now
+  send valid model/client-device headers so assertions reach authorization rather
+  than failing earlier at model validation. No assertion or production policy was
+  weakened. Initial sandbox formatter could not open its pipe; no-restore formatting
+  reported an incomplete workspace. Restored formatting loaded2,451files and
+  corrected the constructor comment and backup spacing. The first focused backup
+  compile reported SA1513; that was corrected before the full validation gate.
+- Publishing status: new accounts code is not yet published; complete the normal
+  full pre-push gate and exact-SHA Linux/shared CI before marking it verified.
+  The added actual-package browser profile workflow is not yet a claimed pass.
+- Next: finish verification/publish this coherent increment, verify its downloadable
+  preview, then managed profile edit/delete/recovery and safe media preferences.
+  Follow with invitation/device security and the remaining permanent roadmap.
+- Usage/reset: Not accessible. Recovery: inspect status/logs first; preserve all
+  unfinished files, run installed hooks, never bypass validation or recreate work.
+  The latest verified download below remains the previous application's preview.
+
 ## Verified checkpoint — persistent YouTube workflow and packaged UI
 
 - Last completed milestone: administrator-confirmed single-video YouTube queue,

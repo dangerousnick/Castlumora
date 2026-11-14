@@ -1,5 +1,18 @@
 # Castlumora — Built-in URL Import and YouTube Metadata Specification
 
+## Owner priority update — accounts through release readiness (2026-11-14)
+
+Defer further YouTube importing and creator-metadata development at the owner's
+request. Preserve its completed code, tests and known limitations; do not restart
+or remove it. Older "next task" importer entries below are historical checkpoints.
+Continue from the existing development branch and PR3, beginning with accounts,
+managed viewing profiles, permissions, invitations and session security. Then work
+through the remaining permanent roadmap toward release readiness in tested,
+committed and published increments. Retain all remaining requirements and honest
+feature status; a development preview does not establish stable-release readiness.
+Linux-only server policy and mandatory validation remain in effect. Never merge
+main or deploy to Coon Media automatically.
+
 ## Authoritative Linux-only server policy — 2026-11-13
 
 Castlumora1.0 targets Linux servers only: Mint22.3/newer compatible versions, Ubuntu

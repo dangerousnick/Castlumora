@@ -1,5 +1,37 @@
 # Feature parity inventory — Phase 1.3
 
+## Owner priority update — accounts through release readiness (2026-11-14)
+
+Defer further YouTube importing and creator-metadata development at the owner's
+request. Preserve its completed code, tests and known limitations; do not restart
+or remove it. Older "next task" importer entries below are historical checkpoints.
+Continue from the existing development branch and PR3, beginning with accounts,
+managed viewing profiles, permissions, invitations and session security. Then work
+through the remaining permanent roadmap toward release readiness in tested,
+committed and published increments. Retain all remaining requirements and honest
+feature status; a development preview does not establish stable-release readiness.
+Linux-only server policy and mandatory validation remain in effect. Never merge
+main or deploy to Coon Media automatically.
+
+## Accounts-first milestone — managed viewing profiles
+
+Initial account-linked profile creation/switching is implemented using separate
+inherited user identities, private persistent ownership/credentials, explicit
+kids/adult policies, full account-password authentication and prior-token revocation.
+Owner restrictions bound profiles; disabled/missing owners and unsafe managed
+configuration fail closed without replacing ordinary user/API-key authentication.
+Native admin creation and client profile switching preserve separate progress,
+lists and preferences. See docs/CASTLUMORA_ACCOUNTS_AND_PROFILES.md for restrictions,
+recovery and tests; exact published verification belongs in DEVELOPMENT_PROGRESS.md.
+
+Remaining: dedicated edit/delete/pending recovery, safe self-service media settings,
+invitation/registration security edge cases, account-wide sessions/devices and
+multi-device/history verification. Then resume discovery/notifications, playback/
+Live TV/skipper/UI/category/admin parity, resource/creator/business/storage/offline
+work and Linux packaging/release readiness. Retain completed importer code; further
+YouTube/creator-metadata work is deferred by owner instruction. No stable-release
+or complete Phase1.4 claim is made.
+
 ## Verified persistent YouTube workflow — development preview
 
 Latest applicatione3298e68ceec41d5df197c50ed96c02aada23361 includes administrator

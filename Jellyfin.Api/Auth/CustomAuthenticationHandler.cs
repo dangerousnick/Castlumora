@@ -2,6 +2,7 @@ using System.Globalization;
 using System.Security.Claims;
 using System.Text.Encodings.Web;
 using System.Threading.Tasks;
+using Jellyfin.Api.Castlumora;
 using Jellyfin.Api.Constants;
 using Jellyfin.Data;
 using Jellyfin.Database.Implementations.Enums;
@@ -19,6 +20,7 @@ namespace Jellyfin.Api.Auth
     public class CustomAuthenticationHandler : AuthenticationHandler<AuthenticationSchemeOptions>
     {
         private readonly IAuthService _authService;
+        private readonly ProfileService? _profiles;
         private readonly ILogger<CustomAuthenticationHandler> _logger;
 
         /// <summary>
@@ -33,8 +35,25 @@ namespace Jellyfin.Api.Auth
             IOptionsMonitor<AuthenticationSchemeOptions> options,
             ILoggerFactory logger,
             UrlEncoder encoder)
+            : this(authService, options, logger, encoder, null)
+        {
+        }
+
+        /// <summary>Initializes a new instance of the <see cref="CustomAuthenticationHandler"/> class with managed-profile owner checks.</summary>
+        /// <param name="authService">Inherited authentication.</param>
+        /// <param name="options">Scheme options.</param>
+        /// <param name="logger">Logger factory.</param>
+        /// <param name="encoder">URL encoder.</param>
+        /// <param name="profiles">Managed-profile policy; null preserves the original constructor contract.</param>
+        public CustomAuthenticationHandler(
+            IAuthService authService,
+            IOptionsMonitor<AuthenticationSchemeOptions> options,
+            ILoggerFactory logger,
+            UrlEncoder encoder,
+            ProfileService? profiles)
             : base(options, logger, encoder)
         {
+            _profiles = profiles;
             _authService = authService;
             _logger = logger.CreateLogger<CustomAuthenticationHandler>();
         }
@@ -48,6 +67,12 @@ namespace Jellyfin.Api.Auth
                 if (!authorizationInfo.HasToken)
                 {
                     return AuthenticateResult.NoResult();
+                }
+
+                if (!authorizationInfo.IsApiKey && _profiles is not null
+                    && !await _profiles.SessionAllowedAsync(authorizationInfo.UserId, Context.RequestAborted).ConfigureAwait(false))
+                {
+                    return AuthenticateResult.Fail("Managed viewing profile requires administrator review.");
                 }
 
                 var role = UserRoles.User;
