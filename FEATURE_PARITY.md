@@ -13,6 +13,18 @@ feature status; a development preview does not establish stable-release readines
 Linux-only server policy and mandatory validation remain in effect. Never merge
 main or deploy to Coon Media automatically.
 
+## Verified accounts preview — source503434e4a2
+
+Managed administrator creation and password-verified switching passed the normal
+full backend gate (c2:4,564passes/20skips),70frontend tests, exact Linux/shared CI
+and all four actual-package browser workflows. The uploaded Linux archive was
+independently source/hash/GPL/castle/compiled-profile verified. See
+DEVELOPMENT_PROGRESS.md for download/checksum and exact recovery evidence.
+Dedicated profile edit/delete/recovery, safe self-service media preferences and
+account-wide device/session controls remain; initial managed profiles exclude
+Live TV/DVR. Ordinary inherited accounts retain their existing functionality.
+This is a development preview, not stable1.0 or complete Phase1.4.
+
 ## Accounts-first milestone — managed viewing profiles
 
 Initial account-linked profile creation/switching is implemented using separate

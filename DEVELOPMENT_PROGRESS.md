@@ -13,56 +13,65 @@ feature status; a development preview does not establish stable-release readines
 Linux-only server policy and mandatory validation remain in effect. Never merge
 main or deploy to Coon Media automatically.
 
-## Published accounts milestone — packaged menu correction
+## Verified accounts checkpoint — managed creation and switching
 
-- Latest published application: `c2b8ba759342a6492037512d01fa04cd2744d1e2`.
-  Branch `development/castlumora-web-1.3`; PR3 open. Last implementation milestone:
-  administrator-created account-linked profiles and password-verified switching.
-  No main merge, Coon deployment or recreation of completed work.
-- Implemented: private persistent linked identities, disabled-first provisioning,
-  bounded kids/adult policies, full password/session authentication, old-token
-  revocation, owner-policy checks, native administrator creation and client switch.
-  Real backup archives include profile registry/key with private Linux archive
-  permissions; restore reapplies private profile modes. Production capacity
-  safeguards are unchanged. See docs/CASTLUMORA_ACCOUNTS_AND_PROFILES.md.
-- Full normal pre-push gate passed at this exact application SHA: restored format
-  2,451files/zero changes/no workspace warning; .NET10 Debug and Release builds
-  zero warnings/errors; all17backend suites4,564passed/20skips; Node24.22.1
-  typecheck/lint/70tests/build; native/security/backup/migration/hook/handler checks.
-  Logs: /tmp/castlumora-prepush.7SiZztZ2. The seven profile service tests, real HTTP
-  owner-disable/ordinary-admin-preservation workflow and actual private backup
-  registry/key archive assertions passed within the complete suite.
-- Investigated corrections: provisioning now preserves required inherited provider
-  IDs. Negative HTTP requests use valid models/device headers, so they exercise
-  authorization. Initial sandbox formatting could not open its pipe; no-restore
-  formatting warned of incomplete loading. Restored formatting corrected constructor
-  documentation and backup spacing before the successful full gate. No assertion,
-  test, production backup threshold or CI requirement was weakened.
-- Exact-SHA GitHub Format43622195670, ABI43622195591 and OpenAPI43622195732
-  passed. Tests43622195633 remains in progress. Preview43622195599 passed the prior
-  three actual-package workflows, then exposed an open profile-menu overlay
-  intercepting the ordinary Switch button click. It correctly withheld upload.
-  The product now closes its menu on link navigation; no forced click, removed
-  assertion or increased timeout masks the bug. Actual React/local Chromium with
-  controlled API fixtures verified menu closure, ordinary switching and removal
-  of admin navigation. That is UI evidence, not a packaged-server pass.
-  The corrected frontend still needs its normal gate and new package verification;
-  the verified download below remains the previous application. Preserve the
-  running backend CI result before publishing the client-only correction.
-- Unpublished application change: the locally verified menu overlay correction.
-  Preserve it and publish only after its normal frontend gate. Remaining account work: dedicated
-  managed-profile edit/delete/pending recovery, safe self-service media preferences,
-  invitation/device security and broader media-history/multi-device verification.
-  Initial managed profiles deliberately exclude Live TV/DVR and identity edits;
-  inherited standalone-account functionality remains available. Full installed-system
-  backup restore and actual Linux Mint/NAS/GPU/tuner certification remain unverified.
-- Next task: finish CI/package verification and update this checkpoint/PR3. Then add
-  administrator profile enumeration/deletion with disabled-first revocation, durable
-  registry cleanup, actual API/security/reopen tests and native UI; bundle the new
-  account guide/feature manifest in the next preview. Do not resume deferred YouTube
-  or creator-metadata development. Continue remaining permanent release roadmap.
+- Last completed milestone: account-linked viewing identities, administrator
+  provisioning, password-verified switching and owner-policy/session enforcement.
+- Latest published application: `503434e4a24fd6627a9ec187941704b1c32da7d7`.
+  Backend/profile/backup implementation: c2b8ba759342a6492037512d01fa04cd2744d1e2.
+  Branch `development/castlumora-web-1.3`; PR3 open. No main merge/Coon deployment.
+- Implemented: private persistent ownership/derived credentials; disabled-first
+  provisioning; explicit kids/adult libraries bounded by owner policies; separate
+  inherited user IDs for history/lists/preferences; full password/session auth and
+  old-token revocation; owner-disable/unsafe-managed-configuration denial while
+  ordinary accounts/API keys retain their existing behavior. Native admin creation
+  and web switching/reload are included. Real archives retain registry/key with
+  private Linux permissions; restore reapplies profile modes. Production backup
+  capacity safeguards remain unchanged. See docs/CASTLUMORA_ACCOUNTS_AND_PROFILES.md.
+- Full normal gate at c2b8ba7593: restored formatting2,451files/zero changes/no
+  workspace warning; .NET10 Debug/Release0warnings/errors; all17backend suites
+  4,564passed/20skips; Node24.22.1 typecheck/lint/70tests/build; security/native/
+  backup/migration/hook/handler checks. GitHub Linux job132530184298 independently
+  matched4,564passes/20skips; Format43622195670, ABI43622195591 and
+  OpenAPI43622195732 passed. Logs: /tmp/castlumora-prepush.7SiZztZ2.
+- Application503434e4a2 changes only the client/menu and documentation: its normal
+  frontend gate passed typecheck/lint/70tests/build, reusing unchanged c2 backend
+  results. Logs: /tmp/castlumora-prepush.FoyibhVe. Exact503 GitHub checks
+  43623111675/43623111673/43623111652/43623111668 passed; unchanged backend skipped.
+- Actual extracted-package preview43623111735 / job132533030510 passed all four
+  browser workflows: fresh setup/login/admin/logout; restart/library scan/playback;
+  owned public native imports/indexing/dedup/playback; profile creation/switch/reload,
+  separate preferences, denied admin access and old-token rejection. These prove
+  switching/browser reload; full profile persistence across another server restart
+  and broader real multi-device/media-history validation remain future coverage.
+- New verified download: https://github.com/dangerousnick/Castlumora/actions/runs/43623111735/artifacts/14125216175
+  Archive `Castlumora-1.0-dev-503434e4a24f-linux-x64.tar.gz`.
+  SHA256 `b00c1f567bc9b1f68d43c3f9dd446221a4156a62f300f75b24dcb6137494a1d7`.
+  Independent download checked outer/inner hashes, exact source/manifest/compiled
+  profile controls, all16castle assets, original GPL bytes, runtime/Node notices,
+  executable modes and archived progress documents. Sign-in/30-day retention apply.
+  Report: /tmp/castlumora-linux-profiles-preview-verified.json. Intermediate preview,
+  not stable1.0 or complete Phase1.4. No physical Mint/NAS/GPU/tuner certification.
+- Investigated failures: preserved required core provider IDs during provisioning;
+  negative HTTP tests now reach authorization with valid models/device headers.
+  Restored formatting fixed constructor documentation/backup spacing. First package
+  test correctly caught the profile menu covering Switch; the product closes menus
+  on navigation. Actual local React/Chromium proved the fix before503 publication;
+  corrected packaged clicks passed. No force-click/assertion/timeout/CI weakening.
+- Unfinished application changes: none. Dedicated edit/delete/pending recovery,
+  safe self-service media preferences, invitation/device security and account-wide
+  session controls remain. Initial managed profiles exclude Live TV/DVR and core
+  identity edits; inherited standalone-account functionality remains available.
+  Full installed-system restore remains unverified. The new account guide is in
+  source; bundle it with the next preview (the current checklist links to GitHub).
+- Next exact task: add administrator-scoped profile enumeration and disabled-first
+  deletion/revocation, durable mapping cleanup and safe orphan retry. Test role/
+  ownership denials, token rejection, persistence and deletion failures, add native
+  administration, and bundle the account guide/feature manifest. Complete/publish
+  that coherent increment before media-preference and remaining release work.
+  Further YouTube/creator metadata development is deferred; preserve existing code.
 - Usage/reset: Not accessible. Recovery: fetch origin, inspect status/log/this file,
-  preserve newer/unfinished work and existing hooks; continue this branch without
+  preserve newer/unfinished work and installed hooks; continue this branch without
   resetting/recreating features. No automatic usage-reset continuation is claimed.
 
 ## Verified checkpoint — persistent YouTube workflow and packaged UI
