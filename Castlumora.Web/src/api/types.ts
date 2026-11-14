@@ -49,6 +49,7 @@ export interface MediaStream {
   Language?: string;
   DisplayTitle?: string;
   IsExternal?: boolean;
+  IsDefault?: boolean;
   DeliveryUrl?: string;
 }
 export interface MediaSource {

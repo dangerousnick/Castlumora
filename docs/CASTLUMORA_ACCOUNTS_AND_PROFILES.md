@@ -31,8 +31,8 @@ bounds. Review the media's ratings and profile policy before children use it.
 Managed identity names/passwords and core account configuration are administrator
 controlled. The displayed name is distinct from the reserved internal username.
 Normal profile watch progress/lists and Castlumora presentation preferences remain
-independent. Core audio/subtitle preference editing currently requires the
-administrator's existing user configuration editor. No PIN-only switch or retained
+independent. Audio/subtitle defaults have a separate self-scoped media editor; other core
+configuration still requires the administrator's existing editor. No PIN-only switch or retained
 parent credential bypass is provided. Existing standalone accounts still work.
 
 The server checks linked identity ownership on authenticated requests. Disabled or
@@ -41,6 +41,27 @@ unsafe configuration and child policies exceeding owner bounds fail closed.
 Tightening an owner policy can require an administrator to review the linked
 profile's inherited policy before its sessions are allowed again. Ordinary
 inherited users and API keys retain their existing authentication behavior.
+
+## Profile-specific media defaults
+
+Viewing profiles → Media preferences edits preferred audio/subtitle language,
+source-default-audio choice and subtitle behavior for the current identity only.
+Use ISO language/language-region codes (eng, spa, en-US), blank for automatic, or
+OriginalLanguage for original audio. Turn source-default audio off to prefer a
+matching language. Existing remembered per-title choices can override defaults;
+manual player choices remain available. Some tracks require permitted compatible
+streaming. Missing matching tracks fall back through inherited server selection.
+
+The endpoint derives the user from authentication and rejects identity, password,
+permission and target-user fields. It changes only the four media columns instead
+of replacing a stale full configuration. It does not re-enable identity editing.
+Ordinary account preference restrictions and managed owners' restrictions remain.
+The player respects server subtitle defaults and routes alternate preferred tracks
+through compatible streaming when direct MP4 cannot select them reliably.
+
+The automated package fixture uses owned English440Hz/Spanish880Hz audio plus VTT;
+tests measure decoded browser audio and actual cue text, not just saved settings.
+Consult the exact checkpoint for which package has passed these new assertions.
 
 ## Administrator lifecycle and cleanup
 
@@ -98,7 +119,7 @@ preferences and return-to-account authentication. Consult DEVELOPMENT_PROGRESS.m
 for the exact checks actually run and source SHA; test presence alone is not a pass.
 
 Remaining account work includes dedicated managed-profile editing and non-destructive
-pending recovery UI, safe self-service media preferences, invitation/registration edge-case
+pending recovery UI, broader preference/device coverage, invitation/registration edge-case
 review, account-wide device/session controls and broader multi-device/media-history
 verification. Inherited administrative user-policy controls remain available.
 External-auth-provider account compatibility is unverified; the initial workflow

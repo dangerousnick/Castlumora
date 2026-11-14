@@ -127,6 +127,26 @@ public sealed class ProfileService : IDisposable
         }
     }
 
+    /// <summary>Checks whether a ready managed profile's owner permits media preference editing.</summary>
+    /// <param name="identity">Identity supplied by the authenticated caller, not a requested target.</param>
+    /// <param name="token">Request cancellation.</param>
+    /// <returns>Whether the enabled owner permits preference editing for this managed identity.</returns>
+    public async Task<bool> CanEditManagedPreferencesAsync(Guid identity, CancellationToken token)
+    {
+        await _gate.WaitAsync(token).ConfigureAwait(false);
+        try
+        {
+            var profile = Read().Profiles.SingleOrDefault(profile => profile.User.Equals(identity) && profile.Ready);
+            var owner = profile is null ? null : _users.GetUserById(profile.Owner);
+            return owner is not null && !owner.HasPermission(PermissionKind.IsDisabled)
+                && (owner.HasPermission(PermissionKind.IsAdministrator) || owner.EnableUserPreferenceAccess);
+        }
+        finally
+        {
+            _gate.Release();
+        }
+    }
+
     /// <summary>Lists managed identities for administrator review, including pending/orphaned records.</summary>
     /// <param name="actor">Authenticated administrator.</param>
     /// <param name="token">Request cancellation.</param>

@@ -1,5 +1,7 @@
 // Opt-in only: actual extracted archive running on the dedicated fresh-install loopback port.
 import { test, expect } from '@playwright/test';
+import type { MediaSource } from '../src/api/types';
+import { verifyPreferredFixtureTracks } from './media-preference-proof';
 const preview = process.env.CASTLUMORA_PREVIEW_URL;
 const password = process.env.CASTLUMORA_PREVIEW_PASSWORD;
 test('packaged preview: fresh setup, login, administration and logout', async ({
@@ -434,6 +436,71 @@ test('packaged preview: restart managed profiles isolate preferences and revoke 
       })
     ).status(),
   ).toBe(403);
+  await page.locator('.profile-menu > summary').click();
+  await page.getByRole('link', { name: 'Viewing profiles', exact: true }).click();
+  await page.getByLabel('Preferred audio language', { exact: true }).fill('spa');
+  await page.getByLabel('Preferred subtitle language', { exact: true }).fill('eng');
+  await page
+    .getByRole('checkbox', { name: 'Use source default audio track', exact: true })
+    .uncheck();
+  await page
+    .getByRole('combobox', { name: 'Subtitle behavior', exact: true })
+    .selectOption('Always');
+  await page.getByRole('button', { name: 'Save media preferences', exact: true }).click();
+  await expect(
+    page.getByText('Media preferences saved for this profile.', { exact: true }),
+  ).toBeVisible();
+  await page.reload();
+  await expect(page.getByLabel('Preferred audio language', { exact: true })).toHaveValue('spa');
+  let fixture: { Id: string; OfficialRating?: string; MediaSources: MediaSource[] } | undefined;
+  await expect
+    .poll(
+      async () => {
+        const response = await request.get(endpoint('Items'), {
+          headers: headers(child.token),
+          params: {
+            UserId: child.user.Id,
+            Recursive: true,
+            IncludeItemTypes: 'Movie',
+            Fields: 'MediaSources',
+            SearchTerm: 'Castlumora Test',
+          },
+        });
+        expect(response.ok()).toBe(true);
+        fixture = (await response.json()).Items[0];
+        return (
+          fixture?.OfficialRating === 'G' &&
+          (fixture.MediaSources[0]?.MediaStreams.length ?? 0) >= 4
+        );
+      },
+      { timeout: 20000 },
+    )
+    .toBe(true);
+  const audioIndex = fixture!.MediaSources[0].MediaStreams.find(
+    (stream) => stream.Type === 'Audio' && stream.Language === 'spa',
+  )!.Index;
+  const subtitleIndex = fixture!.MediaSources[0].MediaStreams.find(
+    (stream) => stream.Type === 'Subtitle' && stream.Language === 'eng',
+  )!.Index;
+  const playbackRequests: Record<string, unknown>[] = [];
+  const capturePlayback = (response: import('@playwright/test').Request) => {
+    if (new URL(response.url()).pathname.endsWith('/PlaybackInfo') && response.method() === 'POST')
+      playbackRequests.push(response.postDataJSON());
+  };
+  page.on('request', capturePlayback);
+  await page.goto(preview! + '#/item/' + fixture!.Id);
+  await page.getByRole('link', { name: 'Watch now', exact: true }).click();
+  await verifyPreferredFixtureTracks(page);
+  expect(
+    playbackRequests.some(
+      (body) =>
+        body.EnableDirectPlay === false &&
+        body.AudioStreamIndex === audioIndex &&
+        body.SubtitleStreamIndex === subtitleIndex,
+    ),
+  ).toBe(true);
+  page.off('request', capturePlayback);
+  await page.getByRole('link', { name: 'Back', exact: true }).click();
   const marker = '11111111222233334444555555555555';
   expect(
     (

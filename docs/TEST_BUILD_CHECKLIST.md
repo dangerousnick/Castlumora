@@ -72,3 +72,11 @@ confirm it remains, then confirm deletion. Its identity/history must disappear,
 its sessions must be rejected, and its owning account and media playback must
 still work. Pending/orphan records can be removed; keep matching backups before
 changing real accounts. Actual packaged verification is recorded per exact SHA.
+
+For previews declaring profileMediaPreferencesAvailable=true, open Viewing profiles
+→ Media preferences. Choose spa audio, disable source-default audio, choose eng
+subtitles/Always, save and reload. With matching tracks, playback should use those
+defaults; another profile must retain its own settings. Identity and permissions
+must remain unchanged. Remembered per-title choices may override defaults. The
+package fixture measures Spanish880Hz audio and actual VTT text; this does not
+certify all codecs, real media languages or hardware acceleration.

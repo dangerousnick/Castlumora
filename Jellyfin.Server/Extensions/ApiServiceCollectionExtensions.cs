@@ -56,6 +56,7 @@ namespace Jellyfin.Server.Extensions
             serviceCollection.AddSingleton<Jellyfin.Api.Castlumora.PresentationStore>();
             serviceCollection.AddSingleton<Jellyfin.Api.Castlumora.RegistrationService>();
             serviceCollection.AddSingleton<Jellyfin.Api.Castlumora.ProfileService>();
+            serviceCollection.AddSingleton<Jellyfin.Api.Castlumora.MediaPreferencesService>();
             serviceCollection.AddSingleton<Jellyfin.Api.Castlumora.ReaderStore>();
             serviceCollection.AddSingleton<Jellyfin.Api.Castlumora.YtDlpRuntime>();
             serviceCollection.AddSingleton<Jellyfin.Api.Castlumora.ImportService>();

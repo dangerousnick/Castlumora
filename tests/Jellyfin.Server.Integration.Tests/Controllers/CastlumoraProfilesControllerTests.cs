@@ -21,6 +21,8 @@ public sealed class CastlumoraProfilesControllerTests : IClassFixture<JellyfinAp
         var token = TestContext.Current.CancellationToken;
         using var denied = await anonymous.GetAsync("Castlumora/Profiles", token);
         Assert.Equal(HttpStatusCode.Unauthorized, denied.StatusCode);
+        using var anonymousPreferences = await anonymous.GetAsync("Castlumora/Profiles/MediaPreferences", token);
+        Assert.Equal(HttpStatusCode.Unauthorized, anonymousPreferences.StatusCode);
         using var admin = _factory.CreateClient();
         admin.DefaultRequestHeaders.AddAuthHeader(await AuthHelper.CompleteStartupAsync(admin));
         var me = await admin.GetFromJsonAsync<JsonObject>("Users/Me", token);
@@ -65,6 +67,22 @@ public sealed class CastlumoraProfilesControllerTests : IClassFixture<JellyfinAp
             Assert.Equal(HttpStatusCode.Forbidden, adminDenied.StatusCode);
             using var guessed = await anonymous.PostAsJsonAsync("Users/AuthenticateByName", new { Username = childInfo["Name"]!.GetValue<string>(), Pw = string.Empty }, token);
             Assert.Equal(HttpStatusCode.Unauthorized, guessed.StatusCode);
+            using var unsafePreferences = await child.PutAsJsonAsync("Castlumora/Profiles/MediaPreferences", new { audioLanguage = "spa", EnableLocalPassword = true }, token);
+            Assert.Equal(HttpStatusCode.BadRequest, unsafePreferences.StatusCode);
+            using var targetPreferences = await child.PutAsJsonAsync("Castlumora/Profiles/MediaPreferences", new { userId = owner, audioLanguage = "spa" }, token);
+            Assert.Equal(HttpStatusCode.BadRequest, targetPreferences.StatusCode);
+            using var invalidLanguage = await child.PutAsJsonAsync("Castlumora/Profiles/MediaPreferences", new { audioLanguage = "../en", subtitleMode = "Always" }, token);
+            Assert.Equal(HttpStatusCode.BadRequest, invalidLanguage.StatusCode);
+            using var mediaDefaults = await child.PutAsJsonAsync("Castlumora/Profiles/MediaPreferences?userId=" + owner, new { audioLanguage = "spa", subtitleLanguage = "eng", useDefaultAudioTrack = false, subtitleMode = "Always" }, token);
+            mediaDefaults.EnsureSuccessStatusCode();
+            var savedDefaults = await child.GetFromJsonAsync<JsonObject>("Castlumora/Profiles/MediaPreferences", token);
+            Assert.Equal("spa", savedDefaults!["audioLanguage"]!.GetValue<string>());
+            Assert.Equal("eng", savedDefaults["subtitleLanguage"]!.GetValue<string>());
+            var configuredChild = await child.GetFromJsonAsync<JsonObject>("Users/Me", token);
+            Assert.Equal("spa", configuredChild!["Configuration"]!["AudioLanguagePreference"]!.GetValue<string>());
+            Assert.Equal(childInfo["Name"]!.GetValue<string>(), configuredChild["Name"]!.GetValue<string>());
+            Assert.False(configuredChild["Policy"]!["EnableUserPreferenceAccess"]!.GetValue<bool>());
+            Assert.Equal(childInfo["Configuration"]!["EnableLocalPassword"]!.GetValue<bool>(), configuredChild["Configuration"]!["EnableLocalPassword"]!.GetValue<bool>());
             var item = Guid.NewGuid().ToString("N");
             using var saved = await child.PutAsync("Castlumora/Presentation/Preferences/hiddenResume/" + item + "?enabled=true", null, token);
             saved.EnsureSuccessStatusCode();
@@ -75,6 +93,8 @@ public sealed class CastlumoraProfilesControllerTests : IClassFixture<JellyfinAp
             parent.DefaultRequestHeaders.AddAuthHeader(returned!["AccessToken"]!.GetValue<string>());
             var preferences = await parent.GetFromJsonAsync<JsonObject>("Castlumora/Presentation/Preferences", token);
             Assert.Empty(preferences!["hiddenResume"]!.AsArray());
+            var ownerDefaults = await parent.GetFromJsonAsync<JsonObject>("Castlumora/Profiles/MediaPreferences", token);
+            Assert.Equal(me["Configuration"]!["AudioLanguagePreference"]?.GetValue<string>(), ownerDefaults!["audioLanguage"]?.GetValue<string>());
             using var childRevoked = await child.GetAsync("Users/Me", token);
             Assert.Equal(HttpStatusCode.Unauthorized, childRevoked.StatusCode);
 
@@ -83,6 +103,9 @@ public sealed class CastlumoraProfilesControllerTests : IClassFixture<JellyfinAp
             accountCreation.EnsureSuccessStatusCode();
             var account = await accountCreation.Content.ReadFromJsonAsync<JsonObject>(token);
             var accountId = account!["Id"]!.GetValue<string>();
+            account["Policy"]!["EnableUserPreferenceAccess"] = false;
+            using var restrictPreferences = await parent.PostAsJsonAsync("Users/" + accountId + "/Policy", account["Policy"], token);
+            restrictPreferences.EnsureSuccessStatusCode();
             using var linkedCreation = await parent.PostAsJsonAsync("Castlumora/Profiles", new { accountId, name = "Family", preset = "adult", libraries = new[] { libraryId } }, token);
             linkedCreation.EnsureSuccessStatusCode();
             var linked = await linkedCreation.Content.ReadFromJsonAsync<JsonObject>(token);
@@ -91,6 +114,10 @@ public sealed class CastlumoraProfilesControllerTests : IClassFixture<JellyfinAp
             var signedIn = await login.Content.ReadFromJsonAsync<JsonObject>(token);
             using var accountClient = _factory.CreateClient();
             accountClient.DefaultRequestHeaders.AddAuthHeader(signedIn!["AccessToken"]!.GetValue<string>());
+            var restrictedDefaults = await accountClient.GetFromJsonAsync<JsonObject>("Castlumora/Profiles/MediaPreferences", token);
+            Assert.False(restrictedDefaults!["canEdit"]!.GetValue<bool>());
+            using var restrictedWrite = await accountClient.PutAsJsonAsync("Castlumora/Profiles/MediaPreferences", new { audioLanguage = "spa" }, token);
+            Assert.Equal(HttpStatusCode.Forbidden, restrictedWrite.StatusCode);
             using var profileLogin = await accountClient.PostAsJsonAsync("Castlumora/Profiles/Switch", new { profileId = linked!["id"]!.GetValue<string>(), accountPassword = password }, token);
             profileLogin.EnsureSuccessStatusCode();
             var profileSession = await profileLogin.Content.ReadFromJsonAsync<JsonObject>(token);
@@ -98,6 +125,8 @@ public sealed class CastlumoraProfilesControllerTests : IClassFixture<JellyfinAp
             linkedClient.DefaultRequestHeaders.AddAuthHeader(profileSession!["AccessToken"]!.GetValue<string>());
             using var enabled = await linkedClient.GetAsync("Users/Me", token);
             enabled.EnsureSuccessStatusCode();
+            using var childPreferenceDenied = await linkedClient.PutAsJsonAsync("Castlumora/Profiles/MediaPreferences", new { audioLanguage = "spa" }, token);
+            Assert.Equal(HttpStatusCode.Forbidden, childPreferenceDenied.StatusCode);
             account["Policy"]!["IsDisabled"] = true;
             using var disable = await parent.PostAsJsonAsync("Users/" + accountId + "/Policy", account["Policy"], token);
             disable.EnsureSuccessStatusCode();

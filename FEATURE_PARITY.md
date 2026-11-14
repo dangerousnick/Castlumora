@@ -13,6 +13,16 @@ feature status; a development preview does not establish stable-release readines
 Linux-only server policy and mandatory validation remain in effect. Never merge
 main or deploy to Coon Media automatically.
 
+## In validation — safe profile media defaults
+
+Self-scoped audio/subtitle/source-audio/mode editing uses four existing user columns,
+preserves identity/policy restrictions and account isolation, and honors owner
+preference restrictions. Player negotiation respects server subtitle defaults and
+preferred alternate tracks.77frontend tests, real SQLite HTTP/security coverage and
+actual compiled-app decoded880Hz audio/VTT-cue proof passed locally. The shared
+package assertions are added but have not yet run on an uploaded build. See current
+progress for exact next validation/publication steps; c1 remains the verified preview.
+
 ## Verified lifecycle preview — sourcec1a2d85d1f
 
 Administrator inventory and confirmed profile deletion now include disabled-first

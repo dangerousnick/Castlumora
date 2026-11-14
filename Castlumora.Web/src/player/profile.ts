@@ -1,4 +1,21 @@
 import type { Api } from '../api/client';
+import type { MediaSource } from '../api/types';
+
+export function playbackDefaults(source: MediaSource, audio?: number, subtitle?: number) {
+  const audioStreams = source.MediaStreams.filter((stream) => stream.Type === 'Audio');
+  const nativeAudio = audioStreams.find((stream) => stream.IsDefault) ?? audioStreams[0];
+  const selectedAudio = audio ?? source.DefaultAudioStreamIndex;
+  const selectedSubtitle = subtitle ?? source.DefaultSubtitleStreamIndex ?? -1;
+  return {
+    audio: selectedAudio,
+    subtitle: selectedSubtitle,
+    requiresStreaming:
+      selectedSubtitle >= 0 ||
+      (selectedAudio !== undefined &&
+        nativeAudio !== undefined &&
+        selectedAudio !== nativeAudio.Index),
+  };
+}
 export function browserProfile() {
   const video = document.createElement('video');
   const supportsAvc = !!video.canPlayType('video/mp4; codecs="avc1.42E01E, mp4a.40.2"');

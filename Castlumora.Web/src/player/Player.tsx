@@ -7,7 +7,7 @@ import { errorText, useApp, useLoad } from '../state';
 import { Feedback } from '../components/Media';
 import { useMusic } from '../music/MusicProvider';
 import { SkipControls } from '../skipper/SkipControls';
-import { authenticatedMediaUrl, browserProfile, ticks } from './profile';
+import { authenticatedMediaUrl, browserProfile, playbackDefaults, ticks } from './profile';
 export default function Player() {
   const { id = '' } = useParams();
   const { api } = useApp();
@@ -26,7 +26,7 @@ export default function Player() {
   const [ended, setEnded] = useState(false);
   const navigate = useNavigate();
   const [audio, setAudio] = useState<number>();
-  const [subtitle, setSubtitle] = useState(-1);
+  const [subtitle, setSubtitle] = useState<number>();
   const [transcode, setTranscode] = useState(false);
   const [attempt, setAttempt] = useState(0);
   const [source, setSource] = useState<MediaSource>();
@@ -71,6 +71,8 @@ export default function Player() {
     let offset = 0;
     let direct = true;
     let method = 'DirectPlay';
+    let activeAudio = audio;
+    let activeSubtitle = subtitle ?? -1;
     let timer: ReturnType<typeof setInterval> | undefined;
     setLoading(true);
     setError('');
@@ -86,8 +88,8 @@ export default function Player() {
         IsMuted: video.muted,
         CanSeek: item.value?.Type !== 'TvChannel',
         PlayMethod: method,
-        AudioStreamIndex: audio,
-        SubtitleStreamIndex: subtitle,
+        AudioStreamIndex: activeAudio,
+        SubtitleStreamIndex: activeSubtitle,
         LiveStreamId: liveStream,
       };
     }
@@ -137,40 +139,67 @@ export default function Player() {
     video.addEventListener('ended', finished);
     void (async () => {
       try {
-        const info = await api.playback(
+        let forceCompatible =
+          transcode || audio !== undefined || (subtitle ?? -1) >= 0 || quality > 0;
+        let info = await api.playback(
           id,
           browserProfile(),
           start,
           audio,
           subtitle,
-          transcode || audio !== undefined || subtitle >= 0 || quality > 0,
+          forceCompatible,
           { mediaSourceId: mediaVersion || undefined, maxBitrate: quality || undefined },
         );
         playSession = info.PlaySessionId;
         if (info.ErrorCode || !info.MediaSources.length)
           throw new Error(info.ErrorCode ?? 'No playable media source was returned.');
-        const selected = info.MediaSources[0];
-        mediaSource = selected.Id;
+        let selected = info.MediaSources[0];
         liveStream = selected.LiveStreamId;
         if (cancelled) {
           await api.cleanup(playSession, liveStream);
           return;
         }
-        setSource(selected);
-        direct =
-          !!selected.SupportsDirectPlay &&
-          !transcode &&
-          audio === undefined &&
-          subtitle < 0 &&
-          quality === 0;
+        let defaults = playbackDefaults(selected, audio, subtitle);
+        // A static MP4 plays its physical default track. Route alternate preferred
+        // audio/subtitles through the server, just as explicit track choices do.
+        if (!forceCompatible && defaults.requiresStreaming) {
+          await api.cleanup(playSession, liveStream);
+          playSession = '';
+          liveStream = undefined;
+          forceCompatible = true;
+          info = await api.playback(
+            id,
+            browserProfile(),
+            start,
+            defaults.audio,
+            defaults.subtitle,
+            true,
+            { mediaSourceId: mediaVersion || undefined, maxBitrate: quality || undefined },
+          );
+          if (info.ErrorCode || !info.MediaSources.length)
+            throw new Error(info.ErrorCode ?? 'No playable preferred-track stream was returned.');
+          playSession = info.PlaySessionId;
+          selected = info.MediaSources[0];
+          liveStream = selected.LiveStreamId;
+          defaults = playbackDefaults(selected, defaults.audio, defaults.subtitle);
+          if (cancelled) {
+            await api.cleanup(playSession, liveStream);
+            return;
+          }
+        }
+        activeAudio = defaults.audio;
+        activeSubtitle = defaults.subtitle;
+        mediaSource = selected.Id;
+        setSource({
+          ...selected,
+          DefaultAudioStreamIndex: activeAudio,
+          DefaultSubtitleStreamIndex: activeSubtitle,
+        });
+        direct = !!selected.SupportsDirectPlay && !forceCompatible;
         directMode.current = direct;
         method = direct
           ? 'DirectPlay'
-          : selected.SupportsDirectStream &&
-              !transcode &&
-              audio === undefined &&
-              subtitle < 0 &&
-              quality === 0
+          : selected.SupportsDirectStream && !forceCompatible
             ? 'DirectStream'
             : 'Transcode';
         let url: string;
@@ -209,9 +238,9 @@ export default function Player() {
           if (direct && start > 0) video.currentTime = start / 10000000;
           setLoading(false);
         };
-        if (subtitle >= 0) {
+        if (activeSubtitle >= 0) {
           const stream = selected.MediaStreams.find(
-            (s) => s.Type === 'Subtitle' && s.Index === subtitle,
+            (s) => s.Type === 'Subtitle' && s.Index === activeSubtitle,
           );
           if (stream?.DeliveryUrl && stream.IsExternal) {
             const track = document.createElement('track');
@@ -395,7 +424,7 @@ export default function Player() {
         <label>
           Subtitles
           <select
-            value={subtitle}
+            value={subtitle ?? source?.DefaultSubtitleStreamIndex ?? -1}
             onChange={(e) => {
               changing();
               setSubtitle(Number(e.target.value));

@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import MediaPreferences from './MediaPreferences';
 import { useNavigate } from 'react-router-dom';
 import { useApp, useLoad } from '../state';
 import type { User } from '../api/types';
@@ -23,6 +24,7 @@ export default function Profiles() {
   return (
     <main className="page">
       <h1>Viewing profiles</h1>
+      <MediaPreferences />
       <Feedback busy={profiles.busy} error={profiles.error} />
       {profiles.value && (
         <>

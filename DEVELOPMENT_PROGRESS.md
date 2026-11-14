@@ -13,6 +13,45 @@ feature status; a development preview does not establish stable-release readines
 Linux-only server policy and mandatory validation remain in effect. Never merge
 main or deploy to Coon Media automatically.
 
+## Current task — profile media defaults (unpublished)
+
+- Working tree extends checkpointf064a81608 / applicationc1a2d85d1f. Implemented
+  self-scoped audio/subtitle language, source-default-audio and subtitle-mode API/UI.
+  Only four existing user columns are tracked/updated; no full stale configuration
+  replacement, identity/password/policy editing, target-user parameter or global
+  defaults override. Ordinary/owner administrator preference restrictions remain.
+- Player now uses server subtitle defaults and negotiates compatible streaming for
+  preferred alternate tracks instead of silently playing the MP4 native default.
+  Actual selected indices are reported; manual choices remain supported.
+- Verification so far: actual SQLite HTTP workflow passed isolation, denied unsafe
+  fields/targets, preserved identity flags and restricted owner/child preference
+  writes. Frontend77tests/typecheck/lint/build passed. Restored formatting loaded
+  2,453files/zero changes. The shared CI browser measurement helper passed against
+  the real compiled working-tree server/web on disposable127.0.0.1:18097: persisted
+  preferences, decoded Spanish~880Hz audio, visible preferred VTT cue, HLS negotiation
+  and blocked identity editing. This is local actual-app evidence, not a package pass.
+- Investigated fixture assumptions: await initial setup/login readiness and complete
+  G-rated NFO scanning; match requested track IDs to scanned metadata (API audio3/
+  subtitle0 differ from container audio2). Assertions still verify decoded audio and
+  cue text. No parental, disk, FFmpeg, timeout or CI safeguards were weakened.
+- Storage: safely removed four obsolete preview archive copies,584closed test-host
+  directories and an unused PyInstaller extraction after checking open descriptors/
+  mappings. Reclaimed979,099,648bytes; source/Git/docs/reports/SDK/native fixtures
+  preserved. Free space reached2.05GiB, so normal production startup/FFmpeg validation
+  ran with FFmpeg7.1.5. CPU media proof only; no GPU certification. Cleanup inventory
+  /tmp/castlumora-media-proof-cleanup.json; proof result under
+  /tmp/castlumora-profile-media-proof/media-proof-result.json. Proof server stopped.
+- Added shared actual-package checks and owned two-language/VTT/G-rated fixtures;
+  the next package must pass these before upload. Full gate/Debug/Release/backend
+  regressions, commit/push, exact GitHub CI and package verification are next.
+- Unfinished application changes: this service/controller/player/UI/tests/packaging
+  increment is local; preserve it. Do not recreate completed account/lifecycle work.
+  Next after publication: profile editing/non-destructive pending recovery and
+  remaining account/session/device requirements, then the permanent release roadmap.
+- Usage/reset: Not accessible. Recovery: inspect status/log and these files; retain
+  the uncommitted increment, finish its full validation/publication, then continue.
+  Do not resume deferred YouTube/creator metadata or merge main/deploy to Coon Media.
+
 ## Verified lifecycle checkpoint — administrator profile deletion
 
 - Last completed milestone: administrator inventory and disabled-first profile
