@@ -23,8 +23,10 @@ required before the normal hook. Preserve exact snapshots during validation.
 
 Documentation-only changes use UTF-8/conflict-marker/whitespace checks and avoid
 application builds/tests. Classification covers the whole unpublished push range,
-not just the final commit. Unknown bases, new branches, workflow/policy changes,
-symlinks or mixed changes default to application validation. Never claim docs-only
+not just the final commit. Unknown bases, new branches, symlinks and backend/shared changes use full application
+validation. Client-only changes run client checks and package smoke tests while
+reusing unchanged backend results. Validation-policy changes run hook/shell/handler
+and client checks locally; GitHub exercises the complete changed pipeline. Never claim docs-only
 checks are an application test pass. CI uses the same conservative classifier.
 
 Verify exact-SHA required Linux/shared CI; macOS/Windows are not required jobs or

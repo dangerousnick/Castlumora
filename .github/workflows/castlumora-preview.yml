@@ -14,7 +14,7 @@ jobs:
     uses: ./.github/workflows/change-scope.yml
   build-verify-deliver:
     needs: scope
-    if: github.event_name == 'workflow_dispatch' || (needs.scope.outputs.application == 'true' && github.event.pull_request.number == 3 && github.event.pull_request.head.repo.full_name == github.repository && github.event.pull_request.head.ref == 'development/castlumora-web-1.3')
+    if: github.event_name == 'workflow_dispatch' || (needs.scope.outputs.preview == 'true' && github.event.pull_request.number == 3 && github.event.pull_request.head.repo.full_name == github.repository && github.event.pull_request.head.ref == 'development/castlumora-web-1.3')
     runs-on: ubuntu-24.04
     timeout-minutes: 40
     steps:

@@ -253,7 +253,7 @@ test('packaged preview: authorized public import indexes, deduplicates and plays
   const previousCount = (await get('Castlumora/Imports/Queue')).jobs.length;
   await page.getByRole('checkbox', { name: /Import multiple URLs/ }).check();
   await page
-    .getByLabel('Source URLs (one per line)', { exact: true })
+    .getByRole('textbox', { name: 'Source URLs (one per line)', exact: true })
     .fill(`${source}?bulk=one\nhttps://127.0.0.1/private.mp4`);
   await page.getByLabel('Title prefix', { exact: true }).fill('Owned batch');
   await page
@@ -269,7 +269,7 @@ test('packaged preview: authorized public import indexes, deduplicates and plays
   expect((await invalid).status()).toBe(400);
   expect((await get('Castlumora/Imports/Queue')).jobs).toHaveLength(previousCount);
   await page
-    .getByLabel('Source URLs (one per line)', { exact: true })
+    .getByRole('textbox', { name: 'Source URLs (one per line)', exact: true })
     .fill(`${source}?bulk=one\n${source}?bulk=two`);
   const savedBatch = page.waitForResponse(
     (r) =>

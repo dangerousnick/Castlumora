@@ -1,5 +1,30 @@
 # Castlumora Web Phase 1.3 development progress
 
+## Published atomic batch; packaged locator correction
+
+Application commit13794af5af1e06904c212b05fa08874d3aedec37 passed the complete
+local gate: full format2,433files/zero changes/no workspace warning; zero-warning
+Debug/Release;17backend suites4,500passed/19existing skips;64frontend tests and
+Node24 checks;18hook/scope tests and native/backup/migration regressions retained.
+Source and policy are published to the existing branch. GitHub shared checks passed.
+
+The first package workflow passed setup/restart/single import and unsafe-batch400/
+no-partial-job assertions, then failed on an exact wrapped-textarea label locator.
+A minimal real Chromium reproduction proved getByLabel exact finds0 after text
+is present, while the accessible textbox role finds1. The form did not lose state.
+Current correction uses that stable role without changing or weakening assertions.
+No C# backend source changed; reuse verified137backend results, run focused client/
+policy checks, then verify the corrected real package workflow before claiming it.
+The revised hook/scope contract includes21cases (under final validation).
+Client-only scoping now preserves client/package coverage without rebuilding the
+unchanged backend; policy changes exercise their contract locally and full CI.
+
+Next: publish this correction only after its checks pass, verify Linux/shared CI
+and the actual two-URL public native import/package. Record the verified download,
+then continue secure YouTube/playlist/channel importing and native creator metadata.
+No platform scope reduction beyond Linux-only servers, no2.0 rewrite, no main merge
+or Coon deployment. Usage status: Not accessible. Branch protection remains403.
+
 ## Current direction — Linux-only and atomic multiple URLs
 
 Owner instruction (2026-11-13): Linux servers only for1.0; macOS/Windows servers

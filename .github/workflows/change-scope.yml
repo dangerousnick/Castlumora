@@ -4,6 +4,8 @@ on:
     outputs:
       application:
         value: ${{ jobs.classify.outputs.application }}
+      preview:
+        value: ${{ jobs.classify.outputs.preview }}
 permissions:
   contents: read
 jobs:
@@ -11,6 +13,7 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       application: ${{ steps.scope.outputs.application }}
+      preview: ${{ steps.scope.outputs.preview }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
@@ -26,6 +29,11 @@ jobs:
           if [[ "$scope" == docs ]]; then
             python3 .github/scripts/change_scope.py --base "$SCOPE_BASE" --target-base "$SCOPE_TARGET" --check-docs
             echo 'application=false' >> "$GITHUB_OUTPUT"
+            echo 'preview=false' >> "$GITHUB_OUTPUT"
+          elif [[ "$scope" == frontend ]]; then
+            echo 'application=false' >> "$GITHUB_OUTPUT"
+            echo 'preview=true' >> "$GITHUB_OUTPUT"
           else
             echo 'application=true' >> "$GITHUB_OUTPUT"
+            echo 'preview=true' >> "$GITHUB_OUTPUT"
           fi

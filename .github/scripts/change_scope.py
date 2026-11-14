@@ -4,6 +4,8 @@ from pathlib import Path, PurePosixPath
 import subprocess
 import re
 
+POLICY_FILES = {"AGENTS.md", ".githooks/pre-push", "scripts/validate-before-push.sh", "scripts/install-git-hooks.sh", "scripts/tests/test_pre_push.py", ".github/scripts/change_scope.py"}
+
 ROOT_DOCS = {"README.md", "DEVELOPMENT_PROGRESS.md", "FEATURE_PARITY.md", "PRODUCT_ROADMAP.md", "INSTALL_TEST_BUILD.md"}
 
 
@@ -19,7 +21,7 @@ def changed(base, head):
         return None
     if subprocess.run(["git", "merge-base", "--is-ancestor", base, head], capture_output=True).returncode:
         return None
-    result = subprocess.run(["git", "diff", "--name-only", "-z", base, head], capture_output=True, check=True)
+    result = subprocess.run(["git", "diff", "--no-renames", "--name-only", "-z", base, head], capture_output=True, check=True)
     return [p.decode("utf-8") for p in result.stdout.split(b"\0") if p]
 
 
@@ -28,14 +30,21 @@ def classify(base, head, target_base=""):
         return "application"
     try:
         paths = changed(base, head)
-        if not paths or not all(documentation(p) for p in paths):
+        if not paths:
             return "application"
-        # A symlink masquerading as documentation is not a documentation-only edit.
         for p in paths:
             entry = subprocess.check_output(["git", "ls-tree", head, "--", p]).decode()
-            if not entry.startswith("100644 blob "):
+            if not entry.startswith(("100644 blob ", "100755 blob ")):
                 return "application"
-        return "docs"
+            if documentation(p) and not entry.startswith("100644 blob "):
+                return "application"
+        if all(documentation(p) for p in paths):
+            return "docs"
+        if all(documentation(p) or p.startswith("Castlumora.Web/") for p in paths):
+            return "frontend"
+        if all(documentation(p) or p.startswith(("Castlumora.Web/", ".github/workflows/")) or p in POLICY_FILES for p in paths):
+            return "policy"
+        return "application"
     except (subprocess.SubprocessError, UnicodeError):
         return "application"
 

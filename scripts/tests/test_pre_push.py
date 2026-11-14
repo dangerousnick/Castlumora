@@ -53,8 +53,8 @@ if [ "$1" = test ] && [ "${CASTLUMORA_GATE_TEST_FAILURE:-}" = tests ]; then exit
         self.env["CASTLUMORA_TEST_FFMPEG"] = str(self.tools / "ffmpeg")
         self.tool("ffprobe", "echo native-hook-fixture")
         self.env["CASTLUMORA_TEST_FFPROBE"] = str(self.tools / "ffprobe")
-        self.tool("npm", "")
-        self.tool("python3", 'if [ "$1" = .github/scripts/change_scope.py ]; then exec '+sys.executable+' "$@"; fi\nif [ "$1" = -c ]; then echo "Free bytes: 1024; informational only"; fi')
+        self.tool("npm", 'if [ "${CASTLUMORA_GATE_TEST_FAILURE:-}" = web-tests ] && [ "$1" = test ]; then exit 1; fi')
+        self.tool("python3", 'if [ "${CASTLUMORA_GATE_TEST_FAILURE:-}" = policy ] && [ "$1" = -m ]; then exit 1; fi\nif [ "$1" = .github/scripts/change_scope.py ]; then exec '+sys.executable+' "$@"; fi\nif [ "$1" = -c ]; then echo "Free bytes: 1024; informational only"; fi')
 
     def test_documentation_only_push_does_not_rebuild_application(self):
         self.git("push", "origin", "HEAD:refs/heads/development")
@@ -70,7 +70,7 @@ if [ "$1" = test ] && [ "${CASTLUMORA_GATE_TEST_FAILURE:-}" = tests ]; then exit
 
     def test_final_docs_commit_cannot_hide_unpublished_application_changes(self):
         self.git("push", "origin", "HEAD:refs/heads/development")
-        (self.repo / "Castlumora.Web/package.json").write_text('{"changed":true}')
+        (self.repo / "backend.cs").write_text("unpublished backend change")
         self.git("add", ".")
         self.git("commit", "-m", "application")
         (self.repo / "README.md").write_text("# Final docs\n")
@@ -101,7 +101,7 @@ if [ "$1" = test ] && [ "${CASTLUMORA_GATE_TEST_FAILURE:-}" = tests ]; then exit
         (self.repo / "AGENTS.md").write_text("policy change\n")
         self.git("add", ".")
         self.git("commit", "-m", "policy")
-        self.env["CASTLUMORA_GATE_TEST_FAILURE"] = "tests"
+        self.env["CASTLUMORA_GATE_TEST_FAILURE"] = "policy"
         self.assertNotEqual(self.git("push", "origin", "HEAD:refs/heads/development", check=False).returncode, 0)
 
     def test_symlink_cannot_masquerade_as_documentation(self):
@@ -133,6 +133,39 @@ if [ "$1" = test ] && [ "${CASTLUMORA_GATE_TEST_FAILURE:-}" = tests ]; then exit
         self.git("commit", "-m", "docs")
         result = subprocess.run([sys.executable, ".github/scripts/change_scope.py", "--base", base, "--target-base", target], cwd=self.repo, text=True, capture_output=True, check=True)
         self.assertEqual(result.stdout.strip(), "application")
+
+    def test_frontend_only_runs_client_checks_without_rebuilding_backend(self):
+        self.git("push", "origin", "HEAD:refs/heads/development")
+        (self.root / "commands").write_text("")
+        (self.repo / "Castlumora.Web/package.json").write_text('{"client":true}')
+        self.git("add", ".")
+        self.git("commit", "-m", "client")
+        self.git("push", "origin", "HEAD:refs/heads/development")
+        commands = (self.root / "commands").read_text()
+        self.assertNotIn("dotnet", commands)
+        self.assertIn("npm run typecheck", commands)
+        self.assertIn("npm test", commands)
+
+    def test_frontend_failure_blocks_client_only_push(self):
+        self.git("push", "origin", "HEAD:refs/heads/development")
+        (self.repo / "Castlumora.Web/package.json").write_text('{"client":false}')
+        self.git("add", ".")
+        self.git("commit", "-m", "client")
+        self.env["CASTLUMORA_GATE_TEST_FAILURE"] = "web-tests"
+        self.assertNotEqual(self.git("push", "origin", "HEAD:refs/heads/development", check=False).returncode, 0)
+
+    def test_executable_validation_script_uses_policy_checks(self):
+        self.git("push", "origin", "HEAD:refs/heads/development")
+        (self.root / "commands").write_text("")
+        script = self.repo / "scripts/validate-before-push.sh"
+        script.write_text(script.read_text()+"\n# Owned policy-only edit\n")
+        self.git("add", ".")
+        self.git("commit", "-m", "validation policy")
+        self.git("push", "origin", "HEAD:refs/heads/development")
+        commands = (self.root / "commands").read_text()
+        self.assertNotIn("dotnet", commands)
+        self.assertIn("python3 -m unittest", commands)
+        self.assertIn("npm test", commands)
 
     def test_missing_native_inspection_fixture_blocks_push(self):
         self.env["CASTLUMORA_TEST_FFPROBE"] = str(self.root / "missing-native-probe")

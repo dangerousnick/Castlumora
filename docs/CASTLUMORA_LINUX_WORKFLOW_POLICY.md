@@ -138,3 +138,11 @@ Do not spend an entire development session merely reorganizing documentation or 
 **The objective is to finish Castlumora 1.0, not endlessly rebuild and revalidate its development infrastructure.**
 
 Keep PR #3 open. Do not merge into `main` without owner approval.
+
+## Validation implementation notes
+
+Client-only changes validate the client and actual package/browser workflow while
+reusing unchanged backend results. Unknown/shared/backend changes require full
+backend validation. Validation-policy edits exercise hook/shell/handler/client
+checks locally and the complete changed pipeline in GitHub; they do not claim a
+new local backend pass. Mixed ranges cannot hide C# changes behind final docs.

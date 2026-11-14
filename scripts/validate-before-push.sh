@@ -46,6 +46,30 @@ if [[ "$scope" == docs ]]; then
     echo "PASS: documentation-only $head; application source unchanged from $base. No application build/test pass is claimed."
     exit 0
 fi
+# Client-only edits do not change the verified backend source. Validation-policy
+# edits exercise the hook contract locally and the complete changed pipeline in CI.
+if [[ "$scope" == frontend || "$scope" == policy ]]; then
+    command -v node >/dev/null
+    command -v npm >/dev/null
+    [[ $(node --version) == v24.* ]] || { echo 'BLOCKED: Node24 required.' >&2; exit 1; }
+    if [[ "$scope" == policy ]]; then
+        run hook-tests python3 -m unittest discover -s scripts/tests -p 'test_*.py'
+        run shell-syntax bash -n scripts/validate-before-push.sh .githooks/pre-push
+        run workflow-handler node --test .github/scripts/publish-openapi-report.test.cjs
+    fi
+    # Policy changes may also change the client; keep its checks in this bounded path.
+    (
+        cd Castlumora.Web
+        run web-install npm ci
+        run web-typecheck npm run typecheck
+        run web-lint npm run lint
+        run web-tests npm test
+        run web-build npm run build
+    )
+    assert_snapshot
+    echo "PASS: $scope $head; backend source unchanged from $base. Reuse that revision's backend results; no new backend pass is claimed."
+    exit 0
+fi
 command -v dotnet >/dev/null
 command -v node >/dev/null
 command -v npm >/dev/null
