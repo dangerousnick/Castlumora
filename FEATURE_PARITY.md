@@ -1,19 +1,22 @@
 # Feature parity inventory — Phase 1.3
 
-## Published single-video YouTube workflow — verification checkpoint
+## Verified persistent YouTube workflow — development preview
 
-Preview/rights/destination confirmation, durable source-ID/policy snapshots, native
-UI, bounded local remux/publication and creator provenance are implemented. Focused
-native/API/owned-media tests pass. Application1ac55a6c423eef11738e70b95e3b304fe49bef19
-is published after full restored formatting, zero-warning Debug/Release,4,555backend
-passes/20skips and66frontend passes. Exact-SHA Linux/shared CI and the new actual-package preview passed; its download
-was independently hash/source/compiled-UI/GPL/branding verified. A small browser
-follow-up adds explicit unsafe YouTube-source/no-job coverage without changing C#.
-Actual authorized public extraction remains unverified (network failure/HTTP403).
-This is not production certification or complete Phase1.4. Thumbnail/subtitle
-retention, playlists/channels/synchronization and independent online metadata remain
-required next work; all original1.0 scope is preserved. See development progress.
+Latest applicatione3298e68ceec41d5df197c50ed96c02aada23361 includes administrator
+preview/rights/destination confirmation, durable source-ID/resource snapshots,
+private bounded downloads/local mux, creator provenance and library publication.
+Backend1acpassed full restored format, zero-warning Debug/Release and4,555tests/
+20skips locally and in exact-SHA Linux CI. C# is unchanged through e329; its client
+checks67tests/typecheck/lint/build and actual extracted-package browser workflows
+passed, including unsafe YouTube-source rejection, guidance and no-job checks.
+The new GitHub archive was independently source/hash/compiled-UI/GPL/castle verified;
+see DEVELOPMENT_PROGRESS.md for download, checksum and exact recovery evidence.
 
+Actual authorized public YouTube extraction/download is unverified (source network
+failure/HTTP403); the manifest records that honestly. Thumbnail/subtitle retention,
+playlists/channels/bulk synchronization and independent online creator metadata
+remain next work. This is not stable1.0, complete Phase1.4 or full platform/hardware
+certification. All original1.0 scope and prior development history remain intact.
 
 ## Published YouTube prerequisite — full adapter still pending
 

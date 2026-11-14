@@ -1,58 +1,63 @@
 # Castlumora Web Phase 1.3 development progress
 
-## Published application — persistent single-video YouTube workflow
+## Verified checkpoint — persistent YouTube workflow and packaged UI
 
-- Latest published application: `1ac55a6c423eef11738e70b95e3b304fe49bef19`.
-  Feature commitfbf2ceb3c3; full Debug formatting correction0d5fa68f87;
-  upstream audio-only/null-height schema regression1ac55a6c42.
-  Branch development/castlumora-web-1.3; PR3; no main merge/Coon deployment.
-- Completed increment: administrator preview/receipt/rights/destination confirmation;
-  native Web controls; durable canonical source-ID deduplication/resource snapshots;
-  private H264/AAC downloads; bounded local fragmented-stream remux; strict final
-  inspection; creator/original-title/provenance persistence; existing atomic safe
-  publication/scanning; cancellation/retry/restart and marked staging reclamation.
-- Full normal local gate passed: restored format2,447files/zero changes/no workspace
-  warning; .NET10 SDK10.0.403 Debug/Release0warnings/errors; all17backend suites
-  4,555passed/20skips; Node24.22.1 typecheck/lint/66tests/build; existing hook/native/
-  security/backup/migration/handler coverage. Logs /tmp/castlumora-prepush.1pKN7IMe.
-  The first formatting gate correctly blocked; reported diagnostics were fixed.
-  An obsolete run was stopped when upstream inspection exposed nullable audio-only
-  height; that regression was fixed/tested before publication. No checks weakened.
-- Exact application1acGitHub Linux job132406182436 passed4,555backend tests/
-  20skips. Format43581212324, ABI43581212529, OpenAPI43581212486 and
-  Preview43581212381 passed. Three actual-package browser workflows passed;
-  independently downloaded archive verified exact source, compiled YouTube form,
-  all16castle assets, GPL/runtime/Node licenses and outer/inner checksums.
-  Download: https://github.com/dangerousnick/Castlumora/actions/runs/43581212381/artifacts/14108238748
-  Archive Castlumora-1.0-dev-1ac55a6c423e-linux-x64.tar.gz;
-  SHA256 b10cc7f7cf57daa807ae7a9d3fdfcd921db6881d648c0a10fa8e0e02563886ac.
-  GitHub sign-in/30-day retention apply. This is an intermediate development preview.
-- Current small follow-up: actual packaged-browser coverage of the new YouTube
-  form's unsafe-URL rejection/no-job guarantee, plus safe fixed guidance for rejected,
-  unavailable or timed-out previews. The focused3UI tests passed; final frontend
-  gate passed67tests/typecheck/lint/build at1734437f62. Its first package browser
-  run failed before any preview request at a wrapped-label select locator. Actual
-  local Chromium reproduced zero exact-label matches and a valid accessible role;
-  the correction uses that combobox role without changing assertions/timeouts.
-  Its corrected run reached the expected browser400, then Playwright's browser
-  response-body read hung. The client deliberately does not consume error bodies.
-  Policy-reason coverage now uses an identical authenticated API request, retaining
-  browser status, safe visible guidance and no-job assertions. Actual React/local
-  Chromium verified that replacement flow. Final package CI is pending; C# is
-  unchanged and1acbackend evidence is retained. No assertion/timeout weakened.
-- Actual external YouTube access is unverified. Owner-authorized4Xsn6oe-AEg failed
-  direct connections; numeric upstream CONNECT and normal TLS subsequently worked
-  in a diagnostic, but its watch page returnedHTTP403. No importer proxy/TLS/auth
-  policy or cookies changed. Owned/native/API contracts are not a real YouTube
-  success claim; the build manifest explicitly marks external verification false.
-- Next exact actions: publish/verify the small browser follow-up and its preview,
-  preserving1ac's unchanged backend results. Then thumbnail/subtitle enrichment and
-  actual authorized external verification where allowed, followed by playlists/
-  channels/bulk/synchronization and independent online creator metadata.
-- Usage/reset information: Not accessible. Recovery: fetch origin, inspect status/
-  newer commits, read this record and docs/CASTLUMORA_YOUTUBE_IMPORT.md; retain all
-  work and continue the next milestone. Do not recreate the queue or reapply old
-  stashes. All original1.0 scope and prior requirements/history remain intact.
+- Last completed milestone: administrator-confirmed single-video YouTube queue,
+  bounded local mux/publication and actual packaged-browser rejection/security proof.
+- Latest published application: `e3298e68ceec41d5df197c50ed96c02aada23361`.
+  Current branch `development/castlumora-web-1.3`; PR3 open. Core implementation
+  fbf2ceb3c3, Debug formatting0d5fa68f87, upstream nullable-audio fix1ac55a6c42;
+  safe client guidance/browser coverage1734437f62, locatorfb052bcaa2 and response
+  inspectione3298e68ce. No main merge/Coon Media deployment.
+- Implemented: native administrator preview/opaque confirmation/rights/destination
+  controls; canonical video-ID deduplication; durable creator/quality/size snapshots;
+  private H264/AAC downloading; bounded local fragmented-stream mux; strict final
+  native inspection; locked creator/original-title/provenance NFO; safe publication,
+  normal scanning, cancellation/retry/restart and marked abandoned-stage cleanup.
+- Backend verification at1ac55a6c423eef11738e70b95e3b304fe49bef19: restored full
+  format2,447files/zero changes/no workspace warning, .NET10 Debug/Release0warnings/
+  errors, all17backend suites4,555passed/20skips; native/security/backup/migration/
+  hook/handler checks. Exact GitHub Linux job132406182436 independently matched
+  4,555passes/20skips. Format43581212324, ABI43581212529, OpenAPI43581212486 passed.
+  C# and project settings are unchanged through latest applicatione329; frontend
+  validation correctly reuses that backend evidence instead of repeating it.
+- Frontend verification: Node24.22.1 typecheck/lint/67tests/build passed. Latest
+  GitHub e329checks43583947872/43583947824/43583947865 and scoped Tests43583947821
+  passed; unchanged backend job skipped. Preview43583947898 / job132414403976 passed
+  all3actual extracted-package browser workflows: setup/auth/admin/logout;
+  restart/library/playback; YouTube unsafe-source400/policy reason/safe guidance/
+  no-job/no-confirmation plus owned public direct imports, atomic batch rejection,
+  exact hash/bytes, deduplication, indexing and advancing playback.
+- Failed browser runs were investigated: wrapped select exact-label mismatch was
+  reproduced in actual local Chromium and corrected with accessible role; a browser
+  error-body read hung, so identical authenticated API inspection retains its policy
+  assertion alongside browser checks. Actual React/local Chromium verified the
+  replacement. No assertion, timeout or CI requirement was removed/weakened.
+- Latest real download: https://github.com/dangerousnick/Castlumora/actions/runs/43583947898/artifacts/14109667326
+  Archive `Castlumora-1.0-dev-e3298e68ceec-linux-x64.tar.gz`;
+  SHA256 `0c28fa75f08e4b72bac828b2682aaa589b91a05b2ecdfc6d73f2bfbdc69b6bca`.
+  Independent download verified exact source/manifest, compiled YouTube controls,
+  safe guidance, all16castle assets, original GPL bytes, runtime/Node binary and
+  notices, executable modes and outer/inner checksums. GitHub sign-in and30-day
+  retention apply. This is an intermediate preview, not stable1.0/full Phase1.4.
+- Unfinished/known limitation: actual owner-authorized4Xsn6oe-AEg extraction and
+  download remain unverified. Direct egress failed; diagnostic numeric proxy CONNECT
+  and normal TLS succeeded, but its watch page returnedHTTP403. Importer egress,
+  authentication/cookies/TLS policy was not changed. Owned/native/API tests do not
+  prove a real YouTube import. Manifest keeps youtubeExternalSourceVerified:false.
+- Next development task: source thumbnail/subtitle/provenance enrichment with the
+  same bounded/private/security/publication controls; verify actual authorized
+  external importing where normal access permits. Then playlist/channel/bulk source
+  enumeration/management/synchronization and independent online creator metadata.
+  Preserve all remaining1.0 requirements, including profiles/discovery/notifications,
+  skipper/layout/categories, resource/creator/business/cloud/offline/native clients.
+- Usage/reset information: Not accessible. No automatic reset/background resume is
+  claimed. Recovery: git fetch origin; inspect git status/log; retain newer/unfinished
+  work; switch existing development branch and fast-forward only when clean; install
+  existing hooks. Read this record and docs/CASTLUMORA_YOUTUBE_IMPORT.md, then extend
+  the existing pipeline. Do not recreate it, discard commits or reapply old stashes.
+  No unfinished application files remain; later documentation-only checkpoints do
+  not change the tested application or require another unchanged full backend run.
 
 ## Published checkpoint — reviewed YouTube source/runtime prerequisite
 

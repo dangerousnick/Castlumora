@@ -44,7 +44,8 @@ bounded retries, creator metadata and library scanning/playback after success.
 Changing the source/destination/resource choice requires another preview.
 
 Security check: a loopback/private URL must be rejected, without a confirmation or
-new job. The current follow-up adds this to the real packaged-browser test. Native
+new job. This passed in the actual packaged Chromium workflow ate3298e68ce, including the
+policy reason, safe guidance, no confirmation and no-job assertions. Native
 policy/remux/queue/publication and owned-media API tests passed at application1ac;
 public YouTube extraction/download remains unverified because workspace source
 access failed/returnedHTTP403. Do not count that restriction as a successful test.
