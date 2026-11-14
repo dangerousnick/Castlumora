@@ -21,6 +21,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <None Include="../Jellyfin.Api.Tests/Fixtures/import-owned.mp4" Link="Test Data/import-owned.mp4" CopyToOutputDirectory="PreserveNewest" />
     <None Include="Test Data\**\*.*">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
@@ -28,6 +29,10 @@
     <None Update="xunit.runner.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Include="../Jellyfin.Api.Tests/Castlumora/ImportTestCertificate.cs" Link="Helpers/ImportTestCertificate.cs" />
   </ItemGroup>
 
   <ItemGroup>

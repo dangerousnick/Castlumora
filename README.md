@@ -1,5 +1,14 @@
 <div align="center">
 
+**Platform strategy:** Linux-first with macOS supported where verified; Windows
+compatibility is deferred and tested as advisory. See the
+[platform evidence](docs/CASTLUMORA_PLATFORM_SUPPORT.md). All Castlumora 1.0 feature
+requirements remain in scope; a passing CI job is not installation certification.
+
+
+**Linux development preview:** [download the verified GitHub Actions artifact](https://github.com/dangerousnick/Castlumora/actions/runs/42960456033/artifacts/13829470962) (GitHub sign-in; retained 30 days). Includes the self-contained server and compiled Castlumora Web. Read [INSTALL_TEST_BUILD.md](INSTALL_TEST_BUILD.md), the [test checklist](docs/TEST_BUILD_CHECKLIST.md), and [actual build/package verification](docs/verification-preview-1.4.md). This is a test preview, not production-stable or full Phase 1.4 completion; importer/creator metadata and other remaining features are tracked honestly.
+
+
 <img src="branding/castlumora-wordmark.svg" alt="Castlumora" width="640">
 
 # Castlumora
@@ -56,3 +65,16 @@ The original [GNU GPL license](LICENSE), [contributors](CONTRIBUTORS.md), copyri
 ---
 
 <div align="center"><strong>Castlumora · Version 1.0</strong></div>
+
+## Castlumora Web — Phase 1.3 development
+
+An independent React/TypeScript streaming frontend lives in [Castlumora.Web](Castlumora.Web/README.md). It uses the existing server APIs and adds server-owned presentation drafts/publishing, categories and separate watchlist/resume preferences. The inherited Web client remains available for advanced administration and media features not yet covered. This work does not deploy or modify a running server.
+
+- [Development progress and exact next steps](DEVELOPMENT_PROGRESS.md)
+- [Permanent product requirements](docs/CASTLUMORA_PRODUCT_REQUIREMENTS.md)
+- [Feature parity and limitations](FEATURE_PARITY.md)
+- [Product roadmap](PRODUCT_ROADMAP.md)
+- [Presentation schema and persistence](docs/castlumora-presentation-v1.md)
+- [API adapter](docs/castlumora-api-adapter.md)
+
+Castlumora remains free and GPL licensed; upstream Jellyfin source history, copyright, contributors and existing compatibility contracts are preserved.

@@ -124,7 +124,16 @@ namespace Jellyfin.LiveTv.IO
             _logger.LogInformation("ffmpeg recording process started for {Path}", _targetPath);
 
             // Block until ffmpeg exits
-            await _taskCompletionSource.Task.ConfigureAwait(false);
+            try
+            {
+                await _taskCompletionSource.Task.ConfigureAwait(false);
+            }
+            catch (FfmpegException exception) when (cancellationToken.IsCancellationRequested)
+            {
+                // The owned process has exited after our explicit stop or duration limit.
+                // Keep genuine failures observable when no cancellation was requested.
+                throw new OperationCanceledException("Recording was stopped.", exception, cancellationToken);
+            }
         }
 
         private string GetCommandLineArgs(MediaSourceInfo mediaSource, string inputTempFile, string targetFile)

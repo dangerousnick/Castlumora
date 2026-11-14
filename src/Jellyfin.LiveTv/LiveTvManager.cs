@@ -646,7 +646,7 @@ namespace Jellyfin.LiveTv
                 ? null
                 : _userManager.GetUserById(query.UserId);
 
-            RemoveFields(options);
+            RemoveFields(options, preserveCanDelete: true);
 
             var internalResult = await GetEmbyRecordingsAsync(query, options, user).ConfigureAwait(false);
 
@@ -1257,11 +1257,15 @@ namespace Jellyfin.LiveTv
             return service.ResetTuner(parts[1], cancellationToken);
         }
 
-        private static void RemoveFields(DtoOptions options)
+        private static void RemoveFields(DtoOptions options, bool preserveCanDelete = false)
         {
             var fields = options.Fields.ToList();
 
-            fields.Remove(ItemFields.CanDelete);
+            if (!preserveCanDelete)
+            {
+                fields.Remove(ItemFields.CanDelete);
+            }
+
             fields.Remove(ItemFields.CanDownload);
             fields.Remove(ItemFields.DisplayPreferencesId);
             fields.Remove(ItemFields.Etag);

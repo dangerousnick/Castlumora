@@ -1,5 +1,22 @@
 # Castlumora — Built-in URL Import and YouTube Metadata Specification
 
+## Authoritative Linux-only server policy — 2026-11-13
+
+Castlumora1.0 targets Linux servers only: Mint22.3/newer compatible versions, Ubuntu
+LTS, Debian, Docker on Linux and compatible Linux NAS. macOS and Windows server
+support are deferred indefinitely, including CI/release/packaging acceptance.
+Preserve inherited cross-platform code and clients where practical; no unnecessary
+platform-removal refactoring. Linux security, integrity and functionality remain
+mandatory. This supersedes older platform requirements below; all original1.0
+features and the future1.0→2.0 migration plan remain in scope. No backend rewrite.
+
+Use focused feature tests, full backend validation for substantial application
+increments, relevant frontend/native checks, and lightweight documentation-only
+validation. Classify the whole unpublished range, fail closed on mixed/unknown
+changes, and preserve unique security/backup/migration/regression coverage. Do not
+repeatedly rebuild unchanged source or create needless documentation checkpoints.
+
+
 **Status:** Mandatory production target, not yet verified implemented
 **Priority:** First-class Castlumora media ingestion and metadata, for Family/Friends, Creators and Business presets
 **Ownership:** Server-side core integration and Castlumora Web administration. Not a mandatory third-party Jellyfin plugin.
@@ -58,3 +75,11 @@ The same functionality must be available in **all** server setup presets, withou
 - Ship in reviewable milestones: (1) schema/provider and sidecar metadata tests; (2) secure authorized import runner and queue; (3) admin workflow and account/profile permissions; (4) large-scale syncing/recovery and production validation.
 
 **Requirement permanence:** This feature is **mandatory for the full Castlumora production vision**, not necessarily completed within the current Codex task. No arbitrary omission or downgrading to a third-party plugin. Do not misrepresent planned behavior as shipped behavior.
+
+## Implementation checkpoint — retained sidecars
+
+The first native offline reader is implemented for explicitly generic Video items; see [CASTLUMORA_CREATOR_SIDECAR.md](CASTLUMORA_CREATOR_SIDECAR.md) for strict ID/type boundaries, actual verification, settings and limitations. This supplies existing-file identification and source IDs without downloading media. The complete provider, metadata dashboard and safe yt-dlp import subsystem above remain mandatory and incomplete.
+
+## Managed executable prerequisite
+
+Pinned platform bundle/install/health and administrator controls now exist; see CASTLUMORA_IMPORTER_RUNTIME.md. This does not implement URL ingestion, queue or download-job production safety. Those remain mandatory targets above, independent of already working local sidecar metadata.

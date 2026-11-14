@@ -1,0 +1,21 @@
+{
+  "schemaVersion": 1,
+  "release": "autobuild-2026-11-10-20-59",
+  "upstream": "https://github.com/yt-dlp/FFmpeg-Builds",
+  "source": "https://github.com/FFmpeg/FFmpeg/tree/4b42530309",
+  "purpose": "CI only; not bundled with Castlumora or an application executable override",
+  "assets": {
+    "linux-x64": {
+      "url": "https://github.com/yt-dlp/FFmpeg-Builds/releases/download/autobuild-2026-11-10-20-59/ffmpeg-N-128757-g4b42530309-linux64-gpl.tar.xz",
+      "sha256": "8c6151f3b1d74584a86db504df8251b34e701fd06a5cd222cb168fa1db5e947d",
+      "bytes": 157727820,
+      "root": "ffmpeg-N-128757-g4b42530309-linux64-gpl"
+    },
+    "win-x64": {
+      "url": "https://github.com/yt-dlp/FFmpeg-Builds/releases/download/autobuild-2026-11-10-20-59/ffmpeg-N-128757-g4b42530309-win64-gpl.zip",
+      "sha256": "a12bc11e652ee45d2cde04167d1fdcbf5c964df2e2f532eaf5a7f8bcce1d9260",
+      "bytes": 202241592,
+      "root": "ffmpeg-N-128757-g4b42530309-win64-gpl"
+    }
+  }
+}

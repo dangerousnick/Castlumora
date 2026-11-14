@@ -86,6 +86,18 @@ public sealed class UserManagerUpdateUserTests : IDisposable
     }
 
     [Fact]
+    public async Task CreateUserAsync_DisabledProvisioningIsPersistedBeforePasswordSetup()
+    {
+        var user = await _userManager.CreateUserAsync("provisioninguser", true);
+        Assert.True(user.HasPermission(PermissionKind.IsDisabled));
+        await using var context = CreateDbContext();
+        var stored = await context.Users.Include(u => u.Permissions).SingleAsync(u => u.Id.Equals(user.Id), TestContext.Current.CancellationToken);
+        Assert.True(stored.HasPermission(PermissionKind.IsDisabled));
+        var legacy = await _userManager.CreateUserAsync("legacycreationuser");
+        Assert.False(legacy.HasPermission(PermissionKind.IsDisabled));
+    }
+
+    [Fact]
     public async Task UpdateUserAsync_DoesNotDetachPermissionsOrPreferences()
     {
         var user = await _userManager.CreateUserAsync("orphanuser");
