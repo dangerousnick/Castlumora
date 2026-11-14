@@ -1,5 +1,24 @@
 # Single-video workflow — verification and environment boundaries
 
+## Latest verification supersedes the earlier pending sections
+
+Application57129188fac4288002e4240cd311bf89059085e9 passed the complete normal
+local gate, required Linux/macOS/shared CI and advisory Windows. All three actual
+package/browser workflows passed, including authorized public GPL import, exact
+hash/size, deduplication, native indexing and advancing playback. The package also
+verified explicit automatic-retry opt-in persistence. A separate real owned HTTPS
+fixture tested503 → persisted backoff/restart → exact inspected library publication;
+ordinary compiled-app Chromium/API verified network-backoff display, duplicate
+policy preservation and cancellation retained across a real process restart.
+
+Download and independent verification:
+https://github.com/dangerousnick/Castlumora/actions/runs/43529697761/artifacts/14087106637
+Archive SHA25659cfa0f269649a6b0cd403edb2bd4221ddd0e561388688e1ebe654b0f43498d7.
+See DEVELOPMENT_PROGRESS.md for exact job IDs/counts, source, expires/platform limits
+and next steps. The earlier environment-boundary diagnosis remains valid; no proxy,
+TLS or address-policy bypass was added. This is not full1.0 or hardware certification.
+
+
 ## Published application foundation
 
 Branch development/castlumora-web-1.3; PR3. Application fbea85f83c plus corrected

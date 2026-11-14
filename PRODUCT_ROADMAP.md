@@ -1,5 +1,25 @@
 # Castlumora product roadmap
 
+## Verified persistent transient retries — current checkpoint
+
+Published application57129188fac4288002e4240cd311bf89059085e9 passes the full local
+gate (4,490backend passes/19existing skips,62frontend passes, zero-warning Debug/
+Release and full formatting) and required Linux/macOS/shared CI. Advisory Windows
+also passed. Opt-in network/rate-limit backoff is durable, cancellable, nonblocking
+and shares the existing three-attempt budget; old clients/jobs stay manual.
+
+The new Linux preview passed all three actual package/browser workflows and was
+independently download/hash/source/runtime/compiled-UI/GPL/branding verified:
+https://github.com/dangerousnick/Castlumora/actions/runs/43529697761/artifacts/14087106637
+See DEVELOPMENT_PROGRESS.md for checksum, evidence, platform limits and recovery.
+
+Next task: bounded atomic authorized multiple-direct-URL submissions with native
+admin controls and real restart/security/library tests, reusing the existing queue.
+Source/playlist/channel expansion, resources, online metadata and all remaining1.0
+requirements stay mandatory. No stable/full-parity or hardware-certification claim.
+The following under-verification notes are retained historical checkpoints.
+
+
 ## Verified failure guidance; transient retry increment under verification
 
 Latest published required-CI baseline: e271d70985a0fdba0b6270af12cb24c8a0439ef8.

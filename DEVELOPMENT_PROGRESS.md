@@ -13,6 +13,76 @@ Permanent source of truth: [docs/CASTLUMORA_PRODUCT_REQUIREMENTS.md](docs/CASTLU
 
 
 
+## Verified transient retries — recovery checkpoint (2026-11-13)
+
+- **Last completed milestone:** opt-in persistent transient retry/backoff, including
+  restart recovery, nonblocking ready jobs, durable cancellation and three attempts
+  total. Safe persistent failure guidance is also complete.
+- **Latest published application commit:** `57129188fac4288002e4240cd311bf89059085e9`.
+- **Current branch:** `development/castlumora-web-1.3`; PR3 targets main and stays open.
+- **Local verification:** full mandatory gate `/tmp/castlumora-prepush.mNTGxU3d`
+  passed on that exact commit. Restored formatting checked 2,432 files with zero
+  changes; .NET10 Debug/Release builds had zero warnings/errors; all17 backend
+  suites passed 4,490 tests with19 existing skips. Node24 typecheck/lint/62tests/
+  production build, hook/native fixture/bundler/report-handler checks passed.
+  Real backup safeguards and operations remain tested; no production reserve changed.
+- **GitHub verification:** Tests43529697998 passed required Linux132244038866 and
+  macOS132244038736, plus advisory Windows132244038879. Format43529697780,
+  ABI43529697766, OpenAPI43529697792 and Preview43529697761 passed.
+- **Real workflow evidence:** owned HTTPS503 → durable backoff → queue restart →
+  exact native-inspected media/library publication on attempt2. Two HTTP integration
+  tests passed. Actual compiled-app Chromium verified opt-in, network backoff/time,
+  duplicate preserving policy, safe diagnostics and cancellation; real server restart
+  retained Cancelled/attempt1/no deadline. The disposable servers are stopped.
+- **Download:** https://github.com/dangerousnick/Castlumora/actions/runs/43529697761/artifacts/14087106637
+  Archive `Castlumora-1.0-dev-57129188fac4-linux-x64.tar.gz`.
+  SHA256 `59cfa0f269649a6b0cd403edb2bd4221ddd0e561388688e1ebe654b0f43498d7`.
+  GitHub sign-in required; expires2026-12-13. Three actual extracted-package browser
+  workflows passed, including retry opt-in persistence and public owned import/hash/
+  dedup/index/advancing playback. Independent download verified source, runtime,
+  compiled UI/retry flag/guides, all16branding files and original GPL bytes.
+- **Unfinished work:** no unfinished implementation in this checkpoint. Full YouTube/
+  playlist/channel/bulk/scheduled imports, source Retry-After support, configurable
+  resource policy, online creator metadata and the retained full1.0 scope remain.
+  Direct MP4 preview limits are unchanged. Proxy-only cloud egress remains unsupported;
+  no TLS/address-policy bypass. Mint/macOS desktop installation, GPU and real-tuner
+  certification remain distinct from CI. Historical native cleanup/PID1 zombie
+  observations are retained for process-lifetime review; this exact three-OS CI passed.
+- **Usage status:** Not accessible; no exposed allowance/reset tool exists.
+
+### Next exact development task
+
+Implement bounded authorized multiple-direct-URL submission using the existing queue:
+
+1. Accept at most25 explicit HTTPS MP4 entries with titles, the real destination
+   library and an administrator-confirmed rights record; retain all existing policy.
+2. Validate every entry before a single atomic queue-journal update; invalid batches
+   must not leave partial submissions. Coalesce duplicates without changing existing
+   job IDs, rights, retry policy or attempt budgets. Keep the1000-job/8MiB bounds.
+3. Add native administrator batch entry/management without exposing paths, executable
+   arguments or unsupported YouTube/playlist/channel functionality.
+4. Test batch atomicity, duplicates, caps, authorization, unsafe URLs, persistence,
+   cancellation and real owned native download/publication/indexing. Reuse the pinned
+   executable and existing publication path; no parallel architecture or global overrides.
+5. Run the full hook, publish to this branch, verify Linux/macOS/shared CI and a new
+   preview, update these checkpoints/PR3. Then advance controlled resources and secure
+   source/playlist/channel enumeration plus independent creator metadata. Full1.0
+   requirements remain mandatory; the owner's future migration plan is preserved.
+
+### Recovery instructions
+
+`git fetch origin`; inspect `git status` and `git log -8` before changing files.
+Read the permanent specifications and the newest checkpoint first. Preserve any
+newer remote/local work; use the existing branch and install its Git hooks. The
+published application baseline above is tested; documentation-only follow-up may
+be newer. Verify exact current CI rather than rerunning old development or restoring
+the retained publication stash. Never use --no-verify or merge main automatically.
+Native fixtures: CASTLUMORA_TEST_YTDLP_BUNDLE, CASTLUMORA_TEST_FFPROBE and
+CASTLUMORA_TEST_FFMPEG must identify reviewed local fixtures. See AGENTS.md and
+scripts/validate-before-push.sh for complete commands. No Coon Media deployment.
+
+Earlier pending sections below are retained history, superseded by this checkpoint.
+
 ## Transient-retry continuation — implementation under verification
 
 Last completed milestone: safe persistent importer failure codes/admin guidance.

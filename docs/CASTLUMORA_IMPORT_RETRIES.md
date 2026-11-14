@@ -1,7 +1,9 @@
 # Authorized import retry policy
 
-Status: implemented increment under verification. DEVELOPMENT_PROGRESS.md records
-published commits and exact verification; this document alone is not a test claim.
+Status: verified at application commit57129188fac4288002e4240cd311bf89059085e9.
+The full local gate, required Linux/macOS/shared CI, advisory Windows and updated
+packaged preview passed. DEVELOPMENT_PROGRESS.md records exact evidence and known
+platform limits; this is a bounded preview, not full production-importer parity.
 
 ## Administrator controls
 

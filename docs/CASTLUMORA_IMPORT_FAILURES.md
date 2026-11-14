@@ -1,7 +1,7 @@
 # Import failures — fixed codes and private diagnostics
 
-This increment is under verification; see DEVELOPMENT_PROGRESS.md for the exact
-published commit and evidence. It extends the existing single-video importer;
+Verified in published application57129188fac4288002e4240cd311bf89059085e9;
+see DEVELOPMENT_PROGRESS.md for exact gate/CI/package evidence. It extends the existing single-video importer;
 it does not alter authorization, DNS/address validation, certificate checks,
 executable pins, process lifetime or download/resource limits.
 
@@ -59,8 +59,8 @@ A real loopback tunnel with a refused validated endpoint must close without
 reflecting details and set only the flag; unsafe/authentication requests retain
 zero connection calls and an unset flag. Actual compiled-server/API/Chromium verification also persisted sourceNetwork at
 the final allowed retry, displayed fixed guidance/job ID without private diagnostics,
-and kept Retry unavailable after exhaustion. Final full gate and required native
-CI must still pass before claiming this increment complete.
+and kept Retry unavailable after exhaustion. The full local gate and required Linux/macOS/shared CI subsequently passed,
+including the actual downloadable packaged preview.
 
 Windows compatibility staging-cleanup failures remain advisory/deferred and logged;
 no assertion, required Linux/macOS test or production safeguard is removed here.
