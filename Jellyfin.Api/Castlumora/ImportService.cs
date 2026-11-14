@@ -321,6 +321,7 @@ public sealed class ImportService : IHostedService, IAsyncDisposable
                 _logger.LogError("Import queue stopped after storage failure ({ErrorType}); persisted jobs require recovery", exception.GetType().Name);
             }
         }
+
         await _previewGate.WaitAsync(CancellationToken.None).ConfigureAwait(false);
         _previewGate.Dispose();
         _previewStop.Dispose();

@@ -8,12 +8,10 @@ namespace Jellyfin.Api.Castlumora;
 /// <summary>Short-lived private confirmation receipts bound to an administrator and real library.</summary>
 internal sealed class YouTubePreviewStore(string data)
 {
-    internal sealed record Preview(Guid Id, Guid Administrator, Guid Library, string Source, string Title, YouTubeImportOptions Options, DateTimeOffset Expires);
-
     internal Preview Create(Guid administrator, Guid library, string source, string title, YouTubeImportOptions options)
     {
         options.Validate(source);
-        if (administrator == Guid.Empty || library == Guid.Empty)
+        if (administrator.Equals(Guid.Empty) || library.Equals(Guid.Empty))
         {
             throw new InvalidDataException("Authenticated administrator and library required.");
         }
@@ -60,7 +58,7 @@ internal sealed class YouTubePreviewStore(string data)
         }
 
         var preview = JsonSerializer.Deserialize<Preview>(File.ReadAllText(path));
-        if (preview is null || preview.Id != id || preview.Administrator != administrator || preview.Library != library
+        if (preview is null || !preview.Id.Equals(id) || !preview.Administrator.Equals(administrator) || !preview.Library.Equals(library)
             || preview.Expires < DateTimeOffset.UtcNow || preview.Expires > DateTimeOffset.UtcNow.AddMinutes(21))
         {
             throw new InvalidDataException("Preview confirmation expired or belongs to another administrator/library.");
@@ -81,4 +79,6 @@ internal sealed class YouTubePreviewStore(string data)
         YtDlpPlatform.PrivateDirectory(root);
         return root;
     }
+
+    internal sealed record Preview(Guid Id, Guid Administrator, Guid Library, string Source, string Title, YouTubeImportOptions Options, DateTimeOffset Expires);
 }

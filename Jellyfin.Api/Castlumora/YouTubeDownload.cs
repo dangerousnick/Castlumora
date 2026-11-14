@@ -27,7 +27,7 @@ internal sealed class YouTubeDownload(YtDlpRuntime runtime, IApplicationPaths pa
         }
 
         YtDlpPlatform.PrivateDirectory(parent);
-        if (new DriveInfo(parent).AvailableFreeSpace < checked(options.MaximumBytes * 4 + 134217728))
+        if (new DriveInfo(parent).AvailableFreeSpace < checked((options.MaximumBytes * 4) + 134217728))
         {
             throw new IOException("Insufficient staging capacity for the selected import budget and reserve.");
         }
@@ -44,7 +44,7 @@ internal sealed class YouTubeDownload(YtDlpRuntime runtime, IApplicationPaths pa
         stop.CancelAfter(TimeSpan.FromMinutes(10));
         try
         {
-            await using var tunnel = new ImportTunnel(new ImportNetworkPolicy(), stop.Token, options.MaximumBytes * 2 + 33554432);
+            await using var tunnel = new ImportTunnel(new ImportNetworkPolicy(), stop.Token, (options.MaximumBytes * 2) + 33554432);
             const string videoName = "video.mp4";
             await DownloadAsync(options.VideoFormat, videoName).ConfigureAwait(false);
             if (options.AudioFormat is not null)
@@ -54,7 +54,6 @@ internal sealed class YouTubeDownload(YtDlpRuntime runtime, IApplicationPaths pa
                 {
                     throw ImportFailure.Download("sizeLimit");
                 }
-
             }
 
             await MuxAsync(Path.Combine(work, videoName), options.AudioFormat is null ? null : Path.Combine(work, "audio.m4a"), staged.MediaPath, encoder, options.MaximumBytes, stop.Token).ConfigureAwait(false);
@@ -140,6 +139,7 @@ internal sealed class YouTubeDownload(YtDlpRuntime runtime, IApplicationPaths pa
         {
             throw new InvalidOperationException("Configured media encoder required.");
         }
+
         var start = new ProcessStartInfo(encoder) { WorkingDirectory = Path.GetDirectoryName(output)! };
         foreach (var argument in new[] { "-hide_banner", "-v", "error", "-nostdin", "-n", "-max_alloc", "16777216", "-threads", "1" })
         {
@@ -212,7 +212,7 @@ internal sealed class YouTubeDownload(YtDlpRuntime runtime, IApplicationPaths pa
             }
         }
 
-        if (total > maximumBytes * 2 + 6291456)
+        if (total > (maximumBytes * 2) + 6291456)
         {
             throw ImportFailure.Download("sizeLimit");
         }

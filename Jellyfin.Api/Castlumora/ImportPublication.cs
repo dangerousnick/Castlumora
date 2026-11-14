@@ -380,7 +380,8 @@ internal sealed class ImportPublication
 
     private static byte[] Metadata(Prepared prepared)
     {
-        var document = new XElement("movie",
+        var document = new XElement(
+            "movie",
             new XElement("title", SafeTitle(prepared.Job.Title)),
             new XElement("lockdata", "true"),
             new XElement("uniqueid", new XAttribute("type", "CastlumoraImport"), new XAttribute("default", "false"), prepared.Job.Id.ToString("N")));
