@@ -1,5 +1,30 @@
 # Castlumora Web Phase 1.3 development progress
 
+## Current increment — persistent single-video YouTube workflow
+
+- Implemented: administrator preview/receipt/rights/destination confirmation; native
+  Web controls; durable source-ID deduplication and resource snapshots; private
+  H264/AAC downloads; local fragmented-stream remux; strict final inspection;
+  creator/original-title/provenance persistence; safe existing publication/scanning;
+  cancellation/retry/restart integration and marked staging reclamation.
+- Focused verification:124backend passes/1explicit external-fixture skip;2server
+  authorization/real-owned-media queue-to-index/playback integration tests passed;
+  new UI tests and existing import form tests8passed. Final formatting/full gate,
+  exact-SHA GitHub CI and new preview are pending, not claimed successful yet.
+- Actual authorized video remains unverified. Direct source connections failed;
+  numeric upstream CONNECT and normal TLS succeeded in a separate diagnostic, but
+  its watch page returnedHTTP403. No security/authentication/proxy policy changed.
+- Last published checkpoint:1bcf896d71541fc1969a410fd02db6c14f768b24; tested app47
+  below remains recoverable. Current branch development/castlumora-web-1.3, PR3.
+- Next exact action: finish full formatting/Debug/Release/backend/frontend gate;
+  publish only if passing; verify exact-SHA Linux/shared CI and real preview;
+  then external source verification and thumbnail/subtitle enrichment before bulk/
+  playlist/channel synchronization. See docs/CASTLUMORA_YOUTUBE_IMPORT.md.
+- Usage/reset information: Not accessible. Preserve this increment if interrupted;
+  inspect status/log before continuing, do not recreate it or reapply old stashes.
+  No main merge/Coon Media deployment; all original1.0 requirements retained.
+
+
 ## Published checkpoint — reviewed YouTube source/runtime prerequisite
 
 - Latest published application: `47c47c3fa2c2a7d56f5983fc52ddeac2dac94c58`.

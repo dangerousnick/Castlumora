@@ -18,6 +18,39 @@ public sealed class ImportQueueTests : IDisposable
     private readonly Guid _admin = Guid.NewGuid();
     private readonly CancellationToken _token = TestContext.Current.CancellationToken;
 
+    [Fact]
+    public async Task YouTubeJob_PersistsPolicy_DeduplicatesCanonicalIdentity_AndCompletesAfterRestart()
+    {
+        var options = YouTubeImportOptions.Select(YouTubeImportOptionsTests.Metadata(new YouTubeMetadataPreview.Format("18", 360)), 720, 128);
+        var source = YouTubeVideoSource.Parse("https://youtu.be/4Xsn6oe-AEg?si=tracking").CanonicalUrl;
+        Guid id;
+        await using (var queue = Open(CompleteAsync))
+        {
+            var saved = (await queue.SubmitManyAsync([(source, "Reviewed creator video")], _library, "Own video", _admin, _token, true, options))[0];
+            id = saved.Id;
+            var duplicate = (await queue.SubmitManyAsync([(YouTubeVideoSource.Parse(source + "&t=10").CanonicalUrl, "Different title")], _library, "Other record", _admin, _token, false, options with { MaximumBytes = 268435456 }))[0];
+            Assert.Equal(saved, duplicate);
+        }
+
+        await using var reopened = Open(CompleteAsync);
+        var restored = Assert.Single(await reopened.ListAsync(_token));
+        Assert.Equal(options, restored.YouTube);
+        Assert.True(restored.AutomaticRetries);
+        reopened.Start();
+        Assert.Equal(id, (await WaitAsync(reopened, id, ImportQueue.State.Completed)).Id);
+    }
+
+    [Fact]
+    public async Task YouTubeSource_CannotEnterDirectQueue_OrForgePersistedResourcePolicy()
+    {
+        await using var queue = Open(CompleteAsync);
+        var source = "https://www.youtube.com/watch?v=4Xsn6oe-AEg";
+        await Assert.ThrowsAsync<InvalidDataException>(() => queue.SubmitAsync(source, _library, "Video", "Owned", _admin, _token));
+        var options = YouTubeImportOptions.Select(YouTubeImportOptionsTests.Metadata(new YouTubeMetadataPreview.Format("18", 360)), 720, 128);
+        await Assert.ThrowsAsync<InvalidDataException>(() => queue.SubmitManyAsync([(source, "Video")], _library, "Owned", _admin, _token, false, options with { MaximumBytes = long.MaxValue }));
+        Assert.Empty(await queue.ListAsync(_token));
+    }
+
     [Theory]
     [InlineData("certificateRejected")]
     [InlineData("sourceDenied")]

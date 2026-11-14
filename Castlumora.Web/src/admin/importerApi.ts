@@ -19,6 +19,18 @@ export function importerApi(api: Api) {
   };
 }
 
+export interface YouTubePreview {
+  previewId: string;
+  videoId: string;
+  channelId: string;
+  title: string;
+  creator: string;
+  description: string;
+  height: number;
+  maximumBytes: number;
+  duration: number;
+  expiresAt: string;
+}
 export interface ImportJob {
   id: string;
   title: string;
@@ -34,6 +46,7 @@ export interface ImportJob {
   nextAttemptAt?: string;
 }
 export interface ImportQueue {
+  youtubeImportsAvailable?: boolean;
   batchImportsAvailable?: boolean;
   maxBatchEntries?: number;
   available: boolean;
@@ -67,6 +80,28 @@ export function importQueueApi(api: Api) {
         method: 'POST',
         body: JSON.stringify(value),
       }),
+    previewYouTube: (value: {
+      url: string;
+      destinationId: string;
+      maximumHeight: number;
+      maximumMiB: number;
+    }) =>
+      api.request<YouTubePreview>('Castlumora/Imports/YouTube/Preview', {
+        method: 'POST',
+        body: JSON.stringify(value),
+      }),
+    submitYouTube: (value: {
+      previewId: string;
+      destinationId: string;
+      title: string;
+      rights: string;
+      rightsConfirmed: boolean;
+      automaticRetries: boolean;
+    }) =>
+      api.request<ImportJob>('Castlumora/Imports/Jobs/YouTube', {
+        method: 'POST',
+        body: JSON.stringify(value),
+      }),
     cancel: (id: string) =>
       api.request<ImportJob>(`Castlumora/Imports/Jobs/${encodeURIComponent(id)}/Cancel`, {
         method: 'POST',
@@ -90,7 +125,7 @@ export function importFailureText(code: string): string {
       'The server could not reach the source. Check DNS, firewall and direct HTTPS egress; proxy-only networks are not supported yet.',
     sourceRateLimited: 'The source is rate limiting requests. Wait before retrying.',
     unsupportedSource:
-      'This preview supports direct HTTPS H264/AAC MP4 files. YouTube pages, playlists and channels are not supported yet.',
+      'Choose a supported direct HTTPS MP4 file, or preview a single authorized YouTube video. Playlists and channels are not supported yet.',
     incompleteOutput:
       'No complete media/metadata pair was produced. Check the source format and displayed size limit before retrying.',
     unexpectedOutput:

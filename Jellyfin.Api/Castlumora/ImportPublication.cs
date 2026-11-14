@@ -37,7 +37,9 @@ internal sealed class ImportPublication
             paths.DataPath,
             [paths.ProgramDataPath, paths.ConfigurationDirectoryPath, paths.ProgramSystemPath, paths.WebPath, paths.CachePath],
             job => Resolve(job, libraries, users),
-            (job, progress, token) => new YtDlpImportRunner(runtime, paths, logger).RunAsync(job.Source, token, progress),
+            (job, progress, token) => job.YouTube is null
+                ? new YtDlpImportRunner(runtime, paths, logger).RunAsync(job.Source, token, progress)
+                : new YouTubeDownload(runtime, paths, encoder.EncoderPath, logger).RunAsync(job, progress, token),
             path => RequestScan(path, libraries, monitor),
             encoder.ProbePath,
             encoder.EncoderPath,
@@ -89,7 +91,7 @@ internal sealed class ImportPublication
             var existing = Media(folder, prepared.Sha256);
             if (File.Exists(existing))
             {
-                await VerifyAsync(existing, prepared.Sha256, prepared.Bytes, token).ConfigureAwait(false);
+                await VerifyAsync(existing, prepared.Sha256, prepared.Bytes, token, job.YouTube?.MaximumBytes ?? 33554432).ConfigureAwait(false);
                 CheckDestination(job, root);
                 token.ThrowIfCancellationRequested();
                 _scan(existing);
@@ -99,8 +101,8 @@ internal sealed class ImportPublication
 
         using var staged = await _download(job, progress, token).ConfigureAwait(false);
         var tools = _mediaTools();
-        await ImportMediaInspection.InspectAsync(staged.MediaPath, tools.Probe, tools.Encoder, token).ConfigureAwait(false);
-        await VerifyAsync(staged.MediaPath, staged.Sha256, staged.Bytes, token).ConfigureAwait(false);
+        await ImportMediaInspection.InspectAsync(staged.MediaPath, tools.Probe, tools.Encoder, token, job.YouTube?.MaximumBytes ?? 33554432, job.YouTube?.Height ?? 4096).ConfigureAwait(false);
+        await VerifyAsync(staged.MediaPath, staged.Sha256, staged.Bytes, token, job.YouTube?.MaximumBytes ?? 33554432).ConfigureAwait(false);
         if (prepared is not null && (prepared.Sha256 != staged.Sha256 || prepared.Bytes != staged.Bytes))
         {
             throw new InvalidDataException("The source changed after an interrupted publication; retain the record and submit a reviewed new import.");
@@ -137,12 +139,12 @@ internal sealed class ImportPublication
                     RandomAccess.FlushToDisk(output.SafeFileHandle);
                 }
 
-                await VerifyAsync(partial, record.Sha256, record.Bytes, token).ConfigureAwait(false);
+                await VerifyAsync(partial, record.Sha256, record.Bytes, token, job.YouTube?.MaximumBytes ?? 33554432).ConfigureAwait(false);
                 CheckDestination(job, root);
                 YtDlpPlatform.RejectLink(nfo);
                 if (File.Exists(nfo))
                 {
-                    if (new FileInfo(nfo).Length > 8192 || !(await File.ReadAllBytesAsync(nfo, token).ConfigureAwait(false)).AsSpan().SequenceEqual(metadata))
+                    if (new FileInfo(nfo).Length > 32768 || !(await File.ReadAllBytesAsync(nfo, token).ConfigureAwait(false)).AsSpan().SequenceEqual(metadata))
                     {
                         throw new InvalidDataException("Destination metadata already exists; it was retained for administrator review.");
                     }
@@ -171,7 +173,7 @@ internal sealed class ImportPublication
                 committed = true;
             }
 
-            await VerifyAsync(target, record.Sha256, record.Bytes, CancellationToken.None).ConfigureAwait(false);
+            await VerifyAsync(target, record.Sha256, record.Bytes, CancellationToken.None, job.YouTube?.MaximumBytes ?? 33554432).ConfigureAwait(false);
             _scan(target);
             // Cancellation after the commit point never reports that committed media was removed.
             return new ImportQueue.Receipt(record.Sha256, record.Bytes);
@@ -185,7 +187,7 @@ internal sealed class ImportPublication
                 try
                 {
                     YtDlpPlatform.RejectLink(nfo);
-                    if (File.Exists(nfo) && new FileInfo(nfo).Length <= 8192 && (await File.ReadAllBytesAsync(nfo, CancellationToken.None).ConfigureAwait(false)).AsSpan().SequenceEqual(metadata))
+                    if (File.Exists(nfo) && new FileInfo(nfo).Length <= 32768 && (await File.ReadAllBytesAsync(nfo, CancellationToken.None).ConfigureAwait(false)).AsSpan().SequenceEqual(metadata))
                     {
                         File.Delete(nfo);
                     }
@@ -294,8 +296,8 @@ internal sealed class ImportPublication
         var record = JsonSerializer.Deserialize<Prepared>(File.ReadAllText(path));
         if (record is null || record.Version != 1 || record.Job is null || !record.Job.Id.Equals(job.Id)
             || !record.Job.DestinationId.Equals(job.DestinationId) || record.Job.SourceKey != job.SourceKey || record.Job.Source != job.Source
-            || !record.Job.RequestedBy.Equals(job.RequestedBy) || record.Job.Rights != job.Rights
-            || record.Root != root || record.Bytes is <= 0 or > 33554432 || !Hash(record.Sha256))
+            || !record.Job.RequestedBy.Equals(job.RequestedBy) || record.Job.Rights != job.Rights || record.Job.YouTube != job.YouTube
+            || record.Root != root || (record.Bytes <= 0 || record.Bytes > (job.YouTube?.MaximumBytes ?? 33554432)) || !Hash(record.Sha256))
         {
             throw new InvalidDataException("Publication identity, destination or content record is invalid; preserve it for recovery.");
         }
@@ -376,11 +378,24 @@ internal sealed class ImportPublication
         return Path.Combine(folder, hash + ".mp4");
     }
 
-    private static byte[] Metadata(Prepared prepared) => Encoding.UTF8.GetBytes(new XElement(
-        "movie",
-        new XElement("title", SafeTitle(prepared.Job.Title)),
-        new XElement("lockdata", "true"),
-        new XElement("uniqueid", new XAttribute("type", "CastlumoraImport"), new XAttribute("default", "false"), prepared.Job.Id.ToString("N"))).ToString(SaveOptions.DisableFormatting));
+    private static byte[] Metadata(Prepared prepared)
+    {
+        var document = new XElement("movie",
+            new XElement("title", SafeTitle(prepared.Job.Title)),
+            new XElement("lockdata", "true"),
+            new XElement("uniqueid", new XAttribute("type", "CastlumoraImport"), new XAttribute("default", "false"), prepared.Job.Id.ToString("N")));
+        if (prepared.Job.YouTube is { } creator)
+        {
+            document.Add(new XElement("uniqueid", new XAttribute("type", "YouTube"), creator.VideoId));
+            document.Add(new XElement("uniqueid", new XAttribute("type", "YouTubeChannel"), creator.ChannelId));
+            document.Add(new XElement("originaltitle", SafeTitle(creator.OriginalTitle)));
+            document.Add(new XElement("studio", SafeTitle(creator.Creator)));
+            document.Add(new XElement("plot", SafeTitle(creator.Description)));
+            document.Add(new XElement("tag", "YouTube"));
+        }
+
+        return Encoding.UTF8.GetBytes(document.ToString(SaveOptions.DisableFormatting));
+    }
 
     private static string SafeTitle(string title)
     {
@@ -388,11 +403,11 @@ internal sealed class ImportPublication
         return string.IsNullOrWhiteSpace(safe) ? "Imported video" : safe;
     }
 
-    private static async Task VerifyAsync(string path, string hash, long bytes, CancellationToken token)
+    private static async Task VerifyAsync(string path, string hash, long bytes, CancellationToken token, long maximumBytes = 33554432)
     {
         YtDlpPlatform.RejectLink(path);
         using var file = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read, 65536, FileOptions.Asynchronous | FileOptions.SequentialScan);
-        if (file.Length != bytes || bytes is <= 0 or > 33554432
+        if (file.Length != bytes || (bytes <= 0 || bytes > maximumBytes)
             || Convert.ToHexStringLower(await SHA256.HashDataAsync(file, token).ConfigureAwait(false)) != hash)
         {
             throw new InvalidDataException("Publication bytes changed or collide with existing media; existing files were retained.");

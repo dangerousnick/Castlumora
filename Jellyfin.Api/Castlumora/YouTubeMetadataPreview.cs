@@ -114,18 +114,20 @@ internal static class YouTubeMetadataPreview
                     var id = Text(item, "format_id", 16);
                     var video = Text(item, "vcodec", 80);
                     var audio = Text(item, "acodec", 80);
+                    var audioOnly = video == "none" && audio.StartsWith("mp4a", StringComparison.Ordinal);
+                    var videoOnly = video.StartsWith("avc1", StringComparison.Ordinal) && audio == "none";
                     if (id.Length == 0 || !id.All(char.IsAsciiDigit) || Text(item, "protocol", 30) != "https"
-                        || Text(item, "ext", 8) != "mp4" || !video.StartsWith("avc1", StringComparison.Ordinal)
-                        || !audio.StartsWith("mp4a", StringComparison.Ordinal)
+                        || Text(item, "ext", 8) is not ("mp4" or "m4a")
+                        || (!audioOnly && !videoOnly && !(video.StartsWith("avc1", StringComparison.Ordinal) && audio.StartsWith("mp4a", StringComparison.Ordinal)))
                         || (item.TryGetProperty("has_drm", out var protectedFormat) && protectedFormat.ValueKind != JsonValueKind.False))
                     {
                         continue;
                     }
 
                     var height = item.TryGetProperty("height", out var h) && h.TryGetInt32(out var value) ? value : 0;
-                    if (height is > 0 and <= 2160)
+                    if (audioOnly || height is > 0 and <= 2160)
                     {
-                        formats.Add(new Format(id, height));
+                        formats.Add(new Format(id, height, audioOnly, videoOnly));
                     }
                 }
             }
@@ -141,7 +143,7 @@ internal static class YouTubeMetadataPreview
     private static string Text(JsonElement json, string key, int maximum)
         => json.TryGetProperty(key, out var value) && value.ValueKind == JsonValueKind.String && value.GetString() is { } text && text.Length <= maximum ? text : string.Empty;
 
-    internal sealed record Format(string Id, int Height);
+    internal sealed record Format(string Id, int Height, bool AudioOnly = false, bool VideoOnly = false);
 
     internal sealed record Metadata(string VideoId, string Title, string Description, string ChannelId, string Creator, double Duration, Format[] Formats);
 }

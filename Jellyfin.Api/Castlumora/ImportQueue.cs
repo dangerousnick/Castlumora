@@ -77,10 +77,10 @@ internal sealed class ImportQueue : IAsyncDisposable
                         throw new InvalidDataException("Invalid import journal entry; preserve it for recovery.");
                     }
 
-                    Validate(job.Source, job.DestinationId, job.Title, job.Rights, job.RequestedBy);
+                    Validate(job.Source, job.DestinationId, job.Title, job.Rights, job.RequestedBy, job.YouTube);
                     if (job.Id.Equals(Guid.Empty) || job.Attempts is < 0 or > 3 || !Enum.IsDefined(job.State)
                         || job.SourceKey != Key(job.Source, job.DestinationId)
-                        || (job.State == State.Completed && !ValidReceipt(job.Sha256, job.Bytes))
+                        || (job.State == State.Completed && !ValidReceipt(job.Sha256, job.Bytes, job.YouTube?.MaximumBytes ?? 33554432))
                         || (job.State == State.Queued && job.Attempts >= 3)
                         || (job.NextAttemptAt is not null && (job.State != State.Queued || !job.AutomaticRetries || ImportRetryPolicy.Delay(job.Error, job.Attempts) is null)))
                     {
@@ -144,14 +144,19 @@ internal sealed class ImportQueue : IAsyncDisposable
     internal async Task<Job> SubmitAsync(string source, Guid destinationId, string title, string rights, Guid requestedBy, CancellationToken token, bool automaticRetries = false)
         => (await SubmitManyAsync([(source, title)], destinationId, rights, requestedBy, token, automaticRetries).ConfigureAwait(false))[0];
 
-    internal async Task<Job[]> SubmitManyAsync((string Source, string Title)[] entries, Guid destinationId, string rights, Guid requestedBy, CancellationToken token, bool automaticRetries = false)
+    internal async Task<Job[]> SubmitManyAsync((string Source, string Title)[] entries, Guid destinationId, string rights, Guid requestedBy, CancellationToken token, bool automaticRetries = false, YouTubeImportOptions? youtube = null)
     {
+        if (youtube is not null && entries.Length != 1)
+        {
+            throw new InvalidDataException("YouTube jobs require individual preview confirmation.");
+        }
+
         if (entries.Length is < 1 or > 25)
         {
             throw new InvalidDataException("Submit between one and twenty-five authorized direct MP4 entries.");
         }
 
-        var validated = entries.Select(entry => (Source: Validate(entry.Source, destinationId, entry.Title, rights, requestedBy), entry.Title)).ToArray();
+        var validated = entries.Select(entry => (Source: Validate(entry.Source, destinationId, entry.Title, rights, requestedBy, youtube), entry.Title)).ToArray();
         await _gate.WaitAsync(token).ConfigureAwait(false);
         try
         {
@@ -172,7 +177,7 @@ internal sealed class ImportQueue : IAsyncDisposable
                     throw new InvalidOperationException("The import history limit is reached; the batch was not saved. Review retained history before adding jobs.");
                 }
 
-                var job = new Job(Guid.NewGuid(), entry.Source, key, destinationId, entry.Title, rights, requestedBy, _clock.GetUtcNow(), AutomaticRetries: automaticRetries);
+                var job = new Job(Guid.NewGuid(), entry.Source, key, destinationId, entry.Title, rights, requestedBy, _clock.GetUtcNow(), AutomaticRetries: automaticRetries, YouTube: youtube);
                 pending.Add(job);
                 results.Add(job);
             }
@@ -346,7 +351,7 @@ internal sealed class ImportQueue : IAsyncDisposable
                     try
                     {
                         receipt = await _execute(job, bytes => Report(job.Id, bytes), stop.Token).ConfigureAwait(false);
-                        if (!ValidReceipt(receipt.Sha256, receipt.Bytes))
+                        if (!ValidReceipt(receipt.Sha256, receipt.Bytes, job.YouTube?.MaximumBytes ?? 33554432))
                         {
                             throw new InvalidDataException("Invalid import publication receipt.");
                         }
@@ -465,10 +470,11 @@ internal sealed class ImportQueue : IAsyncDisposable
         }
     }
 
-    private static string Validate(string source, Guid destinationId, string title, string rights, Guid requestedBy)
+    private static string Validate(string source, Guid destinationId, string title, string rights, Guid requestedBy, YouTubeImportOptions? youtube = null)
     {
+        youtube?.Validate(source);
         var uri = ImportNetworkPolicy.ValidateSource(source);
-        if (uri.AbsoluteUri.Length > 4096 || !uri.AbsolutePath.EndsWith(".mp4", StringComparison.OrdinalIgnoreCase) || destinationId.Equals(Guid.Empty) || requestedBy.Equals(Guid.Empty)
+        if (uri.AbsoluteUri.Length > 4096 || (youtube is null && !uri.AbsolutePath.EndsWith(".mp4", StringComparison.OrdinalIgnoreCase)) || destinationId.Equals(Guid.Empty) || requestedBy.Equals(Guid.Empty)
             || string.IsNullOrWhiteSpace(title) || title.Length > 200 || title.Any(char.IsControl)
             || string.IsNullOrWhiteSpace(rights) || rights.Length > 2000 || rights.Any(char.IsControl))
         {
@@ -478,7 +484,7 @@ internal sealed class ImportQueue : IAsyncDisposable
         return uri.AbsoluteUri;
     }
 
-    private static bool ValidReceipt(string? sha256, long bytes) => bytes is > 0 and <= 33554432 && sha256 is { Length: 64 } && sha256.All(char.IsAsciiHexDigit);
+    private static bool ValidReceipt(string? sha256, long bytes, long maximum) => bytes > 0 && bytes <= maximum && sha256 is { Length: 64 } && sha256.All(char.IsAsciiHexDigit);
 
     private static string Key(string source, Guid destinationId) => Convert.ToHexStringLower(SHA256.HashData(Encoding.UTF8.GetBytes(destinationId.ToString("N") + "\n" + source)));
 
@@ -492,7 +498,7 @@ internal sealed class ImportQueue : IAsyncDisposable
 
     internal sealed record Receipt(string Sha256, long Bytes);
 
-    internal sealed record Job(Guid Id, string Source, string SourceKey, Guid DestinationId, string Title, string Rights, Guid RequestedBy, DateTimeOffset CreatedAt, State State = State.Queued, int Attempts = 0, long Bytes = 0, string? Sha256 = null, string? Error = null, bool AutomaticRetries = false, DateTimeOffset? NextAttemptAt = null);
+    internal sealed record Job(Guid Id, string Source, string SourceKey, Guid DestinationId, string Title, string Rights, Guid RequestedBy, DateTimeOffset CreatedAt, State State = State.Queued, int Attempts = 0, long Bytes = 0, string? Sha256 = null, string? Error = null, bool AutomaticRetries = false, DateTimeOffset? NextAttemptAt = null, YouTubeImportOptions? YouTube = null);
 
     private sealed record Journal(int Version, List<Job> Jobs);
 }

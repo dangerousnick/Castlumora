@@ -6,13 +6,71 @@ using System.Net.Http.Json;
 using System.Text.Json.Nodes;
 using System.Threading;
 using System.Threading.Tasks;
+using Jellyfin.Api.Castlumora;
 using Jellyfin.Server.Integration.Tests.Castlumora;
+using MediaBrowser.Common.Configuration;
+using Microsoft.Extensions.DependencyInjection;
 using Xunit;
 
 namespace Jellyfin.Server.Integration.Tests.Controllers;
 
 public sealed class CastlumoraImportLifecycleTests
 {
+    [Fact]
+    public async Task ConfirmedYouTubeJob_UsesRealQueuePublicationAndLibraryPlayback_WithOwnedTransportFixture()
+    {
+        // This verifies the API/queue/library contract with real owned media, not public YouTube extraction.
+        await using var source = await ImportHttpFixture.CreateAsync();
+        await using var factory = source.Host();
+        using var admin = factory.CreateClient();
+        admin.Timeout = TimeSpan.FromSeconds(30);
+        var token = TestContext.Current.CancellationToken;
+        admin.DefaultRequestHeaders.AddAuthHeader(await AuthHelper.CompleteStartupAsync(admin));
+        using var library = await admin.PostAsJsonAsync("Library/VirtualFolders?name=CreatorImports&collectionType=homevideos&paths=" + Uri.EscapeDataString(source.Library), new { }, token);
+        library.EnsureSuccessStatusCode();
+        using var install = await admin.PostAsync("Castlumora/Imports/Runtime/Install", null, token);
+        install.EnsureSuccessStatusCode();
+        var state = await admin.GetFromJsonAsync<JsonObject>("Castlumora/Imports/Queue", token);
+        var destination = Guid.Parse(Assert.Single(state!["destinations"]!.AsArray())!["id"]!.GetValue<string>());
+        var me = await admin.GetFromJsonAsync<JsonObject>("Users/Me", token);
+        var administrator = Guid.Parse(me!["Id"]!.GetValue<string>());
+        var metadata = new YouTubeMetadataPreview.Metadata("4Xsn6oe-AEg", "Unspeakable creator fixture", "Owned fixture description", "UCabcdefghijklmnopqrstuv", "Fixture creator", 1, [new("18", 64)]);
+        var options = YouTubeImportOptions.Select(metadata, 720, 128);
+        var paths = factory.Services.GetRequiredService<IApplicationPaths>();
+        var receipt = new YouTubePreviewStore(paths.DataPath).Create(administrator, destination, "https://www.youtube.com/watch?v=4Xsn6oe-AEg", metadata.Title, options);
+        var body = new { previewId = receipt.Id, destinationId = destination, title = metadata.Title, rights = "Generated owned media; source identity is a test fixture", rightsConfirmed = true, automaticRetries = false };
+        using var submitted = await admin.PostAsJsonAsync("Castlumora/Imports/Jobs/YouTube", body, token);
+        submitted.EnsureSuccessStatusCode();
+        var id = (await submitted.Content.ReadFromJsonAsync<JsonObject>(token))!["id"]!.GetValue<string>();
+        using var deadline = CancellationTokenSource.CreateLinkedTokenSource(token);
+        deadline.CancelAfter(TimeSpan.FromSeconds(90));
+        string? itemId = null;
+        while (itemId is null)
+        {
+            var queue = await admin.GetFromJsonAsync<JsonObject>("Castlumora/Imports/Queue", deadline.Token);
+            var job = Assert.Single(queue!["jobs"]!.AsArray())!;
+            Assert.NotEqual("failed", job["state"]!.GetValue<string>());
+            Assert.Equal("youtube", job["sourceType"]!.GetValue<string>());
+            Assert.Equal(options.VideoId, job["videoId"]!.GetValue<string>());
+            var items = await admin.GetFromJsonAsync<JsonObject>("Items?Recursive=true&IncludeItemTypes=Video&SearchTerm=Unspeakable", deadline.Token);
+            itemId = items!["Items"]!.AsArray().FirstOrDefault()?["Id"]?.GetValue<string>();
+            if (itemId is null)
+            {
+                await Task.Delay(200, deadline.Token);
+            }
+        }
+
+        using var playback = await admin.GetAsync("Items/" + itemId + "/Download", token);
+        playback.EnsureSuccessStatusCode();
+        Assert.Equal(source.Payload, await playback.Content.ReadAsByteArrayAsync(token));
+        using var duplicate = await admin.PostAsJsonAsync("Castlumora/Imports/Jobs/YouTube", body, token);
+        duplicate.EnsureSuccessStatusCode();
+        Assert.Equal(id, (await duplicate.Content.ReadFromJsonAsync<JsonObject>(token))!["id"]!.GetValue<string>());
+        var nfo = System.Xml.Linq.XDocument.Load(Assert.Single(Directory.GetFiles(source.Library, "*.nfo", SearchOption.AllDirectories)));
+        Assert.Equal(options.VideoId, nfo.Root!.Elements("uniqueid").Single(element => element.Attribute("type")!.Value == "YouTube").Value);
+        Assert.DoesNotContain("signed-secret", nfo.ToString(), StringComparison.Ordinal);
+    }
+
     [Fact]
     public async Task AuthorizedHttpsImport_PersistsIndexesAndServesRealVideo_WithoutSourceQueryDisclosure()
     {

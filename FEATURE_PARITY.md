@@ -1,5 +1,16 @@
 # Feature parity inventory — Phase 1.3
 
+## Single-video YouTube queue — current development increment
+
+Preview/rights/destination confirmation, durable source-ID/policy snapshots, native
+UI, bounded local remux/publication and creator provenance are implemented. Focused
+native/API/owned-media tests pass; full gate/publication/CI/preview are pending.
+Actual authorized public extraction remains unverified (network failure/HTTP403).
+This is not production certification or complete Phase1.4. Thumbnail/subtitle
+retention, playlists/channels/synchronization and independent online metadata remain
+required next work; all original1.0 scope is preserved. See development progress.
+
+
 ## Published YouTube prerequisite — full adapter still pending
 
 Internal source identity/metadata validation and a checksum-pinned Node24 dependency

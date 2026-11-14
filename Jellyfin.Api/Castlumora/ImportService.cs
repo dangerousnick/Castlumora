@@ -28,6 +28,9 @@ public sealed class ImportService : IHostedService, IAsyncDisposable
     private readonly IMediaEncoder _encoder;
     private readonly ILogger<ImportService> _logger;
     private readonly Func<ImportPublication> _publicationFactory;
+    private readonly SemaphoreSlim _previewGate = new(1, 1);
+    private readonly CancellationTokenSource _previewStop = new();
+    private int _disposeStarted;
     private ImportQueue? _queue;
     private ImportPublication? _publication;
     private string _failure = "The import queue has not started.";
@@ -61,7 +64,7 @@ public sealed class ImportService : IHostedService, IAsyncDisposable
     }
 
     /// <summary>Gets a value indicating whether this host can accept the implemented import workflow.</summary>
-    public bool Available => _host.CoreStartupHasCompleted && (OperatingSystem.IsLinux() || OperatingSystem.IsMacOS())
+    public bool Available => Volatile.Read(ref _disposeStarted) == 0 && _host.CoreStartupHasCompleted && (OperatingSystem.IsLinux() || OperatingSystem.IsMacOS())
         && _queue is { Completion.IsCompleted: false }
         && !string.IsNullOrWhiteSpace(_encoder.ProbePath) && Path.IsPathFullyQualified(_encoder.ProbePath) && File.Exists(_encoder.ProbePath)
         && !string.IsNullOrWhiteSpace(_encoder.EncoderPath) && Path.IsPathFullyQualified(_encoder.EncoderPath) && File.Exists(_encoder.EncoderPath);
@@ -80,6 +83,8 @@ public sealed class ImportService : IHostedService, IAsyncDisposable
         {
             _publication = _publicationFactory();
             _queue = new ImportQueue(Path.Combine(_paths.DataPath, "castlumora", "imports", "queue"), ExecuteAsync, _logger);
+            // Queue constructor holds exclusive ownership before abandoned attempts are touched.
+            ImportStagingRecovery.Recover(_paths.DataPath, _logger);
             _queue.Start();
             _failure = "Check the configured FFmpeg/FFprobe dependencies or queue diagnostics.";
         }
@@ -137,6 +142,7 @@ public sealed class ImportService : IHostedService, IAsyncDisposable
             ["destinations"] = destinations,
             ["jobs"] = jobs,
             ["maxMediaBytes"] = 33554432,
+            ["youtubeImportsAvailable"] = Available && OperatingSystem.IsLinux() && System.Runtime.InteropServices.RuntimeInformation.ProcessArchitecture == System.Runtime.InteropServices.Architecture.X64 && File.Exists(Path.Combine(_paths.ProgramSystemPath, "tools", "node", YouTubeNodeRuntime.Version, "linux-x64", "node")),
             ["concurrency"] = 1,
             ["playlistsAvailable"] = false,
             ["channelsAvailable"] = false,
@@ -162,6 +168,88 @@ public sealed class ImportService : IHostedService, IAsyncDisposable
         var job = await queue.SubmitAsync(Text(value, "url"), options.Library, Text(value, "title"), options.Rights, administrator, token, options.Automatic).ConfigureAwait(false);
         return View(job);
     }
+
+    /// <summary>Extracts a single authorized source into a private administrator/library-bound confirmation.</summary>
+    /// <param name="value">Source, library and bounded quality/resource choices.</param>
+    /// <param name="administrator">Authenticated administrator.</param>
+    /// <param name="token">Preview cancellation.</param>
+    /// <returns>Safe metadata and a short-lived opaque confirmation ID.</returns>
+    public async Task<JsonObject> PreviewYouTubeAsync(JsonObject value, Guid administrator, CancellationToken token)
+    {
+        if (Volatile.Read(ref _disposeStarted) != 0)
+        {
+            throw new InvalidOperationException("The import service is stopping.");
+        }
+
+        using var lifetime = CancellationTokenSource.CreateLinkedTokenSource(token, _previewStop.Token);
+        token = lifetime.Token;
+        if (value.Any(pair => pair.Key is not ("url" or "destinationId" or "maximumHeight" or "maximumMiB"))
+            || !Guid.TryParse(Text(value, "destinationId"), out var library))
+        {
+            throw new InvalidDataException("Provide a source, destination and bounded quality/size choices.");
+        }
+
+        var height = Number(value, "maximumHeight");
+        var size = Number(value, "maximumMiB");
+        if (height is not (360 or 480 or 720 or 1080) || size is not (32 or 128 or 256 or 512))
+        {
+            throw new InvalidDataException("Choose a supported quality and size budget.");
+        }
+
+        var source = YouTubeVideoSource.Parse(Text(value, "url"));
+        await PrepareAsync(administrator, library, token).ConfigureAwait(false);
+        if (!await _previewGate.WaitAsync(0, token).ConfigureAwait(false))
+        {
+            throw new InvalidOperationException("Another YouTube preview is running; wait for it to finish.");
+        }
+
+        try
+        {
+            var metadata = await YouTubeMetadataPreview.ReadAsync(_runtime, _paths.ProgramSystemPath, _paths.DataPath, source.CanonicalUrl, token).ConfigureAwait(false);
+            var options = YouTubeImportOptions.Select(metadata, height, size);
+            var preview = new YouTubePreviewStore(_paths.DataPath).Create(administrator, library, source.CanonicalUrl, metadata.Title[..Math.Min(metadata.Title.Length, 200)], options);
+            return new JsonObject
+            {
+                ["previewId"] = preview.Id.ToString("N"),
+                ["videoId"] = options.VideoId,
+                ["channelId"] = options.ChannelId,
+                ["title"] = preview.Title,
+                ["creator"] = options.Creator,
+                ["description"] = options.Description,
+                ["height"] = options.Height,
+                ["maximumBytes"] = options.MaximumBytes,
+                ["duration"] = options.Duration,
+                ["expiresAt"] = preview.Expires.ToString("O", CultureInfo.InvariantCulture)
+            };
+        }
+        finally
+        {
+            _previewGate.Release();
+        }
+    }
+
+    /// <summary>Persists only a source reviewed by the same administrator for the same library.</summary>
+    /// <param name="value">Opaque preview ID, title and explicit rights/destination confirmation.</param>
+    /// <param name="administrator">Authenticated administrator.</param>
+    /// <param name="token">Submission cancellation.</param>
+    /// <returns>A durable source-ID duplicate or new job.</returns>
+    public async Task<JsonObject> SubmitYouTubeAsync(JsonObject value, Guid administrator, CancellationToken token)
+    {
+        if (value.Any(pair => pair.Key is not ("previewId" or "destinationId" or "title" or "rights" or "rightsConfirmed" or "automaticRetries"))
+            || !Guid.TryParse(Text(value, "previewId"), out var id))
+        {
+            throw new InvalidDataException("A reviewed preview and explicit rights/destination confirmation are required.");
+        }
+
+        var options = ReadOptions(value);
+        var queue = await PrepareAsync(administrator, options.Library, token).ConfigureAwait(false);
+        var preview = new YouTubePreviewStore(_paths.DataPath).Read(id, administrator, options.Library);
+        var jobs = await queue.SubmitManyAsync([(preview.Source, Text(value, "title"))], options.Library, options.Rights, administrator, token, options.Automatic, preview.Options).ConfigureAwait(false);
+        return View(jobs[0]);
+    }
+
+    private static int Number(JsonObject value, string key)
+        => value[key] is JsonValue number && number.TryGetValue<int>(out var result) ? result : throw new InvalidDataException("Quality and size choices must be supported integers.");
 
     /// <summary>Atomically persists up to twenty-five rights-confirmed direct-video entries.</summary>
     /// <param name="value">Entries, library, common rights and retry options.</param>
@@ -215,6 +303,12 @@ public sealed class ImportService : IHostedService, IAsyncDisposable
     /// <inheritdoc />
     public async ValueTask DisposeAsync()
     {
+        if (Interlocked.Exchange(ref _disposeStarted, 1) != 0)
+        {
+            return;
+        }
+
+        await _previewStop.CancelAsync().ConfigureAwait(false);
         var queue = Interlocked.Exchange(ref _queue, null);
         if (queue is not null)
         {
@@ -227,6 +321,9 @@ public sealed class ImportService : IHostedService, IAsyncDisposable
                 _logger.LogError("Import queue stopped after storage failure ({ErrorType}); persisted jobs require recovery", exception.GetType().Name);
             }
         }
+        await _previewGate.WaitAsync(CancellationToken.None).ConfigureAwait(false);
+        _previewGate.Dispose();
+        _previewStop.Dispose();
     }
 
     private async Task<ImportQueue> PrepareAsync(Guid administrator, Guid library, CancellationToken token)
@@ -289,6 +386,10 @@ public sealed class ImportService : IHostedService, IAsyncDisposable
         ["id"] = job.Id.ToString("N"),
         ["title"] = job.Title,
         ["sourceHost"] = new Uri(job.Source).IdnHost,
+        ["sourceType"] = job.YouTube is null ? "direct" : "youtube",
+        ["videoId"] = job.YouTube?.VideoId,
+        ["creator"] = job.YouTube?.Creator,
+        ["maximumBytes"] = job.YouTube?.MaximumBytes ?? 33554432,
         ["destinationId"] = job.DestinationId.ToString("N"),
         ["requestedBy"] = job.RequestedBy.ToString("N"),
         ["rights"] = job.Rights,

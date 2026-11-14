@@ -3,6 +3,7 @@ import { useApp, errorText } from '../state';
 import { Feedback } from '../components/Media';
 import { ActionStatus, useAction } from './Controls';
 import { importFailureText, importQueueApi } from './importerApi';
+import YouTubeImport from './YouTubeImport';
 import type { ImportQueue } from './importerApi';
 
 export default function ImportJobs() {
@@ -54,6 +55,9 @@ export default function ImportJobs() {
       <Feedback busy={!queue && !error} error={error} />
       {queue && (
         <>
+          {queue.youtubeImportsAvailable && (
+            <YouTubeImport destinations={queue.destinations} onQueued={refresh} />
+          )}
           <p>{queue.message}</p>
           <p>
             Choose a direct HTTPS MP4 source you are authorized to retain. Playlists, channels,

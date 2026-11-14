@@ -192,7 +192,7 @@ internal sealed class ImportHttpFixture : IAsyncDisposable
                         paths.DataPath,
                         [paths.ProgramDataPath, paths.ProgramSystemPath, paths.ConfigurationDirectoryPath],
                         job => ImportPublication.Resolve(job, libraries, users),
-                        (job, progress, token) => runner.RunAsync(job.Source, token, progress),
+                        (job, progress, token) => runner.RunAsync(job.YouTube is null ? job.Source : source.Source, token, progress),
                         path => ImportPublication.RequestScan(path, libraries, monitor),
                         probe,
                         encoder,

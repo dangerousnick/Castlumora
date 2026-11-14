@@ -64,6 +64,22 @@ public sealed class CastlumoraImporterController : BaseJellyfinApiController
     [RequestSizeLimit(196608)]
     public Task<ActionResult<JsonObject>> SubmitBatch([FromBody] JsonObject value, CancellationToken cancellationToken) => QueueAction(() => _imports.SubmitBatchAsync(value, User.GetUserId(), cancellationToken));
 
+    /// <summary>Previews one authorized YouTube video without downloading its media.</summary>
+    /// <param name="value">Source, destination and bounded quality/size choices.</param>
+    /// <param name="cancellationToken">Preview cancellation.</param>
+    /// <returns>Safe metadata and a private confirmation reference.</returns>
+    [HttpPost("YouTube/Preview")]
+    [RequestSizeLimit(8192)]
+    public Task<ActionResult<JsonObject>> PreviewYouTube([FromBody] JsonObject value, CancellationToken cancellationToken) => QueueAction(() => _imports.PreviewYouTubeAsync(value, User.GetUserId(), cancellationToken));
+
+    /// <summary>Queues a previously reviewed YouTube video with explicit rights confirmation.</summary>
+    /// <param name="value">Preview reference, destination, title and rights.</param>
+    /// <param name="cancellationToken">Submission cancellation.</param>
+    /// <returns>A persistent job reference.</returns>
+    [HttpPost("Jobs/YouTube")]
+    [RequestSizeLimit(32768)]
+    public Task<ActionResult<JsonObject>> SubmitYouTube([FromBody] JsonObject value, CancellationToken cancellationToken) => QueueAction(() => _imports.SubmitYouTubeAsync(value, User.GetUserId(), cancellationToken));
+
     /// <summary>Cancels only the selected import and its owned process.</summary>
     /// <param name="id">Persistent job ID.</param>
     /// <param name="cancellationToken">Request cancellation.</param>
@@ -130,6 +146,14 @@ public sealed class CastlumoraImporterController : BaseJellyfinApiController
         catch (InvalidOperationException exception)
         {
             return Conflict(exception.Message);
+        }
+        catch (TimeoutException)
+        {
+            return StatusCode(StatusCodes.Status504GatewayTimeout, "The source preview exceeded its time limit. Check source availability and server egress.");
+        }
+        catch (NotSupportedException)
+        {
+            return StatusCode(StatusCodes.Status501NotImplemented, "YouTube importing currently requires the reviewed Linux x64 runtime.");
         }
         catch (IOException)
         {

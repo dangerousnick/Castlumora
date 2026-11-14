@@ -48,6 +48,24 @@ public sealed class ImportPublicationTests : IDisposable
 
     private string Library => Path.Combine(_root, "library");
 
+    [Fact]
+    public async Task YouTubePublication_RetainsCreatorIdentityAndOriginalTitle_WithLockedMetadata()
+    {
+        var options = YouTubeImportOptions.Select(YouTubeImportOptionsTests.Metadata(new YouTubeMetadataPreview.Format("18", 360)), 720, 128);
+        var job = Job() with { Source = "https://www.youtube.com/watch?v=4Xsn6oe-AEg", YouTube = options };
+        await Publisher().ExecuteAsync(job, _ => { }, _token);
+        var media = Assert.Single(Directory.GetFiles(Library, "*.mp4", SearchOption.AllDirectories));
+        var document = XDocument.Load(Path.ChangeExtension(media, ".nfo"));
+        Assert.Equal("true", document.Root!.Element("lockdata")!.Value);
+        Assert.Equal(options.OriginalTitle, document.Root.Element("originaltitle")!.Value);
+        Assert.Equal(options.ChannelId, document.Root.Elements("uniqueid").Single(element => element.Attribute("type")!.Value == "YouTubeChannel").Value);
+        Assert.Equal(options.Description, document.Root.Element("plot")!.Value);
+        Assert.Equal(media, Assert.Single(_scans));
+        var repeated = await Publisher().ExecuteAsync(job, _ => { }, _token);
+        Assert.Equal(Clip().Length, repeated.Bytes);
+        Assert.Equal(1, _downloads);
+    }
+
     [Theory]
     [InlineData(false)]
     [InlineData(true)]

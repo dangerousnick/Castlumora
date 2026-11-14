@@ -15,9 +15,9 @@ namespace Jellyfin.Api.Castlumora;
 /// <summary>Conservative self-contained H264/AAC MP4 boundary before any future library write.</summary>
 internal static class ImportMediaInspection
 {
-    internal static async Task<double> InspectAsync(string path, string probe, string encoder, CancellationToken token)
+    internal static async Task<double> InspectAsync(string path, string probe, string encoder, CancellationToken token, long maximumBytes = 33554432, int maximumHeight = 4096)
     {
-        CheckContainer(path);
+        CheckContainer(path, maximumBytes);
         var start = Start(path, probe);
         var result = await ImportProcess.RunAsync(start, string.Empty, TimeSpan.FromSeconds(30), 16384, stop => Task.Delay(Timeout.InfiniteTimeSpan, stop), token).ConfigureAwait(false);
         if (result.ExitCode != 0)
@@ -25,7 +25,7 @@ internal static class ImportMediaInspection
             throw new InvalidDataException("The downloaded file did not pass bounded MP4 inspection.");
         }
 
-        var seconds = Properties(result.Output);
+        var seconds = Properties(result.Output, maximumHeight);
         var decode = Start(path, encoder);
         decode.ArgumentList.Clear();
         foreach (var value in new[]
@@ -47,7 +47,7 @@ internal static class ImportMediaInspection
         return seconds;
     }
 
-    internal static double Properties(string output)
+    internal static double Properties(string output, int maximumHeight = 4096)
     {
         try
         {
@@ -68,7 +68,7 @@ internal static class ImportMediaInspection
                 var type = stream.GetProperty("codec_type").GetString();
                 if (codec == "h264" && type == "video"
                     && stream.GetProperty("width").GetInt32() is > 0 and <= 4096
-                    && stream.GetProperty("height").GetInt32() is > 0 and <= 4096)
+                    && stream.GetProperty("height").GetInt32() > 0 && stream.GetProperty("height").GetInt32() <= maximumHeight)
                 {
                     video = true;
                 }
@@ -127,25 +127,25 @@ internal static class ImportMediaInspection
         return start;
     }
 
-    internal static void CheckContainer(string path)
+    internal static void CheckContainer(string path, long maximumBytes = 33554432, bool requireVideo = true, bool allowFragments = false)
     {
         YtDlpPlatform.RejectLink(path);
         using var stream = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read);
-        if (stream.Length is < 32 or > 33554432)
+        if (maximumBytes is <= 0 or > YouTubeImportOptions.AbsoluteMaximumBytes || stream.Length < 32 || stream.Length > maximumBytes)
         {
             throw new InvalidDataException("Import MP4 size is outside the supported limit.");
         }
 
-        var inspection = new Boxes(stream);
+        var inspection = new Boxes(stream, allowFragments);
         inspection.Walk(stream.Length, 0);
-        if (inspection.Movies != 1 || inspection.Media != 1 || inspection.FileTypes != 1 || inspection.VideoEntries < 1
+        if (inspection.Movies != 1 || (allowFragments ? inspection.Media < 1 : inspection.Media != 1) || inspection.FileTypes != 1 || (requireVideo && inspection.VideoEntries < 1)
             || inspection.References < 1 || inspection.SampleDescriptions != inspection.References)
         {
             throw new InvalidDataException("A complete self-contained non-fragmented MP4 is required.");
         }
     }
 
-    private sealed class Boxes(FileStream stream)
+    private sealed class Boxes(FileStream stream, bool allowFragments)
     {
         private int _count;
 
@@ -172,7 +172,8 @@ internal static class ImportMediaInspection
             while (stream.Position < end)
             {
                 var (type, stop) = Header(end);
-                if (depth == 0 && type is not ("ftyp" or "moov" or "mdat" or "free" or "skip" or "wide"))
+                if (depth == 0 && type is not ("ftyp" or "moov" or "mdat" or "free" or "skip" or "wide")
+                    && !(allowFragments && type is "moof" or "mfra" or "sidx" or "styp"))
                 {
                     throw new InvalidDataException("Unsupported MP4 top-level structure.");
                 }
@@ -258,6 +259,12 @@ internal static class ImportMediaInspection
                         break;
                     case "moof":
                     case "mvex":
+                        if (allowFragments)
+                        {
+                            break;
+                        }
+
+                        throw new InvalidDataException("Fragmented inputs require the bounded local remux boundary.");
                     case "sinf":
                         throw new InvalidDataException("Fragmented or protected media is not supported by this increment.");
                 }

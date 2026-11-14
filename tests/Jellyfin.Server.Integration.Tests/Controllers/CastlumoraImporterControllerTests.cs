@@ -36,7 +36,7 @@ public sealed class CastlumoraImporterControllerTests : IClassFixture<JellyfinAp
         using var viewerInstall = await viewer.PostAsync("Castlumora/Imports/Runtime/Install", null, TestContext.Current.CancellationToken);
         Assert.Equal(HttpStatusCode.Forbidden, viewerInstall.StatusCode);
 
-        foreach (var endpoint in new[] { "Castlumora/Imports/Queue", "Castlumora/Imports/Jobs", "Castlumora/Imports/Jobs/Batch", "Castlumora/Imports/Jobs/00000000000000000000000000000001/Cancel", "Castlumora/Imports/Jobs/00000000000000000000000000000001/Retry" })
+        foreach (var endpoint in new[] { "Castlumora/Imports/YouTube/Preview", "Castlumora/Imports/Jobs/YouTube", "Castlumora/Imports/Queue", "Castlumora/Imports/Jobs", "Castlumora/Imports/Jobs/Batch", "Castlumora/Imports/Jobs/00000000000000000000000000000001/Cancel", "Castlumora/Imports/Jobs/00000000000000000000000000000001/Retry" })
         {
             using var anonymousRequest = endpoint.EndsWith("Queue", System.StringComparison.Ordinal) ? await anonymous.GetAsync(endpoint, TestContext.Current.CancellationToken) : await anonymous.PostAsJsonAsync(endpoint, new { url = "https://127.0.0.1/private.mp4", automaticRetries = true }, TestContext.Current.CancellationToken);
             Assert.Equal(HttpStatusCode.Unauthorized, anonymousRequest.StatusCode);
