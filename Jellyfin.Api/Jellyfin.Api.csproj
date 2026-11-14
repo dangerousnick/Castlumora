@@ -26,6 +26,7 @@
 
   <ItemGroup>
     <EmbeddedResource Include="../packaging/yt-dlp/release.json" LogicalName="Castlumora.YtDlpRelease" />
+    <EmbeddedResource Include="../packaging/node/release.json" LogicalName="Castlumora.NodeRelease" />
   </ItemGroup>
 
   <!-- Code Analyzers -->

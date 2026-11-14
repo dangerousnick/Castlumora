@@ -15,9 +15,11 @@ export DOTNET_CLI_TELEMETRY_OPTOUT=1
 export DOTNET_NOLOGO=1
 node --test .github/scripts/*.test.cjs
 python3 -m unittest discover -s packaging/yt-dlp -p 'test_*.py'
+python3 -m unittest discover -s packaging/node -p 'test_*.py'
 (cd Castlumora.Web; npm ci; npm run typecheck; npm run lint; npm test; VITE_LEGACY_WEB_PATH=web/legacy/ npm run build)
 dotnet publish Jellyfin.Server/Jellyfin.Server.csproj --configuration Release --runtime linux-x64 --self-contained true --nologo -m:1 -p:PublishSingleFile=false -p:ContinuousIntegrationBuild=true -o "$stage/server"
 python3 packaging/yt-dlp/bundle.py --platform linux-x64 --system-root "$stage/server"
+python3 packaging/node/bundle.py --system-root "$stage/server"
 cp -a Castlumora.Web/dist/. "$stage/web/"
 mkdir "$stage/web/legacy"
 cp packaging/linux/legacy-help.html "$stage/web/legacy/index.html"

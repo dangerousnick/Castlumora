@@ -116,6 +116,11 @@ run probe-version "$CASTLUMORA_TEST_FFPROBE" -version
 run bundle-tests python3 -m unittest discover -s packaging/yt-dlp -p 'test_*.py'
 export CASTLUMORA_TEST_YTDLP_BUNDLE=${CASTLUMORA_TEST_YTDLP_BUNDLE:-"$logdir/tool-fixture"}
 run bundle python3 packaging/yt-dlp/bundle.py --platform "$platform" --system-root "$CASTLUMORA_TEST_YTDLP_BUNDLE"
+if [[ "$platform" == linux-x64 ]]; then
+    run node-bundle-tests python3 -m unittest discover -s packaging/node -p 'test_*.py'
+    export CASTLUMORA_TEST_NODE_BUNDLE=${CASTLUMORA_TEST_NODE_BUNDLE:-"$CASTLUMORA_TEST_YTDLP_BUNDLE"}
+    run node-bundle python3 packaging/node/bundle.py --system-root "$CASTLUMORA_TEST_NODE_BUNDLE"
+fi
 run test-disk-space python3 -c 'import shutil,sys; free=shutil.disk_usage(sys.argv[1]).free; print(f"Free bytes: {free}; informational only; build and test I/O failures remain fatal")' "$root"
 run tests dotnet test Jellyfin.sln --configuration Release --collect:XPlat\ Code\ Coverage --settings tests/coverletArgs.runsettings --verbosity minimal -m:1
 run workflow-tests node --test .github/scripts/publish-openapi-report.test.cjs

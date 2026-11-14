@@ -104,8 +104,12 @@ internal static class ImportProcess
 
     private static async Task InputAsync(StreamWriter writer, string input, CancellationToken token)
     {
-        await writer.WriteLineAsync(input.AsMemory(), token).ConfigureAwait(false);
-        await writer.FlushAsync(token).ConfigureAwait(false);
+        if (input.Length != 0)
+        {
+            await writer.WriteLineAsync(input.AsMemory(), token).ConfigureAwait(false);
+            await writer.FlushAsync(token).ConfigureAwait(false);
+        }
+
         writer.Close();
     }
 

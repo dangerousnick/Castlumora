@@ -1,5 +1,29 @@
 # Castlumora Web Phase 1.3 development progress
 
+## In progress — reviewed YouTube source/runtime prerequisite
+
+- Branch remains `development/castlumora-web-1.3`, PR3. Last published checkpoint
+  `64667e175ceb108a063e28b0339f92c7d2dd1c03`; this increment awaits the mandatory
+  application gate and publication. No main merge or Coon Media deployment.
+- Implemented internal canonical YouTube single-video identity, bounded metadata
+  preview, pinned Node24.22.1 packaging/runtime verification and a real process
+  health-probe stdin correction. Public YouTube importing stays unavailable.
+- Focused verification:70passed/1explicit external-fixture skip, plus6owned-archive
+  security tests. Additional native sandbox assertion and final formatting/full
+  Debug/Release/backend/frontend gate are pending; do not infer their success.
+- Real owner-authorized `https://youtu.be/4Xsn6oe-AEg` was attempted through the
+  actual managed runtime and unchanged SSRF/TLS controls: failed `sourceNetwork`
+  after approximately14seconds. This workspace cannot currently establish the
+  required normal source connections. No successful YouTube E2E claim or bypass.
+- Remaining task: finish/verify the secure preview-to-persistent-download adapter,
+  administrator rights/destination confirmation, formats/resource limits, creator/
+  artwork/provenance publication, indexing and playback. Then playlists/channels.
+  Details/repro command: `docs/CASTLUMORA_YOUTUBE_IMPORT.md`. All1.0 scope remains.
+- Usage/reset information: Not accessible. Recovery: inspect status/log and retain
+  this increment; run the installed normal pre-push hook, publish only if passing,
+  then update the exact published SHA/results here. Do not recreate the adapter.
+
+
 ## Verified checkpoint — atomic multiple URLs and Linux-only workflow
 
 - Completed: atomic acceptance of1–25 authorized direct MP4 URLs; native admin form/

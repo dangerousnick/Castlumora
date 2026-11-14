@@ -43,6 +43,9 @@ jobs:
           python -m unittest discover -s packaging/yt-dlp -p 'test_*.py'
           python packaging/yt-dlp/bundle.py --platform "$tool_platform" --system-root "$RUNNER_TEMP/castlumora-tool-fixture"
           echo "CASTLUMORA_TEST_YTDLP_BUNDLE=$RUNNER_TEMP/castlumora-tool-fixture" >> "$GITHUB_ENV"
+          python -m unittest discover -s packaging/node -p 'test_*.py'
+          python packaging/node/bundle.py --system-root "$RUNNER_TEMP/castlumora-tool-fixture"
+          echo "CASTLUMORA_TEST_NODE_BUNDLE=$RUNNER_TEMP/castlumora-tool-fixture" >> "$GITHUB_ENV"
 
       - name: Build Debug server on required platforms
         run: dotnet build Jellyfin.Server -m:1

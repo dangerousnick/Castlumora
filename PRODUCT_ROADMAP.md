@@ -1,5 +1,16 @@
 # Castlumora product roadmap
 
+## YouTube source prerequisite — verification in progress
+
+Internal source identity/metadata validation and a checksum-pinned Node24 dependency
+have been added, with native/archive/security tests. This does not enable or
+complete YouTube importing. The owner's authorized real video failed normal
+outbound connections (`sourceNetwork`) in this workspace; actual download/library/
+playback remains unverified. Existing direct/batch importing is preserved.
+See DEVELOPMENT_PROGRESS.md and docs/CASTLUMORA_YOUTUBE_IMPORT.md for evidence,
+recovery and the exact next adapter milestone. All original1.0 scope is retained.
+
+
 ## Current verified scope — Linux-only, atomic direct-URL batches
 
 Application95f3f028b88ca8504e40dfe076d343cbce1300fc is published and verified:
