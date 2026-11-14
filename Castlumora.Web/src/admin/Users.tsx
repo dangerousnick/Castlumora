@@ -41,7 +41,12 @@ export default function Users() {
   return (
     <>
       <h1>Users, access & devices</h1>
-      <ManagedProfiles onCreated={() => setRefresh((value) => value + 1)} />
+      <ManagedProfiles
+        onChanged={() => {
+          setSelected('');
+          setRefresh((value) => value + 1);
+        }}
+      />
       <Feedback busy={users.busy} error={users.error} />
       <ActionStatus message={action.message} />
       <div className="filters">

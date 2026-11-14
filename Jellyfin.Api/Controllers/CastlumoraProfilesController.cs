@@ -55,6 +55,49 @@ public sealed class CastlumoraProfilesController : BaseJellyfinApiController
         }
     }
 
+    /// <summary>Lists managed profiles for administrator review and cleanup.</summary>
+    /// <param name="token">Request cancellation.</param>
+    /// <returns>Profiles including pending and orphaned records, without credentials.</returns>
+    [HttpGet("Managed")]
+    [Authorize(Policy = Policies.RequiresElevation)]
+    public async Task<ActionResult<JsonObject>> Managed(CancellationToken token)
+    {
+        try
+        {
+            return await _profiles.ListManagedAsync(User.GetUserId(), token).ConfigureAwait(false);
+        }
+        catch (UnauthorizedAccessException)
+        {
+            return Forbid();
+        }
+        catch (Exception exception) when (exception is IOException or InvalidDataException or JsonException)
+        {
+            return StatusCode(StatusCodes.Status503ServiceUnavailable, "Profile configuration requires administrator recovery; preserve its files.");
+        }
+    }
+
+    /// <summary>Deletes only a managed profile, preserving its account and media files.</summary>
+    /// <param name="profileId">Managed identity.</param>
+    /// <param name="token">Cancellation before deletion begins.</param>
+    /// <returns>No content after deletion; not found for an account or unknown profile.</returns>
+    [HttpDelete("Managed/{profileId:guid}")]
+    [Authorize(Policy = Policies.RequiresElevation)]
+    public async Task<ActionResult> Delete([FromRoute] Guid profileId, CancellationToken token)
+    {
+        try
+        {
+            return await _profiles.DeleteAsync(User.GetUserId(), profileId, token).ConfigureAwait(false) ? NoContent() : NotFound();
+        }
+        catch (UnauthorizedAccessException)
+        {
+            return Forbid();
+        }
+        catch (Exception exception) when (exception is IOException or InvalidDataException or JsonException or InvalidOperationException)
+        {
+            return StatusCode(StatusCodes.Status503ServiceUnavailable, "Profile removal requires review. Preserve its unavailable record and retry after correcting the problem.");
+        }
+    }
+
     /// <summary>Creates a managed kids/adult profile with explicit libraries.</summary>
     /// <param name="value">Existing account ID, display name, preset and library IDs.</param>
     /// <param name="token">Request cancellation.</param>

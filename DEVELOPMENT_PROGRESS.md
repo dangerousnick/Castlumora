@@ -13,6 +13,29 @@ feature status; a development preview does not establish stable-release readines
 Linux-only server policy and mandatory validation remain in effect. Never merge
 main or deploy to Coon Media automatically.
 
+## Current task — managed-profile lifecycle (unpublished)
+
+- Scope: administrator inventory and disabled-first deletion/revocation, durable
+  cleanup/retry/orphan handling, native confirmation UI, account/media preservation
+  and inclusion of the account guide/feature manifest in the next preview.
+- Working tree builds on published checkpoint040381c422 / application503434e4a2.
+  Nine focused service tests, four profile/admin UI tests and the expanded real
+  HTTP workflow passed, including live child-token rejection and account/file
+  preservation. Typecheck/lint passed; restored formatting loaded2,451files and
+  changed zero. Packaging shell syntax passed. The full gate is next.
+  A chained HTTP invocation first lacked the SDK PATH and did not run; it was
+  restarted correctly, without treating the infrastructure error as a test pass.
+- Added actual-package assertions for confirmed deletion, missing child identity
+  and subsequent movie playback. Those new assertions are not yet a claimed pass.
+- Completion: finish focused HTTP/formatting, run the normal full gate, publish,
+  verify exact Linux/shared CI and new downloadable package, update PR3/checkpoint.
+- Unfinished changes: current service/controller/UI/tests/docs/packaging edits are
+  local and must be preserved. Do not recreate completed profiles or change main.
+- Usage/reset information: Not accessible. If interrupted, inspect git status/log,
+  retain these files, read this and the permanent requirements, then complete this
+  task before starting media preferences or other roadmap work. Existing503 download
+  below remains verified and available. No automatic background resume is claimed.
+
 ## Verified accounts checkpoint — managed creation and switching
 
 - Last completed milestone: account-linked viewing identities, administrator

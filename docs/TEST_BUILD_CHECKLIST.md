@@ -65,3 +65,10 @@ profiles. Review ratings and blocked unrated content before granting child acces
 See the [account/profile guide](https://github.com/dangerousnick/Castlumora/blob/development/castlumora-web-1.3/docs/CASTLUMORA_ACCOUNTS_AND_PROFILES.md) for restrictions, recovery and unverified
 areas. Record the exact archive SHA, browser/device, expected/actual behavior and
 redacted logs when reporting issues; never attach credentials or the profile key.
+
+For previews declaring managedProfilesStage=administrator-create-switch-delete,
+return to Administration → Users & devices, cancel a profile deletion once and
+confirm it remains, then confirm deletion. Its identity/history must disappear,
+its sessions must be rejected, and its owning account and media playback must
+still work. Pending/orphan records can be removed; keep matching backups before
+changing real accounts. Actual packaged verification is recorded per exact SHA.

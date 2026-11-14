@@ -42,6 +42,27 @@ Tightening an owner policy can require an administrator to review the linked
 profile's inherited policy before its sessions are allowed again. Ordinary
 inherited users and API keys retain their existing authentication behavior.
 
+## Administrator lifecycle and cleanup
+
+Administration → Users & devices lists managed profiles with owning account,
+preset and availability, including pending records and identities already removed
+through inherited administration. Only authenticated administrators can enumerate
+this inventory or delete a managed profile. Viewing users cannot list other
+accounts' managed identities or delete themselves through these endpoints.
+
+The Delete action requires confirmation because it removes that profile's viewing
+identity/history. It preserves the owning account and media files. An owning
+account or arbitrary ordinary user ID is never accepted by the managed-delete
+endpoint. Existing standalone-account administration remains available separately.
+
+Removal first durably marks the mapping unavailable, disables the child and revokes
+its sessions. It deletes the inherited child identity before durably removing the
+mapping. An interrupted/failed deletion remains unavailable and retryable; if the
+user was already deleted, retry removes only its orphan mapping. Remaining profile
+keys/owners are preserved. Reload the inventory after changes made through another
+client or inherited administration. Pending provisioning can be removed safely;
+editing/re-enabling a partially provisioned profile remains a separate recovery task.
+
 ## Persistent state, backup and recovery
 
 Include the entire private `config/castlumora/profiles/` directory in server
@@ -76,8 +97,8 @@ packaged browser workflow covers native administration, switching/reload, separa
 preferences and return-to-account authentication. Consult DEVELOPMENT_PROGRESS.md
 for the exact checks actually run and source SHA; test presence alone is not a pass.
 
-Remaining account work includes dedicated managed-profile edit/delete and pending
-recovery UI, safe self-service media preferences, invitation/registration edge-case
+Remaining account work includes dedicated managed-profile editing and non-destructive
+pending recovery UI, safe self-service media preferences, invitation/registration edge-case
 review, account-wide device/session controls and broader multi-device/media-history
 verification. Inherited administrative user-policy controls remain available.
 External-auth-provider account compatibility is unverified; the initial workflow

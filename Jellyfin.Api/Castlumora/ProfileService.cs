@@ -127,6 +127,88 @@ public sealed class ProfileService : IDisposable
         }
     }
 
+    /// <summary>Lists managed identities for administrator review, including pending/orphaned records.</summary>
+    /// <param name="actor">Authenticated administrator.</param>
+    /// <param name="token">Request cancellation.</param>
+    /// <returns>Safe identity and ownership information, never credentials.</returns>
+    public async Task<JsonObject> ListManagedAsync(Guid actor, CancellationToken token)
+    {
+        RequireAdministrator(actor);
+        await _gate.WaitAsync(token).ConfigureAwait(false);
+        try
+        {
+            var entries = new JsonArray();
+            foreach (var profile in Read().Profiles)
+            {
+                var owner = _users.GetUserById(profile.Owner);
+                var user = _users.GetUserById(profile.User);
+                entries.Add(new JsonObject
+                {
+                    ["id"] = profile.User.ToString("N"),
+                    ["accountId"] = profile.Owner.ToString("N"),
+                    ["accountName"] = owner?.Username ?? "Deleted account",
+                    ["name"] = profile.Name,
+                    ["preset"] = profile.Preset,
+                    ["exists"] = user is not null,
+                    ["ready"] = profile.Ready && owner is not null && user is not null
+                        && !owner.HasPermission(PermissionKind.IsDisabled)
+                        && !user.HasPermission(PermissionKind.IsDisabled)
+                        && !user.HasPermission(PermissionKind.IsAdministrator)
+                        && WithinPolicy(_users.GetUserDto(owner).Policy, _users.GetUserDto(user).Policy)
+                });
+            }
+
+            return new JsonObject { ["profiles"] = entries };
+        }
+        finally
+        {
+            _gate.Release();
+        }
+    }
+
+    /// <summary>Disables/revokes/deletes only a registered managed identity, then durably removes its mapping.</summary>
+    /// <param name="actor">Authenticated administrator.</param>
+    /// <param name="identity">Managed identity, never an owning account.</param>
+    /// <param name="token">Cancellation before destructive work begins.</param>
+    /// <returns>False when no managed mapping exists.</returns>
+    public async Task<bool> DeleteAsync(Guid actor, Guid identity, CancellationToken token)
+    {
+        RequireAdministrator(actor);
+        await _gate.WaitAsync(token).ConfigureAwait(false);
+        try
+        {
+            var state = Read();
+            var index = state.Profiles.FindIndex(profile => profile.User.Equals(identity));
+            if (index < 0)
+            {
+                return false;
+            }
+
+            token.ThrowIfCancellationRequested();
+            // Persist denial first. A failure/crash leaves a retryable, unavailable record.
+            state.Profiles[index] = state.Profiles[index] with { Ready = false };
+            Write(state);
+            var user = _users.GetUserById(identity);
+            if (user is not null)
+            {
+                var policy = _users.GetUserDto(user).Policy;
+                policy.IsDisabled = true;
+                await _users.UpdatePolicyAsync(identity, policy).ConfigureAwait(false);
+                await _sessions.RevokeUserTokens(identity, null).ConfigureAwait(false);
+                await _users.DeleteUserAsync(identity).ConfigureAwait(false);
+            }
+
+            // Also repairs a mapping left after an earlier successful database deletion.
+            state.Profiles.RemoveAt(index);
+            Write(state);
+            return true;
+        }
+        finally
+        {
+            _gate.Release();
+        }
+    }
+
     /// <summary>Creates a disabled-first managed viewing identity with explicit library access.</summary>
     /// <param name="actor">Authenticated administrator.</param>
     /// <param name="owner">Existing account identity.</param>
@@ -315,6 +397,14 @@ public sealed class ProfileService : IDisposable
 
     private static bool ManagedName(string name) => name.StartsWith("Castlumora profile ", StringComparison.Ordinal)
         && Guid.TryParseExact(name["Castlumora profile ".Length..], "N", out _);
+
+    private void RequireAdministrator(Guid actor)
+    {
+        if (_users.GetUserById(actor)?.HasPermission(PermissionKind.IsAdministrator) != true)
+        {
+            throw new UnauthorizedAccessException();
+        }
+    }
 
     private static bool WithinPolicy(UserPolicy parent, UserPolicy child)
     {

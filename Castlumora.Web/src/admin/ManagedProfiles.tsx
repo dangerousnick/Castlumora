@@ -4,13 +4,28 @@ import type { User } from '../api/types';
 import { Feedback } from '../components/Media';
 import { ActionStatus, useAction } from './Controls';
 
-export default function ManagedProfiles({ onCreated }: { onCreated: () => void }) {
+export default function ManagedProfiles({ onChanged }: { onChanged: () => void }) {
   const { api } = useApp();
   const [owner, setOwner] = useState('');
   const [name, setName] = useState('');
   const [preset, setPreset] = useState('kids');
   const [folders, setFolders] = useState<string[]>([]);
   const action = useAction();
+  const [refresh, setRefresh] = useState(0);
+  const managed = useLoad(
+    () =>
+      api.request<{
+        profiles: {
+          id: string;
+          name: string;
+          accountName: string;
+          preset: string;
+          ready: boolean;
+          exists: boolean;
+        }[];
+      }>('Castlumora/Profiles/Managed'),
+    [api, refresh],
+  );
   const users = useLoad(() => api.request<User[]>('Users'), [api]);
   const libraries = useLoad(
     () => api.request<{ ItemId: string; Name: string }[]>('Library/VirtualFolders'),
@@ -40,7 +55,8 @@ export default function ManagedProfiles({ onCreated }: { onCreated: () => void }
             });
             setName('');
             setFolders([]);
-            onCreated();
+            setRefresh((value) => value + 1);
+            onChanged();
           }, 'Profile created. Review its policy below or switch from the profile menu.');
         }}
       >
@@ -95,6 +111,39 @@ export default function ManagedProfiles({ onCreated }: { onCreated: () => void }
         </button>
         <ActionStatus message={action.message} />
       </form>
+      <h3>Existing managed profiles</h3>
+      <Feedback busy={managed.busy} error={managed.error} />
+      {managed.value?.profiles.length === 0 && <p>No managed profiles.</p>}
+      <ul>
+        {managed.value?.profiles.map((profile) => (
+          <li key={profile.id}>
+            <p>
+              {profile.name} · {profile.accountName} · {profile.preset}
+            </p>
+            <p>{profile.ready ? 'Available' : 'Unavailable — review or remove'}</p>
+            <button
+              disabled={action.busy}
+              onClick={() => {
+                if (
+                  window.confirm(
+                    'Delete this managed profile and its viewing history? Its owning account and media files are preserved.',
+                  )
+                )
+                  void action.run(async () => {
+                    await api.request('Castlumora/Profiles/Managed/' + profile.id, {
+                      method: 'DELETE',
+                    });
+                    setRefresh((value) => value + 1);
+                    onChanged();
+                  }, 'Managed profile removed. Account and media files preserved.');
+              }}
+            >
+              {profile.exists ? 'Delete ' : 'Remove orphan entry '}
+              {profile.name}
+            </button>
+          </li>
+        ))}
+      </ul>
     </section>
   );
 }

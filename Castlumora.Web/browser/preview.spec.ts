@@ -455,4 +455,33 @@ test('packaged preview: restart managed profiles isolate preferences and revoke 
   expect(
     (await request.get(endpoint('Users/Me'), { headers: headers(child.token) })).status(),
   ).toBe(401);
+  await page.getByRole('link', { name: 'Administration', exact: true }).click();
+  await page
+    .getByRole('navigation', { name: 'Administration sections' })
+    .getByRole('link', { name: 'Users & devices', exact: true })
+    .click();
+  page.once('dialog', (dialog) => dialog.accept());
+  await page.getByRole('button', { name: 'Delete Packaged Kids', exact: true }).click();
+  await expect(page.getByText('No managed profiles.', { exact: true })).toBeVisible();
+  expect(
+    (
+      await request.get(endpoint('Users/' + child.user.Id), { headers: headers(returned.token) })
+    ).status(),
+  ).toBe(404);
+  await page.getByRole('link', { name: 'Browse', exact: true }).click();
+  await page.getByRole('link', { name: 'Details for Castlumora Test', exact: true }).click();
+  await page.getByRole('link', { name: 'Watch now', exact: true }).click();
+  await expect
+    .poll(() => page.locator('video').evaluate((video: HTMLVideoElement) => video.readyState), {
+      timeout: 20000,
+    })
+    .toBeGreaterThanOrEqual(2);
+  const position = await page
+    .locator('video')
+    .evaluate((video: HTMLVideoElement) => video.currentTime);
+  await expect
+    .poll(() => page.locator('video').evaluate((video: HTMLVideoElement) => video.currentTime), {
+      timeout: 20000,
+    })
+    .toBeGreaterThan(position + 0.2);
 });

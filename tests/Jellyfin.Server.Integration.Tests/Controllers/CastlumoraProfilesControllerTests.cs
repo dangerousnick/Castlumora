@@ -30,6 +30,8 @@ public sealed class CastlumoraProfilesControllerTests : IClassFixture<JellyfinAp
         passwordChange.EnsureSuccessStatusCode();
         var folder = System.IO.Path.Combine(System.IO.Path.GetTempPath(), "castlumora-profile-library-" + Guid.NewGuid().ToString("N"));
         System.IO.Directory.CreateDirectory(folder);
+        var preservedFile = System.IO.Path.Combine(folder, "preserve.txt");
+        await System.IO.File.WriteAllTextAsync(preservedFile, "Owned media-library preservation fixture", token);
         try
         {
             using var library = await admin.PostAsJsonAsync("Library/VirtualFolders?name=ProfileFixtures&collectionType=homevideos&paths=" + Uri.EscapeDataString(folder), new { }, token);
@@ -103,6 +105,28 @@ public sealed class CastlumoraProfilesControllerTests : IClassFixture<JellyfinAp
             Assert.Equal(HttpStatusCode.Unauthorized, linkedDenied.StatusCode);
             using var ordinaryStillWorks = await parent.GetAsync("Users/Me", token);
             ordinaryStillWorks.EnsureSuccessStatusCode();
+            account["Policy"]!["IsDisabled"] = false;
+            using var enable = await parent.PostAsJsonAsync("Users/" + accountId + "/Policy", account["Policy"], token);
+            enable.EnsureSuccessStatusCode();
+            using var activeAgain = await linkedClient.GetAsync("Users/Me", token);
+            activeAgain.EnsureSuccessStatusCode();
+            using var listDenied = await linkedClient.GetAsync("Castlumora/Profiles/Managed", token);
+            Assert.Equal(HttpStatusCode.Forbidden, listDenied.StatusCode);
+            var linkedId = linked!["id"]!.GetValue<string>();
+            using var deleteDenied = await linkedClient.DeleteAsync("Castlumora/Profiles/Managed/" + linkedId, token);
+            Assert.Equal(HttpStatusCode.Forbidden, deleteDenied.StatusCode);
+            using var ownerProtected = await parent.DeleteAsync("Castlumora/Profiles/Managed/" + owner, token);
+            Assert.Equal(HttpStatusCode.NotFound, ownerProtected.StatusCode);
+            var managed = await parent.GetFromJsonAsync<JsonObject>("Castlumora/Profiles/Managed", token);
+            Assert.Equal(2, managed!["profiles"]!.AsArray().Count);
+            using var removed = await parent.DeleteAsync("Castlumora/Profiles/Managed/" + linkedId, token);
+            Assert.Equal(HttpStatusCode.NoContent, removed.StatusCode);
+            using var deletedSession = await linkedClient.GetAsync("Users/Me", token);
+            Assert.Equal(HttpStatusCode.Unauthorized, deletedSession.StatusCode);
+            using var retainedAccount = await parent.GetAsync("Users/" + accountId, token);
+            retainedAccount.EnsureSuccessStatusCode();
+            Assert.True(System.IO.File.Exists(preservedFile));
+            Assert.Single((await parent.GetFromJsonAsync<JsonObject>("Castlumora/Profiles/Managed", token))!["profiles"]!.AsArray());
         }
         finally
         {

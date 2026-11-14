@@ -76,7 +76,69 @@ public sealed class ProfileServiceTests : IDisposable
             return Task.FromResult(new AuthenticationResult { User = new UserDto { Id = user.Id }, AccessToken = "child-token" });
         });
         _sessions.Setup(sessions => sessions.Logout(It.IsAny<string>())).Callback((string _) => _events.Add("revoke")).Returns(Task.CompletedTask);
+        _sessions.Setup(sessions => sessions.RevokeUserTokens(It.IsAny<Guid>(), It.IsAny<string>())).Callback(() => _events.Add("revoke-all")).Returns(Task.CompletedTask);
+        _users.Setup(users => users.DeleteUserAsync(It.IsAny<Guid>())).Returns((Guid id) =>
+        {
+            Assert.True(_people[id].HasPermission(PermissionKind.IsDisabled));
+            _events.Add("delete");
+            _people.Remove(id);
+            return Task.CompletedTask;
+        });
         _service = Open();
+    }
+
+    [Fact]
+    public async Task Delete_RequiresAdministrator_RevokesOnlyTheChild_AndPreservesOwnerAndKey()
+    {
+        var token = TestContext.Current.CancellationToken;
+        var child = await Create();
+        var keyPath = Path.Combine(_root, "castlumora", "profiles", "credentials.key");
+        var key = await File.ReadAllBytesAsync(keyPath, token);
+        await Assert.ThrowsAsync<UnauthorizedAccessException>(() => _service.ListManagedAsync(child, token));
+        await Assert.ThrowsAsync<UnauthorizedAccessException>(() => _service.DeleteAsync(child, child, token));
+        Assert.False(await _service.DeleteAsync(_owner.Id, _owner.Id, token));
+        var listed = await _service.ListManagedAsync(_owner.Id, token);
+        Assert.Single(listed["profiles"]!.AsArray());
+        _events.Clear();
+        Assert.True(await _service.DeleteAsync(_owner.Id, child, token));
+        Assert.Equal(new[] { "policy", "revoke-all", "delete" }, _events);
+        Assert.True(_people.ContainsKey(_owner.Id));
+        Assert.False(_people.ContainsKey(child));
+        Assert.Equal(key, await File.ReadAllBytesAsync(keyPath, token));
+        using var reopened = Open();
+        Assert.Empty((await reopened.ListManagedAsync(_owner.Id, token))["profiles"]!.AsArray());
+        _sessions.Verify(sessions => sessions.RevokeUserTokens(child, null), Times.Once);
+        _sessions.Verify(sessions => sessions.RevokeUserTokens(_owner.Id, It.IsAny<string>()), Times.Never);
+    }
+
+    [Fact]
+    public async Task Delete_FailureLeavesUnavailableReservation_AndRetryOrOrphanCleanupCompletes()
+    {
+        var token = TestContext.Current.CancellationToken;
+        var child = await Create();
+        var attempts = 0;
+        _users.Setup(users => users.DeleteUserAsync(child)).Returns(() =>
+        {
+            if (attempts++ == 0)
+            {
+                throw new IOException("Owned deletion failure fixture");
+            }
+
+            _people.Remove(child);
+            return Task.CompletedTask;
+        });
+        await Assert.ThrowsAsync<IOException>(() => _service.DeleteAsync(_owner.Id, child, token));
+        Assert.True(_people[child].HasPermission(PermissionKind.IsDisabled));
+        Assert.False(await _service.SessionAllowedAsync(child, token));
+        using var reopened = Open();
+        var pending = Assert.Single((await reopened.ListManagedAsync(_owner.Id, token))["profiles"]!.AsArray());
+        Assert.False(pending!["ready"]!.GetValue<bool>());
+        Assert.True(await reopened.DeleteAsync(_owner.Id, child, token));
+        var orphan = await Create();
+        _people.Remove(orphan);
+        Assert.True(await _service.DeleteAsync(_owner.Id, orphan, token));
+        Assert.Empty((await reopened.ListManagedAsync(_owner.Id, token))["profiles"]!.AsArray());
+        Assert.False(await reopened.DeleteAsync(_owner.Id, orphan, token));
     }
 
     [Fact]

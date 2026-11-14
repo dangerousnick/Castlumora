@@ -13,6 +13,18 @@ feature status; a development preview does not establish stable-release readines
 Linux-only server policy and mandatory validation remain in effect. Never merge
 main or deploy to Coon Media automatically.
 
+## Next account increment — managed-profile lifecycle
+
+Administrator-only inventory and disabled-first deletion/revocation with durable
+registry cleanup, failure retry and orphan handling are implemented locally.
+Owner accounts, media files and the private key are preserved. The account guide
+and managed-profile availability/stage manifest are included in the next package.
+Focused service/UI tests pass; actual HTTP/full validation and the extended package
+browser deletion/playback workflow must finish before publication is called verified.
+Editing/non-destructive pending recovery, safe self-service preferences and broader
+invitation/session/device coverage remain next account work. YouTube/creator
+metadata work remains deferred; the verified503 preview below is still current.
+
 ## Verified accounts preview — source503434e4a2
 
 Managed administrator creation and password-verified switching passed the normal
