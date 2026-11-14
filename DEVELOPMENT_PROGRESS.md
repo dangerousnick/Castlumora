@@ -1,29 +1,44 @@
 # Castlumora Web Phase 1.3 development progress
 
-## Published atomic batch; packaged locator correction
+## Verified checkpoint — atomic multiple URLs and Linux-only workflow
 
-Application commit13794af5af1e06904c212b05fa08874d3aedec37 passed the complete
-local gate: full format2,433files/zero changes/no workspace warning; zero-warning
-Debug/Release;17backend suites4,500passed/19existing skips;64frontend tests and
-Node24 checks;18hook/scope tests and native/backup/migration regressions retained.
-Source and policy are published to the existing branch. GitHub shared checks passed.
+- Completed: atomic acceptance of1–25 authorized direct MP4 URLs; native admin form/
+  API; persistent independent jobs, duplicate-policy preservation and safe publication.
+- Latest published application: `95f3f028b88ca8504e40dfe076d343cbce1300fc`.
+  Branch: `development/castlumora-web-1.3`; PR3 open, no main merge/deployment.
+- Validation: application137full local gate passed .NET10 Debug/Release with zero
+  warnings/errors, full format2,433files/zero changes/no workspace warning, all17
+  backend suites4,500passed/19existing skips and64frontend tests. Correction95
+  changed only browser locator/policy/docs; local21hook/scope and client/handler/
+  shell checks passed, reusing unchanged backend results. Exact95GitHub Linux
+  job132330296323 passed the full backend suite; Format43556435958,
+  ABI43556435899, OpenAPI43556435906 and Preview43556435850 passed.
+- Real package/browser proof: setup/authentication; restart/library/playback;
+  unsafe mixed batch400 with no partial jobs; two owner-authorized public MP4
+  imports with exact hash/bytes, deduplication, indexing and advancing playback.
+  The initial137wrapped-textarea locator failure was diagnosed in real Chromium
+  and corrected using its accessible role; no assertions/timeouts were weakened.
+- Verified Linux x64 download: https://github.com/dangerousnick/Castlumora/actions/runs/43556435850/artifacts/14098308716
+  Archive `Castlumora-1.0-dev-95f3f028b88c-linux-x64.tar.gz`;
+  SHA256 `020aa7361c468353c56c97e94b04655600dd0e5be273d4ccce5efc8578fde15b`.
+  Independent download verified exact source/runtime/compiled batch UI, guides,
+  all16castle assets and original GPL bytes. GitHub sign-in/30-day retention apply.
+- Linux is the only1.0 server target; macOS/Windows are deferred indefinitely.
+  Branch-protection inspection returned403; an administrator must remove obsolete
+  macOS/Windows required contexts if configured, retaining Linux/shared checks.
+- No unfinished application edits. Known limits: direct H264/AAC MP4≤32MiB,
+  single worker,3total attempts,1000-job/8MiB journal; no full YouTube/playlist/
+  channel/scheduled importing yet. All original1.0 scope and migration planning remain.
+- Next exact task: approved YouTube source adapter and controlled reviewed runtime
+  dependencies, then secure single-video preview/execution before playlist/channel
+  enumeration. Preserve existing direct/batch jobs, SSRF/TLS/path/rights controls;
+  use owned fixtures and keep unfinished source types unavailable. Independent
+  creator metadata, resource/creator/business/cloud features remain mandatory.
+- Usage/reset information: Not accessible. Recovery: fetch origin; inspect status/
+  latest commits and this record; retain newer work; install existing hooks; resume
+  the next task. Later documentation-only commits do not change the tested app.
 
-The first package workflow passed setup/restart/single import and unsafe-batch400/
-no-partial-job assertions, then failed on an exact wrapped-textarea label locator.
-A minimal real Chromium reproduction proved getByLabel exact finds0 after text
-is present, while the accessible textbox role finds1. The form did not lose state.
-Current correction uses that stable role without changing or weakening assertions.
-No C# backend source changed; reuse verified137backend results, run focused client/
-policy checks, then verify the corrected real package workflow before claiming it.
-The revised hook/scope contract includes21cases (under final validation).
-Client-only scoping now preserves client/package coverage without rebuilding the
-unchanged backend; policy changes exercise their contract locally and full CI.
-
-Next: publish this correction only after its checks pass, verify Linux/shared CI
-and the actual two-URL public native import/package. Record the verified download,
-then continue secure YouTube/playlist/channel importing and native creator metadata.
-No platform scope reduction beyond Linux-only servers, no2.0 rewrite, no main merge
-or Coon deployment. Usage status: Not accessible. Branch protection remains403.
+Earlier pending entries below are retained history, superseded by this checkpoint.
 
 ## Current direction — Linux-only and atomic multiple URLs
 
