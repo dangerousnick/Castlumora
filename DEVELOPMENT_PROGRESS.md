@@ -13,38 +13,57 @@ feature status; a development preview does not establish stable-release readines
 Linux-only server policy and mandatory validation remain in effect. Never merge
 main or deploy to Coon Media automatically.
 
-## Current accounts milestone — verification in progress
+## Published accounts milestone — packaged menu correction
 
-- Branch: `development/castlumora-web-1.3`; PR3. Preserve the existing application
-  checkpoint e3298e68ceec and documentation checkpoint0c0ed483e673. No main merge,
-  Coon deployment or recreation of completed work.
+- Latest published application: `c2b8ba759342a6492037512d01fa04cd2744d1e2`.
+  Branch `development/castlumora-web-1.3`; PR3 open. Last implementation milestone:
+  administrator-created account-linked profiles and password-verified switching.
+  No main merge, Coon deployment or recreation of completed work.
 - Implemented: private persistent linked identities, disabled-first provisioning,
   bounded kids/adult policies, full password/session authentication, old-token
   revocation, owner-policy checks, native administrator creation and client switch.
-  Real backup archives include the profile registry/key with private Linux archive
+  Real backup archives include profile registry/key with private Linux archive
   permissions; restore reapplies private profile modes. Production capacity
   safeguards are unchanged. See docs/CASTLUMORA_ACCOUNTS_AND_PROFILES.md.
-- Focused verification: seven service tests passed; real HTTP workflow passed
-  creation/switching/separate preferences/admin and rename denial/old-token revocation
-  plus actual owner-disable rejection while ordinary administrator access survived.
-  Node24 typecheck/lint/69tests passed before the added administrator-form test.
-- Investigated corrections: initial provisioning lost required core provider IDs;
-  these now preserve each new user's actual providers. Negative HTTP tests now
-  send valid model/client-device headers so assertions reach authorization rather
-  than failing earlier at model validation. No assertion or production policy was
-  weakened. Initial sandbox formatter could not open its pipe; no-restore formatting
-  reported an incomplete workspace. Restored formatting loaded2,451files and
-  corrected the constructor comment and backup spacing. The first focused backup
-  compile reported SA1513; that was corrected before the full validation gate.
-- Publishing status: new accounts code is not yet published; complete the normal
-  full pre-push gate and exact-SHA Linux/shared CI before marking it verified.
-  The added actual-package browser profile workflow is not yet a claimed pass.
-- Next: finish verification/publish this coherent increment, verify its downloadable
-  preview, then managed profile edit/delete/recovery and safe media preferences.
-  Follow with invitation/device security and the remaining permanent roadmap.
-- Usage/reset: Not accessible. Recovery: inspect status/logs first; preserve all
-  unfinished files, run installed hooks, never bypass validation or recreate work.
-  The latest verified download below remains the previous application's preview.
+- Full normal pre-push gate passed at this exact application SHA: restored format
+  2,451files/zero changes/no workspace warning; .NET10 Debug and Release builds
+  zero warnings/errors; all17backend suites4,564passed/20skips; Node24.22.1
+  typecheck/lint/70tests/build; native/security/backup/migration/hook/handler checks.
+  Logs: /tmp/castlumora-prepush.7SiZztZ2. The seven profile service tests, real HTTP
+  owner-disable/ordinary-admin-preservation workflow and actual private backup
+  registry/key archive assertions passed within the complete suite.
+- Investigated corrections: provisioning now preserves required inherited provider
+  IDs. Negative HTTP requests use valid models/device headers, so they exercise
+  authorization. Initial sandbox formatting could not open its pipe; no-restore
+  formatting warned of incomplete loading. Restored formatting corrected constructor
+  documentation and backup spacing before the successful full gate. No assertion,
+  test, production backup threshold or CI requirement was weakened.
+- Exact-SHA GitHub Format43622195670, ABI43622195591 and OpenAPI43622195732
+  passed. Tests43622195633 remains in progress. Preview43622195599 passed the prior
+  three actual-package workflows, then exposed an open profile-menu overlay
+  intercepting the ordinary Switch button click. It correctly withheld upload.
+  The product now closes its menu on link navigation; no forced click, removed
+  assertion or increased timeout masks the bug. Actual React/local Chromium with
+  controlled API fixtures verified menu closure, ordinary switching and removal
+  of admin navigation. That is UI evidence, not a packaged-server pass.
+  The corrected frontend still needs its normal gate and new package verification;
+  the verified download below remains the previous application. Preserve the
+  running backend CI result before publishing the client-only correction.
+- Unpublished application change: the locally verified menu overlay correction.
+  Preserve it and publish only after its normal frontend gate. Remaining account work: dedicated
+  managed-profile edit/delete/pending recovery, safe self-service media preferences,
+  invitation/device security and broader media-history/multi-device verification.
+  Initial managed profiles deliberately exclude Live TV/DVR and identity edits;
+  inherited standalone-account functionality remains available. Full installed-system
+  backup restore and actual Linux Mint/NAS/GPU/tuner certification remain unverified.
+- Next task: finish CI/package verification and update this checkpoint/PR3. Then add
+  administrator profile enumeration/deletion with disabled-first revocation, durable
+  registry cleanup, actual API/security/reopen tests and native UI; bundle the new
+  account guide/feature manifest in the next preview. Do not resume deferred YouTube
+  or creator-metadata development. Continue remaining permanent release roadmap.
+- Usage/reset: Not accessible. Recovery: fetch origin, inspect status/log/this file,
+  preserve newer/unfinished work and existing hooks; continue this branch without
+  resetting/recreating features. No automatic usage-reset continuation is claimed.
 
 ## Verified checkpoint — persistent YouTube workflow and packaged UI
 

@@ -158,7 +158,13 @@ function Shell({
                   <span className="avatar">{viewingName.slice(0, 1)}</span>
                   <span>{viewingName}</span>
                 </summary>
-                <div className="menu">
+                <div
+                  className="menu"
+                  onClick={(event) => {
+                    if (event.target instanceof Element && event.target.closest('a'))
+                      event.currentTarget.closest('details')?.removeAttribute('open');
+                  }}
+                >
                   <Link to="/profiles">Viewing profiles</Link>
                   <Link to="/music">Music & playlists</Link>
                   <Link to="/shelf/photos">Photos</Link>

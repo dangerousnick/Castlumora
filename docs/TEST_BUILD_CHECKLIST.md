@@ -62,6 +62,6 @@ the account password to switch. Confirm the kids name survives reload, admin
 controls disappear, history/lists/preferences differ from the parent, and returning
 to the account again requires its password. Disabled owners must block linked
 profiles. Review ratings and blocked unrated content before granting child access.
-See CASTLUMORA_ACCOUNTS_AND_PROFILES.md for restrictions, recovery and unverified
+See the [account/profile guide](https://github.com/dangerousnick/Castlumora/blob/development/castlumora-web-1.3/docs/CASTLUMORA_ACCOUNTS_AND_PROFILES.md) for restrictions, recovery and unverified
 areas. Record the exact archive SHA, browser/device, expected/actual behavior and
 redacted logs when reporting issues; never attach credentials or the profile key.
