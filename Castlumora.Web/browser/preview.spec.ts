@@ -197,7 +197,7 @@ test('packaged preview: authorized public import indexes, deduplicates and plays
       youtube.getByRole('heading', { name: 'Import a YouTube video', exact: true }),
     ).toBeVisible();
     await youtube
-      .getByLabel('YouTube destination library', { exact: true })
+      .getByRole('combobox', { name: 'YouTube destination library', exact: true })
       .selectOption({ label: name });
     await youtube
       .getByLabel('YouTube video URL', { exact: true })

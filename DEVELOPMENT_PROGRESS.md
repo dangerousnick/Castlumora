@@ -30,7 +30,11 @@
 - Current small follow-up: actual packaged-browser coverage of the new YouTube
   form's unsafe-URL rejection/no-job guarantee, plus safe fixed guidance for rejected,
   unavailable or timed-out previews. The focused3UI tests passed; final frontend
-  gate/package CI are pending. Application C# is unchanged; retain1acbackend evidence.
+  gate passed67tests/typecheck/lint/build at1734437f62. Its first package browser
+  run failed before any preview request at a wrapped-label select locator. Actual
+  local Chromium reproduced zero exact-label matches and a valid accessible role;
+  the correction uses that combobox role without changing assertions/timeouts.
+  Corrected package CI is pending. C# is unchanged; retain1acbackend evidence.
 - Actual external YouTube access is unverified. Owner-authorized4Xsn6oe-AEg failed
   direct connections; numeric upstream CONNECT and normal TLS subsequently worked
   in a diagnostic, but its watch page returnedHTTP403. No importer proxy/TLS/auth
