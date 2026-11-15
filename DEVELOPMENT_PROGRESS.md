@@ -13,6 +13,28 @@ feature status; a development preview does not establish stable-release readines
 Linux-only server policy and mandatory validation remain in effect. Never merge
 main or deploy to Coon Media automatically.
 
+## Profile display-name editing — next verified increment
+
+- Implemented administrator-only managed display-name API/UI, atomic private
+  registry update, trimmed unique names up to40characters, and preserved reserved
+  username/userID/key/password/policy/history/session state. Account IDs cannot be
+  renamed through this endpoint; extra payload fields are rejected. Renaming an
+  unavailable record does not reactivate it or repair pending provisioning.
+- Header reloads the current server profile label; compatible servers without this
+  optional endpoint retain normal account access. Manifest and bundled guide/checklist
+  document the new stage; preset/library editing and recovery remain next.
+- Focused HTTP test passed against actual SQLite/server/authentication, including
+  denied child requests, rejected account IDs/extra fields and unchanged core
+  identity/policy. Twelve focused service tests, three focused UI tests and typecheck passed, including
+  credential/policy/authentication preservation and unavailable-profile denial.
+- First focused build caught SA1122 in the new test's empty-string fixture; corrected
+  to string.Empty before publication. No failed commit was pushed.
+- Package browser coverage now exercises UI renaming, stale-label reload and a
+  second rename after real playback, preserving UserData and saved media languages.
+  These package assertions await execution; test code alone is not a test pass.
+- Full normal gate/exact-SHA CI/package verification results will be checkpointed
+  after publication. Usage status: Not accessible. No merge/deployment.
+
 ## OpenAPI artifact lifecycle correction (2026-11-15)
 
 - Root cause confirmed against run43654249381: scope succeeded while Generate
@@ -25,10 +47,16 @@ main or deploy to Coon Media automatically.
 - Producer waits for head/base and now fails if its report file is absent. Both
   sides use exact openapi-report naming and compatible upload/download-artifact@v4;
   cross-run download retains its run-id and authenticated token.
-- Local actionlint passed for all three changed workflows; actual embedded-script
+- Local actionlint passed for all repository workflows; actual embedded-script
   regression checks cover success, intentional skip, missing/duplicate/failing/
-  cancelled jobs and strict producer/consumer wiring. Normal gate and exact-SHA
-  CI results will be recorded after publication. Backend application unchanged.
+  cancelled jobs and strict producer/consumer wiring. Normal gate passed .NET10 Debug/Release, full2453-file
+  format,17backend suites4566passed/20skips and77frontend tests/typecheck/lint/build
+  at1b0688f9d736f1aeb4f67c3ce96c36458a6f62c9. Logs:/tmp/castlumora-prepush.hpPUkH59.
+  GitHub OpenAPI43656977007, Format43656976981, ABI43656976967 and preview43656977065
+  passed. Tests43656977048 was still running when this entry was written.
+  Independently downloaded/checksummed actual artifact14137998945:4713-byte
+  openapi-report.md, SHA256fbdc413c6b69cc892dd44e33a32ba044bfa21846f2b155ff1b5901b4ad545f3c.
+  Evidence:/tmp/castlumora-openapi-report-verified.json. No placeholder generated.
 - Deployment limitation: workflow_run uses the default branch implementation.
   Main still has the older unconditional downloader and separate bot-token use;
   this development-branch fix cannot change that active workflow until reviewed

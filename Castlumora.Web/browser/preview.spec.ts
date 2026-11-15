@@ -408,6 +408,12 @@ test('packaged preview: restart managed profiles isolate preferences and revoke 
       exact: true,
     }),
   ).toBeVisible();
+  await page.getByRole('button', { name: 'Rename Packaged Kids', exact: true }).click();
+  await page.getByLabel('Profile display name', { exact: true }).fill('Packaged Family');
+  await page.getByRole('button', { name: 'Save profile name', exact: true }).click();
+  await expect(
+    page.getByRole('button', { name: 'Rename Packaged Family', exact: true }),
+  ).toBeVisible();
   const switchTo = async (label: string) => {
     await page.locator('.profile-menu > summary').click();
     await page.getByRole('link', { name: 'Viewing profiles', exact: true }).click();
@@ -417,11 +423,17 @@ test('packaged preview: restart managed profiles isolate preferences and revoke 
     await page.getByLabel('Account password', { exact: true }).fill(password!);
     await page.getByRole('button', { name: 'Switch viewing profile', exact: true }).click();
   };
-  await switchTo('Packaged Kids (kids)');
-  await expect(page.locator('.profile-menu > summary')).toContainText('Packaged Kids');
+  await switchTo('Packaged Family (kids)');
+  await expect(page.locator('.profile-menu > summary')).toContainText('Packaged Family');
   await expect(page.getByRole('link', { name: 'Administration', exact: true })).toHaveCount(0);
+  // A cached friendly label must not override a later administrator correction.
+  await page.evaluate(() => {
+    const value = JSON.parse(sessionStorage.getItem('castlumora-session')!);
+    value.profileName = 'Outdated profile label';
+    sessionStorage.setItem('castlumora-session', JSON.stringify(value));
+  });
   await page.reload();
-  await expect(page.locator('.profile-menu > summary')).toContainText('Packaged Kids');
+  await expect(page.locator('.profile-menu > summary')).toContainText('Packaged Family');
   const child = await session();
   expect(child.user.Id).not.toBe(owner.user.Id);
   expect(child.token).not.toBe(owner.token);
@@ -527,8 +539,29 @@ test('packaged preview: restart managed profiles isolate preferences and revoke 
     .getByRole('navigation', { name: 'Administration sections' })
     .getByRole('link', { name: 'Users & devices', exact: true })
     .click();
+  const childItemUrl = endpoint('Items/' + fixture!.Id + '?userId=' + child.user.Id);
+  const beforeRename = await request.get(childItemUrl, { headers: headers(returned.token) });
+  expect(beforeRename.ok()).toBe(true);
+  const watched = (await beforeRename.json()).UserData;
+  expect(watched.LastPlayedDate).toBeTruthy();
+  await page.getByRole('button', { name: 'Rename Packaged Family', exact: true }).click();
+  await page.getByLabel('Profile display name', { exact: true }).fill('Packaged Family Updated');
+  await page.getByRole('button', { name: 'Save profile name', exact: true }).click();
+  await expect(
+    page.getByRole('button', { name: 'Rename Packaged Family Updated', exact: true }),
+  ).toBeVisible();
+  const afterRename = await request.get(childItemUrl, { headers: headers(returned.token) });
+  expect(afterRename.ok()).toBe(true);
+  expect((await afterRename.json()).UserData).toEqual(watched);
+  const retainedUser = await request.get(endpoint('Users/' + child.user.Id), {
+    headers: headers(returned.token),
+  });
+  expect(retainedUser.ok()).toBe(true);
+  const retainedConfiguration = (await retainedUser.json()).Configuration;
+  expect(retainedConfiguration.AudioLanguagePreference).toBe('spa');
+  expect(retainedConfiguration.SubtitleLanguagePreference).toBe('eng');
   page.once('dialog', (dialog) => dialog.accept());
-  await page.getByRole('button', { name: 'Delete Packaged Kids', exact: true }).click();
+  await page.getByRole('button', { name: 'Delete Packaged Family Updated', exact: true }).click();
   await expect(page.getByText('No managed profiles.', { exact: true })).toBeVisible();
   expect(
     (

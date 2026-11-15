@@ -45,7 +45,7 @@ function Shell({
   logout: () => Promise<void>;
   replaceSession: (session: Session) => void;
 }) {
-  const viewingName = session.profileName || session.user.Name;
+  const [viewingName, setViewingName] = useState(session.profileName || session.user.Name);
   const [layout, setLayout] = useState<Layout>(structuredClone(defaultLayout));
   const [preferences, setPreferences] = useState<Preferences>({ watchlist: [], hiddenResume: [] });
   const [notice, setNotice] = useState('');
@@ -64,10 +64,24 @@ function Shell({
   }
   useEffect(() => {
     let alive = true;
-    void Promise.all([api.me(), api.layout(), api.preferences()])
-      .then(([user, result, prefs]) => {
+    void Promise.all([
+      api.me(),
+      api.layout(),
+      api.preferences(),
+      // Friendly labels are optional on compatible servers; failure must not lock out accounts.
+      api
+        .request<{ profiles: { id: string; name: string }[] }>('Castlumora/Profiles')
+        .catch(() => undefined),
+    ])
+      .then(([user, result, prefs, profiles]) => {
         if (!alive) return;
         session.user = user;
+        const profile = profiles?.profiles?.find(
+          (entry) =>
+            entry.id.replaceAll('-', '').toLowerCase() ===
+            user.Id.replaceAll('-', '').toLowerCase(),
+        );
+        setViewingName(profile?.name || session.profileName || user.Name);
         setLayout(result.config);
         setPreferences(prefs);
         setNotice(

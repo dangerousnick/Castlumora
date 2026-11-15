@@ -44,6 +44,16 @@ public sealed class CastlumoraProfilesControllerTests : IClassFixture<JellyfinAp
             Assert.True(created.IsSuccessStatusCode, await created.Content.ReadAsStringAsync(token));
             var profile = await created.Content.ReadFromJsonAsync<JsonObject>(token);
             var childId = profile!["id"]!.GetValue<string>();
+            var originalChild = await admin.GetFromJsonAsync<JsonObject>("Users/" + childId, token);
+            using var invalidRename = await admin.PutAsJsonAsync("Castlumora/Profiles/Managed/" + childId + "/Name", new { name = "Family", preset = "adult" }, token);
+            Assert.Equal(HttpStatusCode.BadRequest, invalidRename.StatusCode);
+            using var accountRename = await admin.PutAsJsonAsync("Castlumora/Profiles/Managed/" + owner + "/Name", new { name = "Family" }, token);
+            Assert.Equal(HttpStatusCode.NotFound, accountRename.StatusCode);
+            using var friendlyRename = await admin.PutAsJsonAsync("Castlumora/Profiles/Managed/" + childId + "/Name", new { name = " Family viewers " }, token);
+            Assert.Equal(HttpStatusCode.NoContent, friendlyRename.StatusCode);
+            var renamedChild = await admin.GetFromJsonAsync<JsonObject>("Users/" + childId, token);
+            Assert.Equal(originalChild!["Name"]!.GetValue<string>(), renamedChild!["Name"]!.GetValue<string>());
+            Assert.Equal(originalChild["Policy"]!.ToJsonString(), renamedChild["Policy"]!.ToJsonString());
             var profiles = await admin.GetFromJsonAsync<JsonObject>("Castlumora/Profiles", token);
             Assert.Equal(2, profiles!["profiles"]!.AsArray().Count);
             using var wrong = await admin.PostAsJsonAsync("Castlumora/Profiles/Switch", new { profileId = childId, accountPassword = "wrong" }, token);
@@ -56,6 +66,10 @@ public sealed class CastlumoraProfilesControllerTests : IClassFixture<JellyfinAp
             child.DefaultRequestHeaders.AddAuthHeader(authentication["AccessToken"]!.GetValue<string>());
             using var oldToken = await admin.GetAsync("Users/Me", token);
             Assert.Equal(HttpStatusCode.Unauthorized, oldToken.StatusCode);
+            using var deniedRename = await child.PutAsJsonAsync("Castlumora/Profiles/Managed/" + childId + "/Name", new { name = "Unauthorized" }, token);
+            Assert.Equal(HttpStatusCode.Forbidden, deniedRename.StatusCode);
+            var childProfiles = await child.GetFromJsonAsync<JsonObject>("Castlumora/Profiles", token);
+            Assert.Equal("Family viewers", childProfiles!["profiles"]!.AsArray()[1]!["name"]!.GetValue<string>());
             var childInfo = await child.GetFromJsonAsync<JsonObject>("Users/Me", token);
             Assert.False(childInfo!["Policy"]!["IsAdministrator"]!.GetValue<bool>());
             Assert.False(childInfo["Policy"]!["EnableAllFolders"]!.GetValue<bool>());

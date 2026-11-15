@@ -85,3 +85,36 @@ it('requires confirmation and removes only the selected managed profile', async 
     confirm.mockRestore();
   }
 });
+
+it('edits only the selected profile display name and refreshes after saving', async () => {
+  const api = new Api('https://example.test');
+  let name = 'Kids';
+  const request = vi.spyOn(api, 'request').mockImplementation(async (path, options) => {
+    if (path === 'Users' || path === 'Library/VirtualFolders') return [];
+    if (path === 'Castlumora/Profiles/Managed/child/Name') {
+      name = JSON.parse(options!.body as string).name;
+      return undefined;
+    }
+    return {
+      profiles: [
+        { id: 'child', name, accountName: 'Account', preset: 'kids', ready: true, exists: true },
+      ],
+    };
+  });
+  const onChanged = vi.fn();
+  render(
+    <AppContext value={{ api } as unknown as AppState}>
+      <ManagedProfiles onChanged={onChanged} />
+    </AppContext>,
+  );
+  fireEvent.click(await screen.findByRole('button', { name: 'Rename Kids' }));
+  fireEvent.change(screen.getByLabelText('Profile display name'), { target: { value: 'Family' } });
+  fireEvent.click(screen.getByRole('button', { name: 'Save profile name' }));
+  await waitFor(() => expect(onChanged).toHaveBeenCalledOnce());
+  expect(request).toHaveBeenCalledWith('Castlumora/Profiles/Managed/child/Name', {
+    method: 'PUT',
+    body: JSON.stringify({ name: 'Family' }),
+  });
+  await screen.findByRole('button', { name: 'Rename Family' });
+  expect(screen.queryByLabelText('Profile display name')).toBeNull();
+});

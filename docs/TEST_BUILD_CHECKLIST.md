@@ -80,3 +80,16 @@ defaults; another profile must retain its own settings. Identity and permissions
 must remain unchanged. Remembered per-title choices may override defaults. The
 package fixture measures Spanish880Hz audio and actual VTT text; this does not
 certify all codecs, real media languages or hardware acceleration.
+
+
+## Managed profile display-name editing
+
+For previews declaring managedProfilesStage=administrator-create-rename-switch-delete:
+open Administration → Users & devices, choose Rename beside a managed profile,
+edit Profile display name and Save profile name. Expect a new friendly label with
+the same identity/history, policy and media preferences. Switch to it and reload;
+the menu must show the server label. Blank/duplicate/control-character/overlong
+names must be rejected. A limited profile must receive403 from the admin rename
+endpoint. An owning account ID must receive404. No user/key/media should be deleted.
+Automated service/HTTP/UI and extracted-package checks cover this increment; see
+DEVELOPMENT_PROGRESS.md for the exact tested commit and any pending verification.

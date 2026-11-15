@@ -76,6 +76,39 @@ public sealed class CastlumoraProfilesController : BaseJellyfinApiController
         }
     }
 
+    /// <summary>Renames only the display label of a registered managed profile.</summary>
+    /// <param name="profileId">Managed identity; owning accounts cannot be renamed here.</param>
+    /// <param name="value">Only the new display name.</param>
+    /// <param name="token">Request cancellation.</param>
+    /// <returns>No content after saving; not found for an account or unknown profile.</returns>
+    [HttpPut("Managed/{profileId:guid}/Name")]
+    [Authorize(Policy = Policies.RequiresElevation)]
+    [RequestSizeLimit(4096)]
+    public async Task<ActionResult> Rename([FromRoute] Guid profileId, [FromBody] JsonObject value, CancellationToken token)
+    {
+        try
+        {
+            if (value.Count != 1 || value["name"] is not JsonValue name || !name.TryGetValue<string>(out var text))
+            {
+                return BadRequest("Supply only the new profile display name.");
+            }
+
+            return await _profiles.RenameAsync(User.GetUserId(), profileId, text, token).ConfigureAwait(false) ? NoContent() : NotFound();
+        }
+        catch (UnauthorizedAccessException)
+        {
+            return Forbid();
+        }
+        catch (InvalidDataException)
+        {
+            return BadRequest("Choose a unique profile display name of up to forty characters.");
+        }
+        catch (Exception exception) when (exception is IOException or JsonException)
+        {
+            return StatusCode(StatusCodes.Status503ServiceUnavailable, "Profile configuration requires administrator recovery; preserve its files.");
+        }
+    }
+
     /// <summary>Deletes only a managed profile, preserving its account and media files.</summary>
     /// <param name="profileId">Managed identity.</param>
     /// <param name="token">Cancellation before deletion begins.</param>

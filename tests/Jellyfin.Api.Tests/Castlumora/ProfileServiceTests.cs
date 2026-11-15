@@ -88,6 +88,64 @@ public sealed class ProfileServiceTests : IDisposable
     }
 
     [Fact]
+    public async Task Rename_PreservesCoreIdentityCredentialsPolicyAndAuthentication_AcrossReopen()
+    {
+        var token = TestContext.Current.CancellationToken;
+        var child = await Create();
+        var username = _people[child].Username;
+        var password = _passwords[child];
+        var policy = _policies[child];
+        var keyPath = Path.Combine(_root, "castlumora", "profiles", "credentials.key");
+        var key = await File.ReadAllBytesAsync(keyPath, token);
+        _events.Clear();
+        Assert.True(await _service.RenameAsync(_owner.Id, child, "  Family time  ", token));
+        Assert.Empty(_events);
+        Assert.Equal(username, _people[child].Username);
+        Assert.Equal(password, _passwords[child]);
+        Assert.Same(policy, _policies[child]);
+        Assert.Equal(key, await File.ReadAllBytesAsync(keyPath, token));
+        using var reopened = Open();
+        var state = await reopened.ListAsync(child, token);
+        Assert.Equal("Family time", state["profiles"]!.AsArray()[1]!["name"]!.GetValue<string>());
+        Assert.True(await reopened.SessionAllowedAsync(child, token));
+        var authenticated = await reopened.SwitchAsync(_owner.Id, child, "account password", Auth(), "127.0.0.1", token);
+        Assert.Equal(child, authenticated.User.Id);
+    }
+
+    [Fact]
+    public async Task Rename_RejectsNonAdministratorsInvalidNamesDuplicatesAndOwningAccounts()
+    {
+        var token = TestContext.Current.CancellationToken;
+        var child = await Create();
+        await Assert.ThrowsAsync<UnauthorizedAccessException>(() => _service.RenameAsync(child, child, "Other", token));
+        Assert.False(await _service.RenameAsync(_owner.Id, _owner.Id, "Other", token));
+        Assert.False(await _service.RenameAsync(_owner.Id, Guid.NewGuid(), "Other", token));
+        foreach (var name in new[] { string.Empty, "  ", "Bad\nName", new string('x', 41) })
+        {
+            await Assert.ThrowsAsync<InvalidDataException>(() => _service.RenameAsync(_owner.Id, child, name, token));
+        }
+
+        await _service.CreateAsync(_owner.Id, _owner.Id, "Second", "adult", [_folder], token);
+        await Assert.ThrowsAsync<InvalidDataException>(() => _service.RenameAsync(_owner.Id, child, " second ", token));
+        Assert.True(await _service.RenameAsync(_owner.Id, child, "KIDS", token));
+        Assert.Equal("KIDS", (await _service.ListAsync(child, token))["profiles"]!.AsArray()[1]!["name"]!.GetValue<string>());
+    }
+
+    [Fact]
+    public async Task Rename_DoesNotReactivateAnUnavailableProfile()
+    {
+        var token = TestContext.Current.CancellationToken;
+        var child = await Create();
+        _users.Setup(users => users.DeleteUserAsync(child)).ThrowsAsync(new IOException("Simulated interrupted deletion"));
+        await Assert.ThrowsAsync<IOException>(() => _service.DeleteAsync(_owner.Id, child, token));
+        Assert.True(await _service.RenameAsync(_owner.Id, child, "Pending review", token));
+        Assert.False(await _service.SessionAllowedAsync(child, token));
+        var inventory = await _service.ListManagedAsync(_owner.Id, token);
+        Assert.False(inventory["profiles"]!.AsArray()[0]!["ready"]!.GetValue<bool>());
+        Assert.True(_people[child].HasPermission(PermissionKind.IsDisabled));
+    }
+
+    [Fact]
     public async Task Delete_RequiresAdministrator_RevokesOnlyTheChild_AndPreservesOwnerAndKey()
     {
         var token = TestContext.Current.CancellationToken;

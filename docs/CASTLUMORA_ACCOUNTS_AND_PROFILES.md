@@ -68,8 +68,16 @@ Consult the exact checkpoint for which package has passed these new assertions.
 Administration → Users & devices lists managed profiles with owning account,
 preset and availability, including pending records and identities already removed
 through inherited administration. Only authenticated administrators can enumerate
-this inventory or delete a managed profile. Viewing users cannot list other
+this inventory, rename or delete a managed profile. Viewing users cannot list other
 accounts' managed identities or delete themselves through these endpoints.
+
+Use **Rename** → **Profile display name** → **Save profile name** to correct its
+friendly label. Names are trimmed, limited to forty characters and unique within
+one account. Only the private ownership registry label changes: the reserved core
+username, ID, password, key, permissions, viewing history and sessions are retained.
+The profile menu reloads the current server label after a browser reload rather
+than trusting a stale cached label. This action does not repair pending provisioning
+or change presets/libraries; those remain separate recovery/policy tasks.
 
 The Delete action requires confirmation because it removes that profile's viewing
 identity/history. It preserves the owning account and media files. An owning
@@ -118,7 +126,7 @@ packaged browser workflow covers native administration, switching/reload, separa
 preferences and return-to-account authentication. Consult DEVELOPMENT_PROGRESS.md
 for the exact checks actually run and source SHA; test presence alone is not a pass.
 
-Remaining account work includes dedicated managed-profile editing and non-destructive
+Remaining account work includes managed-profile preset/library editing and non-destructive
 pending recovery UI, broader preference/device coverage, invitation/registration edge-case
 review, account-wide device/session controls and broader multi-device/media-history
 verification. Inherited administrative user-policy controls remain available.

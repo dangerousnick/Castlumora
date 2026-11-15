@@ -186,6 +186,50 @@ public sealed class ProfileService : IDisposable
         }
     }
 
+    /// <summary>Changes only a managed profile's display name, preserving its identity and history.</summary>
+    /// <param name="actor">Authenticated administrator.</param>
+    /// <param name="identity">Registered managed identity.</param>
+    /// <param name="name">Unique display name within its owning account.</param>
+    /// <param name="token">Cancellation before the atomic registry update.</param>
+    /// <returns>False for an account or unknown profile.</returns>
+    public async Task<bool> RenameAsync(Guid actor, Guid identity, string name, CancellationToken token)
+    {
+        RequireAdministrator(actor);
+        if (string.IsNullOrWhiteSpace(name) || name.Length > 40 || name.Any(char.IsControl))
+        {
+            throw new InvalidDataException("Choose a profile display name of up to forty characters.");
+        }
+
+        await _gate.WaitAsync(token).ConfigureAwait(false);
+        try
+        {
+            var state = Read();
+            var index = state.Profiles.FindIndex(profile => profile.User.Equals(identity));
+            if (index < 0)
+            {
+                return false;
+            }
+
+            var current = state.Profiles[index];
+            name = name.Trim();
+            if (state.Profiles.Any(profile => profile.Owner.Equals(current.Owner) && !profile.User.Equals(identity)
+                && profile.Name.Equals(name, StringComparison.OrdinalIgnoreCase)))
+            {
+                throw new InvalidDataException("Choose a unique profile display name within this account.");
+            }
+
+            token.ThrowIfCancellationRequested();
+            // The core username is a security marker; never rename it or rotate credentials here.
+            state.Profiles[index] = current with { Name = name };
+            Write(state);
+            return true;
+        }
+        finally
+        {
+            _gate.Release();
+        }
+    }
+
     /// <summary>Disables/revokes/deletes only a registered managed identity, then durably removes its mapping.</summary>
     /// <param name="actor">Authenticated administrator.</param>
     /// <param name="identity">Managed identity, never an owning account.</param>

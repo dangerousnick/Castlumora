@@ -12,6 +12,8 @@ export default function ManagedProfiles({ onChanged }: { onChanged: () => void }
   const [folders, setFolders] = useState<string[]>([]);
   const action = useAction();
   const [refresh, setRefresh] = useState(0);
+  const [editing, setEditing] = useState('');
+  const [displayName, setDisplayName] = useState('');
   const managed = useLoad(
     () =>
       api.request<{
@@ -121,6 +123,47 @@ export default function ManagedProfiles({ onChanged }: { onChanged: () => void }
               {profile.name} · {profile.accountName} · {profile.preset}
             </p>
             <p>{profile.ready ? 'Available' : 'Unavailable — review or remove'}</p>
+            {editing === profile.id ? (
+              <form
+                className="settings-fields"
+                onSubmit={(event) => {
+                  event.preventDefault();
+                  void action.run(async () => {
+                    await api.request('Castlumora/Profiles/Managed/' + profile.id + '/Name', {
+                      method: 'PUT',
+                      body: JSON.stringify({ name: displayName }),
+                    });
+                    setEditing('');
+                    setRefresh((value) => value + 1);
+                    onChanged();
+                  }, 'Profile name saved. Identity, history and permissions preserved.');
+                }}
+              >
+                <label>
+                  Profile display name
+                  <input
+                    required
+                    maxLength={40}
+                    value={displayName}
+                    onChange={(event) => setDisplayName(event.target.value)}
+                  />
+                </label>
+                <button disabled={action.busy || !displayName.trim()}>Save profile name</button>
+                <button type="button" disabled={action.busy} onClick={() => setEditing('')}>
+                  Cancel name edit
+                </button>
+              </form>
+            ) : (
+              <button
+                disabled={action.busy}
+                onClick={() => {
+                  setEditing(profile.id);
+                  setDisplayName(profile.name);
+                }}
+              >
+                Rename {profile.name}
+              </button>
+            )}
             <button
               disabled={action.busy}
               onClick={() => {

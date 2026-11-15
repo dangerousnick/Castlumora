@@ -13,6 +13,15 @@ feature status; a development preview does not establish stable-release readines
 Linux-only server policy and mandatory validation remain in effect. Never merge
 main or deploy to Coon Media automatically.
 
+## Managed profile display-name editing
+
+Administrator-only native editing changes the private label while preserving core
+identity/credentials/policy/history. Server labels refresh after browser reload;
+unavailable records are never reactivated. Focused HTTP/UI checks passed; complete
+normal-gate and packaged-browser results remain to be recorded after publication.
+Next: preset/library policy editing and non-destructive pending recovery, then the
+remaining accounts-to-release roadmap. Existing requirements remain intact.
+
 ## OpenAPI reporting correction
 
 The report consumer distinguishes explicitly skipped generation from a missing
