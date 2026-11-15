@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
 using System.IO;
@@ -15,6 +16,7 @@ namespace Jellyfin.Api.Castlumora;
 internal sealed class YtDlpImportRunner
 {
     private static readonly string[] OutputNames = ["media.mp4", "media.mp4.part", "media.info.json", "media.mp4.ytdl"];
+    private static readonly string[] JsonOutputNames = ["media.info.json", "media.mp4.ytdl"];
     private readonly YtDlpRuntime _runtime;
     private readonly string _data;
     private readonly ILogger _logger;
@@ -166,27 +168,35 @@ internal sealed class YtDlpImportRunner
     {
         while (true)
         {
-            var bytes = CheckFiles(work);
+            var bytes = CheckFiles(work, writing: true);
             progress?.Invoke(bytes);
 
             await Task.Delay(TimeSpan.FromMilliseconds(100), token).ConfigureAwait(false);
         }
     }
 
-    private long CheckFiles(string work)
+    internal long CheckFiles(string work, bool writing = false)
     {
         var mediaBytes = 0L;
+        var temporaryTargets = new Dictionary<string, string>(StringComparer.Ordinal);
         YtDlpPlatform.RejectLink(work);
         foreach (var path in Directory.EnumerateFileSystemEntries(work))
         {
             YtDlpPlatform.RejectLink(path);
             var name = Path.GetFileName(path);
-            if (Directory.Exists(path) || !OutputNames.Contains(name, StringComparer.Ordinal))
+            var temporaryTarget = writing ? JsonOutputNames.FirstOrDefault(target => IsAtomicJsonTemporary(name, target)) : null;
+            if (Directory.Exists(path) || (!OutputNames.Contains(name, StringComparer.Ordinal) && temporaryTarget is null)
+                || (temporaryTarget is not null && temporaryTargets.TryGetValue(temporaryTarget, out var previous) && File.Exists(previous)))
             {
                 throw ImportFailure.Download("unexpectedOutput");
             }
 
-            var limit = name == "media.info.json" || name.EndsWith(".ytdl", StringComparison.Ordinal) ? 2097152 : _limits.MediaBytes;
+            if (temporaryTarget is not null)
+            {
+                temporaryTargets[temporaryTarget] = path;
+            }
+
+            var limit = temporaryTarget is not null || JsonOutputNames.Contains(name, StringComparer.Ordinal) ? 2097152 : _limits.MediaBytes;
             try
             {
                 var length = new FileInfo(path).Length;
@@ -207,6 +217,27 @@ internal sealed class YtDlpImportRunner
         }
 
         return mediaBytes;
+    }
+
+    // Pinned yt-dlp write_json_file uses CPython NamedTemporaryFile: basename.<8 random chars>.tmp.
+    // Permit one bounded file per known JSON target only while its owned process writes.
+    internal static bool IsAtomicJsonTemporary(string name, string target)
+    {
+        if (name.Length != target.Length + 13 || !name.StartsWith(target + ".", StringComparison.Ordinal)
+            || !name.EndsWith(".tmp", StringComparison.Ordinal))
+        {
+            return false;
+        }
+
+        foreach (var character in name.AsSpan(target.Length + 1, 8))
+        {
+            if (character is not (>= 'a' and <= 'z') and not (>= '0' and <= '9') and not '_')
+            {
+                return false;
+            }
+        }
+
+        return true;
     }
 
     internal sealed record Limits(long MediaBytes = 33554432, TimeSpan? Deadline = null)

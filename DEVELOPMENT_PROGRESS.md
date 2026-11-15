@@ -14,6 +14,39 @@ Linux-only server policy and mandatory validation remain in effect. Never merge
 main or deploy to Coon Media automatically.
 
 
+## Native downloader CI investigation — atomic metadata writes
+
+Tests43659969795/job132646919124 failed one real native downloader assertion:
+Unexpected downloader output during monitoring. Pinned upstream2026.10.26
+write_json_file uses NamedTemporaryFile(prefix=basename+'.', suffix='.tmp') before
+atomic rename. The old monitor rejected this legitimate transient filename.
+Both existing download monitors now recognize only known JSON targets with exactly
+eight lowercase/digit/underscore random characters and .tmp, at most one extant
+temporary per target, original2MiB metadata limit, original aggregate/resource
+limits and unchanged symlink/directory/unknown-file rejection. Completed outputs
+still reject every temporary file. No importer feature expansion or public policy
+override was added; further importer/creator development stays deferred.
+Focused37native/security tests passed; deterministic tests hold temporary files,
+exercise final rejection, oversize, duplicate/unknown names and dangling links.
+Atomic rename-to-final assertions are included in the full normal gate next.
+The local browser needs the unchanged2GiB startup reserve; this workspace has1.5GiB
+free, so the actual revised Browse assertion will be verified in the hosted package
+rather than lowering production safeguards. No known failing2156preview is published.
+
+## Preview verification investigation — retained movie identity
+
+Preview2156a1ca01 passed profile rename/history/preferences/security checks, then
+failed to find the retained movie by the hardcoded display title in Browse.
+The successful sourcebd82a04d3c had passed all four package workflows. Do not
+blindly rerun or hide this failure. The updated assertion checks the exact retained
+movie ID/type through the real API, finds that same ID's actual Browse poster,
+clicks it and retains decoded/advancing playback assertions. This strengthens media
+identity proof rather than bypassing Browse; it fails if the actual movie is absent.
+Current title and bounded card/error diagnostics identify whether metadata changed
+or Browse genuinely failed. Failure-only screenshots and sanitized DOM context
+are retained; no HAR/trace, credential files or raw server logs are uploaded.
+A new package run must pass before delivery; do not claim the failing2156preview exists.
+
 ## Verified profile-name application checkpoint
 
 - Last completed milestone: administrator-managed profile display-name API/UI,

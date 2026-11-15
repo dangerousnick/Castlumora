@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
 using System.IO;
@@ -14,6 +15,8 @@ namespace Jellyfin.Api.Castlumora;
 /// <summary>Owned single-video downloads; only local, inspected streams reach FFmpeg.</summary>
 internal sealed class YouTubeDownload(YtDlpRuntime runtime, IApplicationPaths paths, string encoder, ILogger logger)
 {
+    private static readonly string[] JsonOutputNames = ["media.info.json", "video.info.json", "audio.info.json", "media.mp4.ytdl", "video.mp4.ytdl", "audio.m4a.ytdl"];
+
     internal async Task<YtDlpImportRunner.StagedDownload> RunAsync(ImportQueue.Job job, Action<long> progress, CancellationToken token)
     {
         var options = job.YouTube ?? throw new InvalidDataException("A confirmed YouTube resource snapshot is required.");
@@ -172,24 +175,33 @@ internal sealed class YouTubeDownload(YtDlpRuntime runtime, IApplicationPaths pa
     {
         while (true)
         {
-            CheckFiles(work, maximumBytes, progress);
+            CheckFiles(work, maximumBytes, progress, writing: true);
             await Task.Delay(100, token).ConfigureAwait(false);
         }
     }
 
-    private static void CheckFiles(string work, long maximumBytes, Action<long> progress)
+    internal static void CheckFiles(string work, long maximumBytes, Action<long> progress, bool writing = false)
     {
+        var temporaryTargets = new Dictionary<string, string>(StringComparer.Ordinal);
         long total = 0;
         long media = 0;
+        YtDlpPlatform.RejectLink(work);
         foreach (var path in Directory.EnumerateFileSystemEntries(work))
         {
             YtDlpPlatform.RejectLink(path);
             var name = Path.GetFileName(path);
+            var temporaryTarget = writing ? JsonOutputNames.FirstOrDefault(target => YtDlpImportRunner.IsAtomicJsonTemporary(name, target)) : null;
             var diagnostic = name is "media.info.json" or "video.info.json" or "audio.info.json";
             var content = name is "media.mp4" or "video.mp4" or "audio.m4a" or "media.mp4.part" or "video.mp4.part" or "audio.m4a.part";
-            if (Directory.Exists(path) || (!diagnostic && !content && name is not ("media.mp4.ytdl" or "video.mp4.ytdl" or "audio.m4a.ytdl")))
+            if (Directory.Exists(path) || (!diagnostic && !content && temporaryTarget is null && name is not ("media.mp4.ytdl" or "video.mp4.ytdl" or "audio.m4a.ytdl"))
+                || (temporaryTarget is not null && temporaryTargets.TryGetValue(temporaryTarget, out var previous) && File.Exists(previous)))
             {
                 throw ImportFailure.Download("unexpectedOutput");
+            }
+
+            if (temporaryTarget is not null)
+            {
+                temporaryTargets[temporaryTarget] = path;
             }
 
             try

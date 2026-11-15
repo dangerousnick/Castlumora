@@ -19,6 +19,52 @@ namespace Jellyfin.Api.Tests.Castlumora;
 [Collection(nameof(ImportExecutableCollection))]
 public sealed class YtDlpImportRunnerTests
 {
+    [Theory]
+    [InlineData("media.info.json.abcdefgh.tmp")]
+    [InlineData("media.mp4.ytdl.a1b2c3_4.tmp")]
+    public async Task AtomicJsonWrite_IsBoundedDuringExecution_AndRejectedIfLeftAfterExit(string name)
+    {
+        await using var fixture = await Fixture.CreateAsync("ok");
+        var work = Path.Combine(fixture.Root, "atomic-json-output");
+        Directory.CreateDirectory(work);
+        var path = Path.Combine(work, name);
+        await File.WriteAllTextAsync(path, "{}", TestContext.Current.CancellationToken);
+        Assert.Equal(0, fixture.Runner.CheckFiles(work, writing: true));
+        Assert.Equal("unexpectedOutput", ImportFailure.Code(Assert.Throws<InvalidDataException>(() => fixture.Runner.CheckFiles(work))));
+        var committed = Path.Combine(work, name[..^13]);
+        File.Move(path, committed);
+        Assert.Equal(0, fixture.Runner.CheckFiles(work));
+        File.Move(committed, path);
+        await File.WriteAllBytesAsync(path, new byte[2097153], TestContext.Current.CancellationToken);
+        Assert.Equal("sizeLimit", ImportFailure.Code(Assert.Throws<InvalidDataException>(() => fixture.Runner.CheckFiles(work, writing: true))));
+        File.Delete(path);
+        await File.WriteAllTextAsync(path, "{}", TestContext.Current.CancellationToken);
+        var second = name.Replace("abcdefgh", "ijklmnop", StringComparison.Ordinal).Replace("a1b2c3_4", "e5f6g7_8", StringComparison.Ordinal);
+        await File.WriteAllTextAsync(Path.Combine(work, second), "{}", TestContext.Current.CancellationToken);
+        Assert.Equal("unexpectedOutput", ImportFailure.Code(Assert.Throws<InvalidDataException>(() => fixture.Runner.CheckFiles(work, writing: true))));
+        File.Delete(Path.Combine(work, second));
+        if (!OperatingSystem.IsWindows())
+        {
+            File.Delete(path);
+            File.CreateSymbolicLink(path, Path.Combine(fixture.Root, "absent-target"));
+            Assert.Throws<InvalidDataException>(() => fixture.Runner.CheckFiles(work, writing: true));
+        }
+    }
+
+    [Theory]
+    [InlineData("untrusted.json.abcdefgh.tmp")]
+    [InlineData("media.info.json.tmp")]
+    [InlineData("media.info.json.ABCDEFGH.tmp")]
+    [InlineData("media.mp4.abcdefgh.tmp")]
+    public async Task AtomicJsonWrite_DoesNotPermitArbitraryTemporaryNames(string name)
+    {
+        await using var fixture = await Fixture.CreateAsync("ok");
+        var work = Path.Combine(fixture.Root, "rejected-json-output");
+        Directory.CreateDirectory(work);
+        await File.WriteAllTextAsync(Path.Combine(work, name), "{}", TestContext.Current.CancellationToken);
+        Assert.Equal("unexpectedOutput", ImportFailure.Code(Assert.Throws<InvalidDataException>(() => fixture.Runner.CheckFiles(work, writing: true))));
+    }
+
     [Fact]
     public async Task RealPinnedTool_StagesExactBytesWithProxyEnvironmentAndStdinSource_ThenDisposes()
     {

@@ -12,6 +12,33 @@ namespace Jellyfin.Api.Tests.Castlumora;
 [Collection(nameof(ImportExecutableCollection))]
 public sealed class YouTubeDownloadTests
 {
+    [Theory]
+    [InlineData("video.info.json.abcdefgh.tmp")]
+    [InlineData("audio.info.json.a1b2c3_4.tmp")]
+    [InlineData("video.mp4.ytdl.abcdefgh.tmp")]
+    public async Task AtomicJsonOutput_KeepsLimitsAndStrictCompletion(string name)
+    {
+        var root = Path.Combine(Path.GetTempPath(), "castlumora-json-write-" + Guid.NewGuid().ToString("N"));
+        Directory.CreateDirectory(root);
+        try
+        {
+            var path = Path.Combine(root, name);
+            await File.WriteAllTextAsync(path, "{}", TestContext.Current.CancellationToken);
+            YouTubeDownload.CheckFiles(root, 33554432, _ => { }, writing: true);
+            Assert.Equal("unexpectedOutput", ImportFailure.Code(Assert.Throws<InvalidDataException>(() => YouTubeDownload.CheckFiles(root, 33554432, _ => { }))));
+            var committed = Path.Combine(root, name[..^13]);
+            File.Move(path, committed);
+            YouTubeDownload.CheckFiles(root, 33554432, _ => { });
+            File.Move(committed, path);
+            await File.WriteAllBytesAsync(path, new byte[2097153], TestContext.Current.CancellationToken);
+            Assert.Equal("sizeLimit", ImportFailure.Code(Assert.Throws<InvalidDataException>(() => YouTubeDownload.CheckFiles(root, 33554432, _ => { }, writing: true))));
+        }
+        finally
+        {
+            Directory.Delete(root, true);
+        }
+    }
+
     [Fact]
     public async Task RealMediaAboveLegacyLimit_RequiresExplicitBoundedJobPolicy()
     {

@@ -568,8 +568,35 @@ test('packaged preview: restart managed profiles isolate preferences and revoke 
       await request.get(endpoint('Users/' + child.user.Id), { headers: headers(returned.token) })
     ).status(),
   ).toBe(404);
+  const retainedMovieResponse = await request.get(endpoint('Items/' + fixture!.Id), {
+    headers: headers(returned.token),
+  });
+  expect(retainedMovieResponse.ok()).toBe(true);
+  const retainedMovie = await retainedMovieResponse.json();
+  expect(retainedMovie.Id).toBe(fixture!.Id);
+  expect(retainedMovie.Type).toBe('Movie');
+  console.info('Retained fixture identity/title:', retainedMovie.Id, retainedMovie.Name);
   await page.getByRole('link', { name: 'Browse', exact: true }).click();
-  await page.getByRole('link', { name: 'Details for Castlumora Test', exact: true }).click();
+  // Metadata titles can change; prove the same immutable movie is still browsable.
+  const retainedPoster = page.locator(`a.poster-art[href$="/item/${retainedMovie.Id}"]`);
+  try {
+    await expect(retainedPoster).toHaveCount(1, { timeout: 20000 });
+    await retainedPoster.click();
+  } catch (error) {
+    console.error('Retained movie Browse diagnostics:', {
+      expectedId: retainedMovie.Id,
+      expectedName: retainedMovie.Name,
+      page: page.url(),
+      cards: await page.locator('a.poster-art').evaluateAll((cards) =>
+        cards.slice(0, 48).map((card) => ({
+          href: card.getAttribute('href'),
+          label: card.getAttribute('aria-label'),
+        })),
+      ),
+      alerts: await page.getByRole('alert').allTextContents(),
+    });
+    throw error;
+  }
   await page.getByRole('link', { name: 'Watch now', exact: true }).click();
   await expect
     .poll(() => page.locator('video').evaluate((video: HTMLVideoElement) => video.readyState), {

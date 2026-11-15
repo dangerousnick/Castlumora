@@ -13,6 +13,16 @@ feature status; a development preview does not establish stable-release readines
 Linux-only server policy and mandatory validation remain in effect. Never merge
 main or deploy to Coon Media automatically.
 
+## CI investigation after the profile milestone
+
+A later preview run exposed a hardcoded-title Browse assertion and a native
+atomic-JSON-write monitoring race. Verification now targets the same immutable
+movie through its actual Browse poster; all playback/security checks remain.
+Existing downloader guards recognize only bounded, expected temporary JSON writes
+while running and reject leftovers after exit. No new importing feature is started.
+Focused native/security tests passed; full gate and new hosted package proof are
+required before declaring the corrected preview available.
+
 ## Published profile-name milestone — bd82a04d3c
 
 Normal gate passed4,569backend tests/20existing skips and78frontend tests, full

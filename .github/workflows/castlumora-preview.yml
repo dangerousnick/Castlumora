@@ -129,6 +129,31 @@ jobs:
           retention-days: 30
           compression-level: 0
           if-no-files-found: error
+      - name: Sanitize failed browser context
+        if: failure()
+        run: |
+          python3 - <<'PY'
+          import os, pathlib, re
+          output = pathlib.Path(os.environ['RUNNER_TEMP']) / 'castlumora-preview-diagnostics'
+          output.mkdir(exist_ok=True)
+          password = os.environ.get('CASTLUMORA_PREVIEW_PASSWORD', '')
+          for index, source in enumerate(pathlib.Path('Castlumora.Web/test-results').rglob('error-context.md')):
+              text = source.read_text(errors='replace')
+              if password:
+                  text = text.replace(password, '[redacted-password]')
+              text = re.sub(r'(?i)[a-f0-9]{32,}', '[redacted-id-or-secret]', text)
+              (output / f'context-{index}.txt').write_text(text)
+          PY
+      - name: Preserve failed browser diagnostics
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: castlumora-preview-diagnostics-${{ steps.identity.outputs.sha }}
+          path: |
+            Castlumora.Web/test-results/**/test-failed-*.png
+            ${{ runner.temp }}/castlumora-preview-diagnostics/*.txt
+          retention-days: 7
+          if-no-files-found: ignore
       - name: Stop only this job's preview
         if: always()
         run: |
