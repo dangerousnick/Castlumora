@@ -13,6 +13,52 @@ feature status; a development preview does not establish stable-release readines
 Linux-only server policy and mandatory validation remain in effect. Never merge
 main or deploy to Coon Media automatically.
 
+
+## Verified profile-name application checkpoint
+
+- Last completed milestone: administrator-managed profile display-name API/UI,
+  current server label on reload, credentials/identity/policy/history preservation,
+  and explicit denial preservation for unavailable records.
+- Latest published application commit: `bd82a04d3c87e081d2d71444d6e6141f4970faf8`.
+  Current branch: `development/castlumora-web-1.3`; PR3 open; no main merge/deployment.
+- Normal full pre-push gate passed: restored format2,453files/zero changes/no workspace
+  warning, .NET10 Debug/Release0warnings/errors,17backend suites4,569passed/20skips,
+  Node24.22.1 typecheck/lint/78tests/build. Existing frontend chunk-size notice
+  remains. Logs:/tmp/castlumora-prepush.05mx6Avg. Focused12service/1HTTP/3UI checks
+  also passed. Exact-SHA hosted Tests43659076284/job132644178886, Format43659076271,
+  ABI43659076219, OpenAPI43659076238 and preview43659076253 all passed. Independent
+  backend log totals match17suites4,569passed/20skips. Preview job132644171594 passed
+  all four actual extracted-package workflows, including UI rename, stale-label
+  reload and unchanged UserData/audio/subtitle settings after a second rename.
+  Artifact14139616012 exists; a report-only refinement follows before final download.
+- Previous workflow fix `1b0688f9d736f1aeb4f67c3ce96c36458a6f62c9` is verified:
+  GitHub Tests43656977048/job132637625283 independently matched17suites4,566passes/
+  20skips; Format43656976981, ABI43656976967, OpenAPI43656977007 and preview43656977065
+  passed. Real report14137998945 was independently downloaded/checksummed; explicit
+  scope skips are handled without hiding a missing required artifact.
+- Activation blocker: workflow_run executes main's older reporting workflow.
+  Reviewed workflow-only adoption, including its trusted comment helper/token fix,
+  is required before those live notifications can stop. Do not merge unfinished
+  application work or change main automatically; do not retry the unchanged job.
+- Unfinished application changes: none. The preview's inherited CI report contained
+  an overbroad missing-features list; the following report-only correction replaces
+  it with precise remaining scope and records the actual new profile assertions.
+  It preserves all application code/checks and will rebuild the downloadable preview. Further YouTube/creator metadata work
+  stays deferred; the broader permanent requirements remain intact.
+- Next exact task: non-destructive provisioning recovery and preset/library editing.
+  First distinguish interrupted creation from interrupted deletion: both currently
+  use Ready=false. Add explicit versioned lifecycle intent and tested migration;
+  ambiguous legacy pending records must remain denied for administrator review.
+  Never reactivate deletion-pending users. Preserve IDs/history/key/owner bounds;
+  missing key requires matching backup restoration, never regeneration. Add crash/
+  restart, deletion-versus-provisioning, missing-key, disabled-owner, foreign-account
+  and policy-bound tests, native recovery controls and actual package proof.
+- Usage status: Not accessible. Recovery: checkout the existing development branch,
+  git pull --ff-only, git status, git log -5, read AGENTS.md and this checkpoint,
+  inspect newer commits before resuming. Preserve source/history/working changes.
+  Run scripts/install-git-hooks.sh for a fresh clone; publish only through the
+  mandatory normal gate. No automatic background resume is claimed.
+
 ## Profile display-name editing — next verified increment
 
 - Implemented administrator-only managed display-name API/UI, atomic private

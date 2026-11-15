@@ -13,6 +13,15 @@ feature status; a development preview does not establish stable-release readines
 Linux-only server policy and mandatory validation remain in effect. Never merge
 main or deploy to Coon Media automatically.
 
+## Published profile-name milestone — bd82a04d3c
+
+Normal gate passed4,569backend tests/20existing skips and78frontend tests, full
+restored formatting and .NET10 Debug/Release. Exact-SHA Linux/shared CI and all four extracted-package browser workflows passed.
+The preview status report is being refined to distinguish partial from absent work. Display-name editing preserves identity/credentials/policy and unavailable
+state. Recovery must distinguish interrupted provisioning from interrupted deletion
+before re-enabling anything; ambiguous legacy pending records stay denied. Preserve
+all other permanent scope; do not mark Phase1.4 or stable1.0 complete.
+
 ## Managed profile display-name editing
 
 Administrator-only native editing changes the private label while preserving core
