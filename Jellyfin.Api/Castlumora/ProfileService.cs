@@ -170,6 +170,7 @@ public sealed class ProfileService : IDisposable
                     ["name"] = profile.Name,
                     ["preset"] = profile.Preset,
                     ["exists"] = user is not null,
+                    ["lifecycle"] = profile.Lifecycle,
                     ["ready"] = profile.Ready && owner is not null && user is not null
                         && !owner.HasPermission(PermissionKind.IsDisabled)
                         && !user.HasPermission(PermissionKind.IsDisabled)
@@ -250,7 +251,7 @@ public sealed class ProfileService : IDisposable
 
             token.ThrowIfCancellationRequested();
             // Persist denial first. A failure/crash leaves a retryable, unavailable record.
-            state.Profiles[index] = state.Profiles[index] with { Ready = false };
+            state.Profiles[index] = state.Profiles[index] with { Ready = false, Lifecycle = "deleting", PendingLibraries = null };
             Write(state);
             var user = _users.GetUserById(identity);
             if (user is not null)
@@ -288,6 +289,8 @@ public sealed class ProfileService : IDisposable
             throw new UnauthorizedAccessException();
         }
 
+        ArgumentNullException.ThrowIfNull(folders);
+        folders = folders.ToArray();
         if (string.IsNullOrWhiteSpace(name) || name.Length > 40 || name.Any(char.IsControl) || preset is not ("kids" or "adult")
             || folders.Length is < 1 or > 100 || folders.Distinct().Count() != folders.Length)
         {
@@ -314,11 +317,15 @@ public sealed class ProfileService : IDisposable
                 throw new InvalidDataException("Select existing libraries available to the account.");
             }
 
+            var planned = new ViewingProfile(owner, Guid.NewGuid(), name.Trim(), preset, false, "provisioning", folders.ToArray());
+            var projected = new List<ViewingProfile>(state.Profiles) { planned };
+            // Reserve room for 1,000 names of 40 escaped characters and deletion transitions.
+            _ = Serialize(new State(2, projected), 2097152 - 262144);
             var key = Key(state);
             token.ThrowIfCancellationRequested();
             // Once provisioning begins, finish its durable reservation even if the HTTP client leaves.
             var user = await _users.CreateUserAsync("Castlumora profile " + Guid.NewGuid().ToString("N"), initiallyDisabled: true).ConfigureAwait(false);
-            var profile = new ViewingProfile(owner, user.Id, name.Trim(), preset, false);
+            var profile = planned with { User = user.Id };
             state.Profiles.Add(profile);
             Write(state);
             await _users.ChangePassword(user.Id, Secret(key, profile)).ConfigureAwait(false);
@@ -346,7 +353,7 @@ public sealed class ProfileService : IDisposable
             policy.MaxActiveSessions = ownerPolicy.MaxActiveSessions;
             policy.AccessSchedules = ownerPolicy.AccessSchedules.Select(schedule => new AccessSchedule(schedule.DayOfWeek, schedule.StartHour, schedule.EndHour, user.Id)).ToArray();
             await _users.UpdatePolicyAsync(user.Id, policy).ConfigureAwait(false);
-            state.Profiles[state.Profiles.Count - 1] = profile with { Ready = true };
+            state.Profiles[state.Profiles.Count - 1] = profile with { Ready = true, Lifecycle = "active", PendingLibraries = null };
             Write(state);
             return new JsonObject { ["id"] = user.Id.ToString("N"), ["name"] = profile.Name, ["preset"] = profile.Preset, ["ready"] = true };
         }
@@ -509,7 +516,7 @@ public sealed class ProfileService : IDisposable
         YtDlpPlatform.RejectLink(path);
         if (!File.Exists(path))
         {
-            return new State(1, []);
+            return new State(2, []);
         }
 
         if (new FileInfo(path).Length > 2097152)
@@ -520,22 +527,80 @@ public sealed class ProfileService : IDisposable
         var info = new FileInfo(path);
         if (_lastGood is not null && _lastWrite == info.LastWriteTimeUtc && _lastLength == info.Length)
         {
-            return new State(1, new List<ViewingProfile>(_lastGood.Profiles));
+            return new State(2, new List<ViewingProfile>(_lastGood.Profiles));
         }
 
-        var state = JsonSerializer.Deserialize<State>(File.ReadAllText(path));
-        if (state is null || state.Version != 1 || state.Profiles is null || state.Profiles.Count > 1000
-            || state.Profiles.Any(profile => profile is null || profile.Owner.Equals(Guid.Empty) || profile.User.Equals(Guid.Empty) || profile.Owner.Equals(profile.User) || string.IsNullOrWhiteSpace(profile.Name) || profile.Name.Length > 40 || profile.Preset is not ("kids" or "adult"))
+        var payload = File.ReadAllBytes(path);
+        if (payload.Length > 2097152)
+        {
+            throw new InvalidDataException("Profile registry exceeded its safe size.");
+        }
+
+        using var reader = new StreamReader(new MemoryStream(payload), Encoding.UTF8, detectEncodingFromByteOrderMarks: true);
+        var state = JsonSerializer.Deserialize<State>(reader.ReadToEnd());
+        if (state is null || state.Version is not (1 or 2) || state.Profiles is null || state.Profiles.Count > 1000
+            || state.Profiles.Any(profile => profile is null || profile.Owner.Equals(Guid.Empty) || profile.User.Equals(Guid.Empty) || profile.Owner.Equals(profile.User) || string.IsNullOrWhiteSpace(profile.Name) || profile.Name.Length > 40 || profile.Name.Any(char.IsControl) || profile.Preset is not ("kids" or "adult"))
             || state.Profiles.Select(profile => profile.User).Distinct().Count() != state.Profiles.Count
             || state.Profiles.Any(profile => state.Profiles.Any(other => other.Owner.Equals(profile.User))))
         {
             throw new InvalidDataException("Profile registry requires administrator recovery; preserve its files.");
         }
 
+        if (state.Version == 1)
+        {
+            var snapshot = Path.Combine(_root, "profiles.v1.json");
+            YtDlpPlatform.RejectLink(snapshot);
+            if (File.Exists(snapshot))
+            {
+                if (new FileInfo(snapshot).Length > 2097152 || !File.ReadAllBytes(snapshot).AsSpan().SequenceEqual(payload))
+                {
+                    throw new InvalidDataException("Legacy profile snapshot differs; preserve both files for administrator review.");
+                }
+
+                Private(snapshot);
+            }
+            else
+            {
+                AtomicWrite(snapshot, payload, overwrite: false);
+            }
+
+            state = new State(2, state.Profiles.Select(profile => profile with
+            {
+                Lifecycle = profile.Ready ? "active" : "review",
+                PendingLibraries = null
+            }).ToList());
+            Write(state);
+            info = new FileInfo(path);
+        }
+        else if (state.Profiles.Any(profile => !ValidLifecycle(profile)))
+        {
+            throw new InvalidDataException("Profile lifecycle requires administrator recovery; preserve its files.");
+        }
+
         _lastGood = state;
         _lastWrite = info.LastWriteTimeUtc;
         _lastLength = info.Length;
-        return new State(1, new List<ViewingProfile>(state.Profiles));
+        return new State(2, new List<ViewingProfile>(state.Profiles));
+    }
+
+    private static bool ValidLifecycle(ViewingProfile profile)
+    {
+        if (profile.Lifecycle is not ("active" or "provisioning" or "deleting" or "review")
+            || profile.Ready != (profile.Lifecycle == "active"))
+        {
+            return false;
+        }
+
+        return profile.Lifecycle == "provisioning"
+            ? profile.PendingLibraries is { Length: >= 1 and <= 100 } folders
+                && folders.Distinct().Count() == folders.Length && !folders.Contains(Guid.Empty)
+            : profile.PendingLibraries is null;
+    }
+
+    private static byte[] Serialize(State state, int maximum = 2097152)
+    {
+        var payload = JsonSerializer.SerializeToUtf8Bytes(state);
+        return payload.Length <= maximum ? payload : throw new InvalidDataException("Profile registry exceeded its safe size.");
     }
 
     private byte[] Key(State state)
@@ -579,7 +644,12 @@ public sealed class ProfileService : IDisposable
 
     private void Write(State state)
     {
-        var path = Path.Combine(_root, "profiles.json");
+        AtomicWrite(Path.Combine(_root, "profiles.json"), Serialize(state), overwrite: true);
+        _lastWrite = DateTime.MinValue;
+    }
+
+    private void AtomicWrite(string path, byte[] payload, bool overwrite)
+    {
         YtDlpPlatform.RejectLink(path);
         var temporary = Path.Combine(_root, Guid.NewGuid().ToString("N") + ".tmp");
         try
@@ -587,12 +657,11 @@ public sealed class ProfileService : IDisposable
             using (var stream = new FileStream(temporary, FileMode.CreateNew, FileAccess.Write, FileShare.None, 4096, FileOptions.WriteThrough))
             {
                 Private(temporary);
-                JsonSerializer.Serialize(stream, state);
+                stream.Write(payload);
                 stream.Flush(flushToDisk: true);
             }
 
-            File.Move(temporary, path, overwrite: true);
-            _lastWrite = DateTime.MinValue;
+            File.Move(temporary, path, overwrite);
         }
         finally
         {
@@ -608,7 +677,7 @@ public sealed class ProfileService : IDisposable
         }
     }
 
-    private sealed record ViewingProfile(Guid Owner, Guid User, string Name, string Preset, bool Ready);
+    private sealed record ViewingProfile(Guid Owner, Guid User, string Name, string Preset, bool Ready, string? Lifecycle = null, Guid[]? PendingLibraries = null);
 
     private sealed record State(int Version, List<ViewingProfile> Profiles);
 }

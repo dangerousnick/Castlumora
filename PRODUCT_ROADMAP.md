@@ -13,6 +13,26 @@ feature status; a development preview does not establish stable-release readines
 Linux-only server policy and mandatory validation remain in effect. Never merge
 main or deploy to Coon Media automatically.
 
+## Profile lifecycle foundation in validation
+
+Registry2 distinguishes interrupted provisioning, deletion and ambiguous legacy
+review, retains a private original snapshot, and preserves keys/identities/policies.
+Administrator labels explain unavailable states. Reactivation remains unavailable;
+complete isolated recovery only after this migration/intent increment is verified
+and published. Focused service/UI tests passed; full gate/hosted/package results
+remain pending. Production backup/storage safeguards and all previous scope remain.
+
+## Verified profile and CI stabilization — 0d59a68a39
+
+Full local and exact-SHA Linux/shared CI passed4578backend tests/20existing skips,
+78frontend tests and all four extracted-package browser workflows. Download and
+checksum are in DEVELOPMENT_PROGRESS.md; branding/licenses/compiled fixes and
+private-state exclusion were independently verified. The prior2156preview failed
+and is not a deliverable. Next: persist and migrate profile lifecycle intent safely,
+then non-destructive recovery/preset editing. Further importer/creator metadata
+work remains deferred; no original1.0 scope is removed. Main reporter adoption is
+still reviewed work, never an automatic merge of unfinished application features.
+
 ## CI investigation after the profile milestone
 
 A later preview run exposed a hardcoded-title Browse assertion and a native

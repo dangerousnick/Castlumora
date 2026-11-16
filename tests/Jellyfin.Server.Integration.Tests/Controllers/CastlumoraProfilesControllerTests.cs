@@ -3,6 +3,8 @@ using System.Net;
 using System.Net.Http.Json;
 using System.Text.Json.Nodes;
 using System.Threading.Tasks;
+using MediaBrowser.Common.Configuration;
+using Microsoft.Extensions.DependencyInjection;
 using Xunit;
 
 namespace Jellyfin.Server.Integration.Tests.Controllers;
@@ -44,6 +46,24 @@ public sealed class CastlumoraProfilesControllerTests : IClassFixture<JellyfinAp
             Assert.True(created.IsSuccessStatusCode, await created.Content.ReadAsStringAsync(token));
             var profile = await created.Content.ReadFromJsonAsync<JsonObject>(token);
             var childId = profile!["id"]!.GetValue<string>();
+            var paths = _factory.Services.GetRequiredService<IApplicationPaths>();
+            var privateRoot = System.IO.Path.Combine(paths.ConfigurationDirectoryPath, "castlumora", "profiles");
+            var registryPath = System.IO.Path.Combine(privateRoot, "profiles.json");
+            var keyBeforeMigration = await System.IO.File.ReadAllBytesAsync(System.IO.Path.Combine(privateRoot, "credentials.key"), token);
+            var legacy = JsonNode.Parse(await System.IO.File.ReadAllTextAsync(registryPath, token))!;
+            legacy["Version"] = 1;
+            foreach (var record in legacy["Profiles"]!.AsArray())
+            {
+                record!.AsObject().Remove("Lifecycle");
+                record.AsObject().Remove("PendingLibraries");
+            }
+
+            var legacyText = legacy.ToJsonString();
+            await System.IO.File.WriteAllTextAsync(registryPath, legacyText, token);
+            var migrated = await admin.GetFromJsonAsync<JsonObject>("Castlumora/Profiles/Managed", token);
+            Assert.Equal("active", migrated!["profiles"]!.AsArray()[0]!["lifecycle"]!.GetValue<string>());
+            Assert.Equal(legacyText, await System.IO.File.ReadAllTextAsync(System.IO.Path.Combine(privateRoot, "profiles.v1.json"), token));
+            Assert.Equal(keyBeforeMigration, await System.IO.File.ReadAllBytesAsync(System.IO.Path.Combine(privateRoot, "credentials.key"), token));
             var originalChild = await admin.GetFromJsonAsync<JsonObject>("Users/" + childId, token);
             using var invalidRename = await admin.PutAsJsonAsync("Castlumora/Profiles/Managed/" + childId + "/Name", new { name = "Family", preset = "adult" }, token);
             Assert.Equal(HttpStatusCode.BadRequest, invalidRename.StatusCode);

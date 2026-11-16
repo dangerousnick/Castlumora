@@ -23,6 +23,7 @@ export default function ManagedProfiles({ onChanged }: { onChanged: () => void }
           accountName: string;
           preset: string;
           ready: boolean;
+          lifecycle?: string;
           exists: boolean;
         }[];
       }>('Castlumora/Profiles/Managed'),
@@ -122,7 +123,17 @@ export default function ManagedProfiles({ onChanged }: { onChanged: () => void }
             <p>
               {profile.name} · {profile.accountName} · {profile.preset}
             </p>
-            <p>{profile.ready ? 'Available' : 'Unavailable — review or remove'}</p>
+            <p>
+              {profile.ready
+                ? 'Available'
+                : profile.lifecycle === 'provisioning'
+                  ? 'Provisioning interrupted — unavailable; preserve for recovery or remove'
+                  : profile.lifecycle === 'deleting'
+                    ? 'Deletion pending — unavailable; retry removal'
+                    : profile.lifecycle === 'review'
+                      ? 'Legacy pending profile — unavailable; administrator review required'
+                      : 'Unavailable — review permissions or remove'}
+            </p>
             {editing === profile.id ? (
               <form
                 className="settings-fields"

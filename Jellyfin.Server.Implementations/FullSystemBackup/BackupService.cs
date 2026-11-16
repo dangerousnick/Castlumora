@@ -175,7 +175,7 @@ public class BackupService : IBackupService
                 if (Directory.Exists(profiles))
                 {
                     File.SetUnixFileMode(profiles, UnixFileMode.UserRead | UnixFileMode.UserWrite | UnixFileMode.UserExecute);
-                    foreach (var name in new[] { "profiles.json", "credentials.key" })
+                    foreach (var name in new[] { "profiles.json", "profiles.v1.json", "credentials.key" })
                     {
                         var path = Path.Combine(profiles, name);
                         if (File.Exists(path))

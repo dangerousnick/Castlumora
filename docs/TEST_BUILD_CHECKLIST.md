@@ -93,3 +93,17 @@ names must be rejected. A limited profile must receive403 from the admin rename
 endpoint. An owning account ID must receive404. No user/key/media should be deleted.
 Automated service/HTTP/UI and extracted-package checks cover this increment; see
 DEVELOPMENT_PROGRESS.md for the exact tested commit and any pending verification.
+
+
+## Profile lifecycle and upgrades
+
+For builds declaring profileLifecycleSchema=2, create a profile and confirm normal
+switching/media preferences remain available. Administration → Users & devices
+shows distinct reasons for interrupted provisioning, pending deletion and legacy
+review records. These states must remain unavailable and no Reactivate/Recover
+button should appear. Do not force a failure on a live installation to test it.
+Automated private-file/service/HTTP tests cover interrupted operations, v1 migration,
+matching/conflicting snapshots, invalid states, keys/policy preservation and storage
+budgeting. The normal packaged browser test covers fresh-v2 profiles and existing
+playback/security workflows; full installed-system restore/upgrade is not certified.
+Always retain a matching database/configuration/key backup before trying an upgrade.

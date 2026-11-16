@@ -14,6 +14,74 @@ Linux-only server policy and mandatory validation remain in effect. Never merge
 main or deploy to Coon Media automatically.
 
 
+## Current increment — durable profile lifecycle, 2026-11-16
+
+Registry2 persists provisioning intent and requested libraries before credential/
+policy changes; success clears the pending plan, while deletion records distinct
+intent before disabling/revoking/removing. Migration keeps a private exact v1
+snapshot and maps ambiguous legacy pending records to review-only. It never rotates
+keys, reauthenticates/enables users or changes identity/history/policy. Conflicting
+snapshots, symlinks and malformed lifecycle plans fail closed. Registry size is
+checked before core-user creation, with reserved transition/name-growth space to
+prevent an unmapped orphan on storage-budget rejection. Native administration shows
+specific unavailable-state reasons; no reactivation action is exposed yet.
+
+Focused23service tests and6UI tests passed. The first build caught xUnit2031 in a
+new assertion and was fixed before publication. Real HTTP migration and11actual ZIP/backup tests passed. The matching-snapshot
+retry passed, including reapplying private permissions. Requested libraries are
+snapshotted before awaits; a256KiB mutation reserve accounts for escaped Unicode
+names and deletion transitions. Final focused budget/input checks passed (2cases); full normal gate/hosted checks/new package remain pending.
+Backup restore privacy now includes profiles.v1.json; production storage safeguards
+are unchanged. No importer feature development, main merge or Coon deployment.
+
+Next after publishing this increment: administrator-only non-destructive recovery
+for explicit provisioning records, revalidating owner/password/key/current libraries
+and parent policy, disabling/revoking before credential/policy repair, preserving
+identity/history and denial on failure. Never recover deletion/review/active or
+missing-key records automatically. Reuse the existing bounded preset logic; then
+add native controls and real HTTP/package verification. Broader preset editing,
+account-wide sessions/invitations and remaining roadmap follow. Usage: Not accessible.
+
+## Verified recovery checkpoint — 2026-11-16
+
+Latest published application: `0d59a68a39e40348fe7e3c71826e61f6b6e7f747`, branch
+`development/castlumora-web-1.3`, PR3 open. Both diagnosed CI failures are covered by
+new assertions and no required checks were weakened. The earlier title-locator
+failure's precise UI cause remains unconfirmed; the successful same-ID Browse test
+retained the original title and actual advancing playback. Sanitized failure
+snapshots are retained if it recurs.
+
+Normal full gate /tmp/castlumora-prepush.v4iav9w3 passed restored format2453files/
+zero changes/no workspace warnings; .NET10 Debug/Release0warnings/errors; all17
+backend suites4578passed/20existing skips; Node24.22.1 typecheck/lint/78tests/build.
+GitHub exact-SHA Tests43662875568/job132655878605 independently matched those totals.
+Format43662875606, ABI43662875550, OpenAPI43662875564 and preview43662875604 passed.
+Actual extracted-package job132655864016 passed all four browser workflows,
+including rename/history/language preservation, same-ID Browse, decoded preferred
+audio/subtitles, permissions, old-token revocation, profile deletion and retained
+movie playback. No physical Mint/NAS/GPU/tuner certification is claimed.
+
+Verified download: https://github.com/dangerousnick/Castlumora/actions/runs/43662875604/artifacts/14140638889
+Archive: Castlumora-1.0-dev-0d59a68a39e4-linux-x64.tar.gz
+SHA256:55bb87d059273e3b1f75a5809452f26e64ee5a72349258320b801f52460d1ac8.
+Independent download checked outer/inner hashes, exact source/manifest/compiled
+fixes, truthful smoke report, all16branding assets, GPL/runtime licenses, executable
+modes and absence of private profile state. Evidence:
+/tmp/castlumora-linux-profile-rename-preview-verified.json. GitHub sign-in and30-day
+retention apply. Development preview, not completed Phase1.4/stable1.0.
+
+Next milestone: durable profile lifecycle intent and migration before recovery.
+Persist provisioning versus deletion intent; migrate legacy Ready=false records to
+review-only, never automatically reactivate them. Preserve IDs/key/history/parent
+bounds. Retain a private legacy snapshot and validate malformed state. Native admin
+must show the reason a profile is unavailable. Recovery/preset editing follows only
+after this foundation is tested/published. Main's separate workflow_run reporter
+still needs reviewed workflow/helper adoption; no automatic main merge or Coon
+Media deployment. Further importing/creator metadata remains deferred.
+Usage allowance/reset: Not accessible. Recovery: git status, checkout the existing
+branch, git pull --ff-only, inspect newer commits and this checkpoint, preserve all
+working changes, and use the installed normal pre-push hook. No automatic resume.
+
 ## Native downloader CI investigation — atomic metadata writes
 
 Tests43659969795/job132646919124 failed one real native downloader assertion:

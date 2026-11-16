@@ -63,6 +63,38 @@ The automated package fixture uses owned English440Hz/Spanish880Hz audio plus VT
 tests measure decoded browser audio and actual cue text, not just saved settings.
 Consult the exact checkpoint for which package has passed these new assertions.
 
+## Durable lifecycle and registry migration
+
+The private profile registry uses version2. New provisioning reserves the identity,
+`provisioning` lifecycle and explicit requested libraries before password/policy
+updates. Success records `active` and clears the pending library plan. Deletion
+records `deleting` and clears that plan before disabling/revoking/removing the child.
+A failed operation keeps its original identity and unavailable state. Display-name
+editing does not change lifecycle or permissions.
+
+On first read of version1, the server preserves its exact bytes as private
+`profiles.v1.json`, then atomically migrates the registry. Ready profiles remain
+active; all legacy pending profiles become `review`, because the old format cannot
+distinguish interrupted creation from deletion. Migration never enables a user,
+changes a password/key, recreates an identity or alters history/policy. The original
+credential derivation remains unchanged. Unknown or inconsistent version2 states
+fail closed. A conflicting or linked legacy snapshot requires administrator review;
+neither registry nor snapshot is overwritten. A matching snapshot allows a safe
+retry after an interrupted migration.
+
+Administration shows provisioning interrupted, deletion pending, or legacy review
+as distinct unavailable states. Reactivation and preset/library editing are still
+separate future milestones. There is no recovery endpoint/button that could revive
+a deletion-pending or ambiguous profile. Ordinary account administration remains
+available if profile-only configuration is damaged.
+
+Back up the user database and the entire private profile directory before upgrading.
+Both registries and the key remain private; configuration backup includes the legacy
+snapshot and restore reapplies its private Linux permissions. Registry2 is not
+readable by old previews: do not downgrade by blindly overwriting files or creating
+a new key. Restore a matching database/configuration/key backup under administrator
+review; the preserved snapshot alone does not represent later profile changes.
+
 ## Administrator lifecycle and cleanup
 
 Administration → Users & devices lists managed profiles with owning account,

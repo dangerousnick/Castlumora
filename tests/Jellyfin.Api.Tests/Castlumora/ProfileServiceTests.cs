@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Text;
 using System.Text.Json.Nodes;
 using System.Threading;
 using System.Threading.Tasks;
@@ -85,6 +86,201 @@ public sealed class ProfileServiceTests : IDisposable
             return Task.CompletedTask;
         });
         _service = Open();
+    }
+
+    [Fact]
+    public async Task Lifecycle_InterruptedProvisioningAndDeletionRemainDistinctAcrossReopen()
+    {
+        var token = TestContext.Current.CancellationToken;
+        _users.Setup(users => users.ChangePassword(It.IsAny<Guid>(), It.IsAny<string>())).ThrowsAsync(new IOException("Interrupted provisioning"));
+        await Assert.ThrowsAsync<IOException>(() => Create());
+        var child = Assert.Single(_people.Keys, id => !id.Equals(_owner.Id));
+        var root = Path.Combine(_root, "castlumora", "profiles");
+        var registry = JsonNode.Parse(await File.ReadAllTextAsync(Path.Combine(root, "profiles.json"), token))!;
+        var pending = registry["Profiles"]!.AsArray()[0]!;
+        Assert.Equal(2, registry["Version"]!.GetValue<int>());
+        Assert.Equal("provisioning", pending["Lifecycle"]!.GetValue<string>());
+        Assert.Equal(_folder, Guid.Parse(pending["PendingLibraries"]!.AsArray()[0]!.GetValue<string>()));
+        using var reopened = Open();
+        Assert.Equal("provisioning", (await reopened.ListManagedAsync(_owner.Id, token))["profiles"]!.AsArray()[0]!["lifecycle"]!.GetValue<string>());
+        Assert.False(await reopened.SessionAllowedAsync(child, token));
+        _users.Setup(users => users.DeleteUserAsync(child)).ThrowsAsync(new IOException("Interrupted deletion"));
+        await Assert.ThrowsAsync<IOException>(() => reopened.DeleteAsync(_owner.Id, child, token));
+        using var afterDelete = Open();
+        var removal = (await afterDelete.ListManagedAsync(_owner.Id, token))["profiles"]!.AsArray()[0]!;
+        Assert.Equal("deleting", removal["lifecycle"]!.GetValue<string>());
+        Assert.False(removal["ready"]!.GetValue<bool>());
+        Assert.False(await afterDelete.SessionAllowedAsync(child, token));
+        Assert.True(_people[child].HasPermission(PermissionKind.IsDisabled));
+        registry = JsonNode.Parse(await File.ReadAllTextAsync(Path.Combine(root, "profiles.json"), token))!;
+        Assert.Null(registry["Profiles"]!.AsArray()[0]!["PendingLibraries"]);
+    }
+
+    [Fact]
+    public async Task Lifecycle_LegacyMigrationPreservesSnapshotKeyPoliciesAndDeniesAmbiguousPending()
+    {
+        var token = TestContext.Current.CancellationToken;
+        var active = await Create();
+        var second = Guid.Parse((await _service.CreateAsync(_owner.Id, _owner.Id, "Adult", "adult", [_folder], token))["id"]!.GetValue<string>());
+        var root = Path.Combine(_root, "castlumora", "profiles");
+        var path = Path.Combine(root, "profiles.json");
+        var legacy = JsonNode.Parse(await File.ReadAllTextAsync(path, token))!;
+        legacy["Version"] = 1;
+        foreach (var profile in legacy["Profiles"]!.AsArray())
+        {
+            profile!.AsObject().Remove("Lifecycle");
+            profile.AsObject().Remove("PendingLibraries");
+        }
+
+        legacy["Profiles"]!.AsArray()[1]!["Ready"] = false;
+        var original = Encoding.UTF8.GetBytes(legacy.ToJsonString());
+        await File.WriteAllBytesAsync(path, original, token);
+        var key = await File.ReadAllBytesAsync(Path.Combine(root, "credentials.key"), token);
+        var activePolicy = _policies[active];
+        _events.Clear();
+        using var reopened = Open();
+        var profiles = (await reopened.ListManagedAsync(_owner.Id, token))["profiles"]!.AsArray();
+        Assert.Equal("active", profiles[0]!["lifecycle"]!.GetValue<string>());
+        Assert.Equal("review", profiles[1]!["lifecycle"]!.GetValue<string>());
+        Assert.False(profiles[1]!["ready"]!.GetValue<bool>());
+        Assert.True(await reopened.SessionAllowedAsync(active, token));
+        Assert.False(await reopened.SessionAllowedAsync(second, token));
+        Assert.False(_people[second].HasPermission(PermissionKind.IsDisabled));
+        Assert.Same(activePolicy, _policies[active]);
+        Assert.Empty(_events);
+        Assert.Equal(original, await File.ReadAllBytesAsync(Path.Combine(root, "profiles.v1.json"), token));
+        Assert.Equal(key, await File.ReadAllBytesAsync(Path.Combine(root, "credentials.key"), token));
+        var upgraded = JsonNode.Parse(await File.ReadAllTextAsync(path, token))!;
+        Assert.Equal(2, upgraded["Version"]!.GetValue<int>());
+        // Model a crash after the private snapshot was committed but before the registry replacement.
+        await File.WriteAllBytesAsync(path, original, token);
+        if (!OperatingSystem.IsWindows())
+        {
+            File.SetUnixFileMode(Path.Combine(root, "profiles.v1.json"), UnixFileMode.UserRead | UnixFileMode.UserWrite | UnixFileMode.GroupRead);
+        }
+
+        using var again = Open();
+        Assert.Equal(2, (await again.ListManagedAsync(_owner.Id, token))["profiles"]!.AsArray().Count);
+        Assert.Equal(original, await File.ReadAllBytesAsync(Path.Combine(root, "profiles.v1.json"), token));
+        if (!OperatingSystem.IsWindows())
+        {
+            Assert.Equal(UnixFileMode.UserRead | UnixFileMode.UserWrite, File.GetUnixFileMode(Path.Combine(root, "profiles.v1.json")));
+            Assert.Equal(UnixFileMode.UserRead | UnixFileMode.UserWrite, File.GetUnixFileMode(path));
+        }
+    }
+
+    [Fact]
+    public async Task Lifecycle_ConflictingOrLinkedLegacySnapshotFailsClosedWithoutOverwriting()
+    {
+        var token = TestContext.Current.CancellationToken;
+        var child = await Create();
+        var root = Path.Combine(_root, "castlumora", "profiles");
+        var path = Path.Combine(root, "profiles.json");
+        var legacy = JsonNode.Parse(await File.ReadAllTextAsync(path, token))!;
+        legacy["Version"] = 1;
+        var original = legacy.ToJsonString();
+        await File.WriteAllTextAsync(path, original, token);
+        var snapshot = Path.Combine(root, "profiles.v1.json");
+        await File.WriteAllTextAsync(snapshot, "Preserve earlier snapshot", token);
+        using var reopened = Open();
+        await Assert.ThrowsAsync<InvalidDataException>(() => reopened.ListManagedAsync(_owner.Id, token));
+        Assert.False(await reopened.SessionAllowedAsync(child, token));
+        Assert.True(await reopened.SessionAllowedAsync(_owner.Id, token));
+        Assert.Equal(original, await File.ReadAllTextAsync(path, token));
+        Assert.Equal("Preserve earlier snapshot", await File.ReadAllTextAsync(snapshot, token));
+        if (!OperatingSystem.IsWindows())
+        {
+            File.Delete(snapshot);
+            File.CreateSymbolicLink(snapshot, path);
+            await Assert.ThrowsAsync<InvalidDataException>(() => reopened.ListManagedAsync(_owner.Id, token));
+            Assert.Equal(original, await File.ReadAllTextAsync(path, token));
+        }
+    }
+
+    [Theory]
+    [InlineData("active", false, "none")]
+    [InlineData("deleting", true, "none")]
+    [InlineData("unknown", false, "none")]
+    [InlineData("provisioning", false, "none")]
+    [InlineData("provisioning", false, "empty")]
+    [InlineData("provisioning", false, "duplicate")]
+    [InlineData("active", true, "valid")]
+    public async Task Lifecycle_MalformedStateCannotGrantManagedAccess(string lifecycle, bool ready, string plan)
+    {
+        var token = TestContext.Current.CancellationToken;
+        var child = await Create();
+        var path = Path.Combine(_root, "castlumora", "profiles", "profiles.json");
+        var state = JsonNode.Parse(await File.ReadAllTextAsync(path, token))!;
+        var profile = state["Profiles"]!.AsArray()[0]!;
+        profile["Lifecycle"] = lifecycle;
+        profile["Ready"] = ready;
+        profile["PendingLibraries"] = plan switch
+        {
+            "valid" => new JsonArray(_folder.ToString()),
+            "duplicate" => new JsonArray(_folder.ToString(), _folder.ToString()),
+            "empty" => new JsonArray(Guid.Empty.ToString()),
+            _ => null
+        };
+        var original = state.ToJsonString();
+        await File.WriteAllTextAsync(path, original, token);
+        using var reopened = Open();
+        await Assert.ThrowsAsync<InvalidDataException>(() => reopened.ListManagedAsync(_owner.Id, token));
+        Assert.False(await reopened.SessionAllowedAsync(child, token));
+        Assert.True(await reopened.SessionAllowedAsync(_owner.Id, token));
+        Assert.Equal(original, await File.ReadAllTextAsync(path, token));
+    }
+
+    [Fact]
+    public async Task Lifecycle_LibraryPlanAndAppliedPolicyUseAnIsolatedInputSnapshot()
+    {
+        var token = TestContext.Current.CancellationToken;
+        var requested = new[] { _folder };
+        var foreign = Guid.NewGuid();
+        _policies[_owner.Id].EnableAllFolders = false;
+        _policies[_owner.Id].EnabledFolders = [_folder];
+        _users.Setup(users => users.ChangePassword(It.IsAny<Guid>(), It.IsAny<string>())).Returns((Guid id, string password) =>
+        {
+            Assert.True(_people[id].HasPermission(PermissionKind.IsDisabled));
+            _passwords[id] = password;
+            requested[0] = foreign;
+            return Task.CompletedTask;
+        });
+        var child = Guid.Parse((await _service.CreateAsync(_owner.Id, _owner.Id, "Snapshot", "kids", requested, token))["id"]!.GetValue<string>());
+        Assert.Equal(foreign, requested[0]);
+        Assert.Equal(new[] { _folder }, _policies[child].EnabledFolders);
+        Assert.True(await _service.SessionAllowedAsync(child, token));
+    }
+
+    [Fact]
+    public async Task Lifecycle_RegistryBudgetRejectsProvisionBeforeCreatingAnOrphan()
+    {
+        var token = TestContext.Current.CancellationToken;
+        var folders = Enumerable.Range(0, 100).Select(_ => Guid.NewGuid()).ToArray();
+        _libraries.Setup(libraries => libraries.GetVirtualFolders()).Returns(folders.Select(id => new VirtualFolderInfo { ItemId = id.ToString() }).ToList());
+        JsonObject Entry() => new()
+        {
+            ["Owner"] = Guid.NewGuid().ToString(),
+            ["User"] = Guid.NewGuid().ToString(),
+            ["Name"] = new string('x', 40),
+            ["Preset"] = "kids",
+            ["Ready"] = false,
+            ["Lifecycle"] = "provisioning",
+            ["PendingLibraries"] = new JsonArray(folders.Select(id => JsonValue.Create(id.ToString())).ToArray<JsonNode?>())
+        };
+        var sample = Entry();
+        var count = ((2097152 - 262144) - 100) / (Encoding.UTF8.GetByteCount(sample.ToJsonString()) + 1);
+        var profiles = new JsonArray(Enumerable.Range(0, count).Select(_ => (JsonNode)Entry()).ToArray());
+        var state = new JsonObject { ["Version"] = 2, ["Profiles"] = profiles };
+        var original = Encoding.UTF8.GetBytes(state.ToJsonString());
+        var root = Path.Combine(_root, "castlumora", "profiles");
+        Directory.CreateDirectory(root);
+        var path = Path.Combine(root, "profiles.json");
+        await File.WriteAllBytesAsync(path, original, token);
+        var error = await Assert.ThrowsAsync<InvalidDataException>(() => _service.CreateAsync(_owner.Id, _owner.Id, "New", "kids", folders, token));
+        Assert.Contains("registry", error.Message, StringComparison.OrdinalIgnoreCase);
+        _users.Verify(users => users.CreateUserAsync(It.IsAny<string>(), It.IsAny<bool>()), Times.Never);
+        Assert.False(File.Exists(Path.Combine(root, "credentials.key")));
+        Assert.Equal(original, await File.ReadAllBytesAsync(path, token));
     }
 
     [Fact]

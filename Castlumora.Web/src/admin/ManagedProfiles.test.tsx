@@ -118,3 +118,35 @@ it('edits only the selected profile display name and refreshes after saving', as
   await screen.findByRole('button', { name: 'Rename Family' });
   expect(screen.queryByLabelText('Profile display name')).toBeNull();
 });
+
+it.each([
+  ['provisioning', 'Provisioning interrupted — unavailable; preserve for recovery or remove'],
+  ['deleting', 'Deletion pending — unavailable; retry removal'],
+  ['review', 'Legacy pending profile — unavailable; administrator review required'],
+])('explains %s without exposing an unsafe reactivation action', async (lifecycle, label) => {
+  const api = new Api('https://example.test');
+  vi.spyOn(api, 'request').mockImplementation(async (path) => {
+    if (path === 'Users' || path === 'Library/VirtualFolders') return [];
+    return {
+      profiles: [
+        {
+          id: 'child',
+          name: 'Kids',
+          accountName: 'Account',
+          preset: 'kids',
+          ready: false,
+          exists: true,
+          lifecycle,
+        },
+      ],
+    };
+  });
+  render(
+    <AppContext value={{ api } as unknown as AppState}>
+      <ManagedProfiles onChanged={() => {}} />
+    </AppContext>,
+  );
+  await screen.findByText(label);
+  expect(screen.queryByRole('button', { name: /recover|reactivate/i })).toBeNull();
+  expect(screen.getByRole('button', { name: 'Delete Kids' })).toBeTruthy();
+});

@@ -123,10 +123,12 @@ public sealed class BackupServiceTests : IDisposable
         var token = TestContext.Current.CancellationToken;
         var directory = Path.Combine(_configurationDirectoryPath, "castlumora", "profiles");
         Directory.CreateDirectory(directory);
-        const string registry = "{\"Version\":1,\"Profiles\":[]}";
+        const string registry = "{\"Version\":2,\"Profiles\":[]}";
+        const string legacy = "{\"Version\":1,\"Profiles\":[]}";
         var key = new byte[32];
         key[0] = 42;
         await File.WriteAllTextAsync(Path.Combine(directory, "profiles.json"), registry, token);
+        await File.WriteAllTextAsync(Path.Combine(directory, "profiles.v1.json"), legacy, token);
         await File.WriteAllBytesAsync(Path.Combine(directory, "credentials.key"), key, token);
         var manifest = await CreateBackupService().CreateBackupAsync(new BackupOptionsDto());
         if (!OperatingSystem.IsWindows())
@@ -140,6 +142,11 @@ public sealed class BackupServiceTests : IDisposable
         await using var registryStream = await registryEntry.OpenAsync(token);
         using var reader = new StreamReader(registryStream);
         Assert.Equal(registry, await reader.ReadToEndAsync(token));
+        var snapshotEntry = archive.GetEntry("Config/castlumora/profiles/profiles.v1.json");
+        Assert.NotNull(snapshotEntry);
+        await using var snapshotStream = await snapshotEntry.OpenAsync(token);
+        using var snapshotReader = new StreamReader(snapshotStream);
+        Assert.Equal(legacy, await snapshotReader.ReadToEndAsync(token));
         var keyEntry = archive.GetEntry("Config/castlumora/profiles/credentials.key");
         Assert.NotNull(keyEntry);
         await using var keyStream = await keyEntry.OpenAsync(token);
