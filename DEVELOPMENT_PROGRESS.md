@@ -14,6 +14,51 @@ Linux-only server policy and mandatory validation remain in effect. Never merge
 main or deploy to Coon Media automatically.
 
 
+## Published notifier fix and verified Linux preview — 2026-11-16
+
+- Latest published application: `82057fa6d821390ece6fb182ea8ebf418bb28314`
+  (production fix `b1173af9da8dca5b2d9d5bca0a5a65441be0d1ec`, constructor
+  documentation correction `82057fa6d8`). Current branch:
+  `development/castlumora-web-1.3`; PR3 remains open; no main merge/deployment.
+- Normal mandatory gate `/tmp/castlumora-prepush.BLMp3Lw5` passed: restored
+  formatting2453files/zero changes; .NET10.0.403 Debug/Release zero warnings/errors;
+  all17backend suites4595passes/20existing skips; Node24.22.1 typecheck/lint,
+  86tests/25files and production build; hook/native/backup/migration/workflow checks.
+  The first push was blocked by SA1642 and corrected before any publication.
+- Exact-SHA Format44001512842, ABI44001512914, OpenAPI44001512883 and Linux
+  preview44001512904/job133766606346 passed. Backend Tests44001512839 /
+  job133766587347 also passed; its downloaded log independently totals17suites,
+  4595passes/20existing skips/zero failures.
+- All four extracted-package browser workflows passed, including actual decoded
+  audio/subtitles, profile deletion/token denial, same-ID Browse selection,
+  continued playback and final health200/retained parent identity. This run tests
+  the production notifier fix; old previews predate the intermittent crash repair.
+- [Download Linux x64 preview](https://github.com/dangerousnick/Castlumora/actions/runs/44001512904/artifacts/14292393322)
+  (GitHub sign-in,30-day retention). Archive:
+  `Castlumora-1.0-dev-82057fa6d821-linux-x64.tar.gz`.
+  SHA-256:`b8677d6e37e82e1075c3aa16dd47707e0af6a0103c4901a8e36995bc2b0e3d40`.
+  Independent download verified ZIP/tar hashes, exact source/manifest/documents,
+  compiled notifier/registry2/rename/atomic guards, all16castle assets, GPL/runtime
+  licenses, executable modes and no private profile key/registry/snapshot.
+  Profile recovery remains false in the manifest. No stable1.0/Mint/NAS/GPU/tuner
+  certification or complete installed-system restore is claimed.
+- Next task: administrator-only non-destructive recovery of explicit registry2
+  provisioning intent. Revalidate current owner/libraries/key; retain identity,
+  history/preferences; disable/revoke before credential/policy repair; activate
+  only after atomic success. Never reactivate deleting/review/active states or
+  recreate a lost key/identity. Add service/HTTP/UI/restart-fault tests and a real
+  packaged recovery workflow before exposing the action. Keep YouTube expansion
+  deferred. Preserve every remaining permanent product requirement.
+- Usage status: Not accessible. Recovery: fetch origin, checkout the existing
+  development branch, inspect status/log and this checkpoint before editing;
+  retain any newer verified commits. Restore the pinned .NET10/Node24/native
+  fixtures, install repository hooks, use focused tests then the normal mandatory
+  push gate. Source is clean at the published commit before this documentation
+  checkpoint. Local full packaged launch remains limited by1.2GiB free versus
+  the unchanged2GiB startup reserve; GitHub actually launched/tested the package.
+  Main's separate OpenAPI Report still has its old workflow (rechecked); reviewed
+  adoption is required, without automatically merging unfinished application work.
+
 ## Confirmed server crash — deleted-user notification race
 
 Preview43994056476/job133741709536 correctly failed instead of uploading an archive.

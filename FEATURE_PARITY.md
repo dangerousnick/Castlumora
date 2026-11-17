@@ -13,6 +13,20 @@ feature status; a development preview does not establish stable-release readines
 Linux-only server policy and mandatory validation remain in effect. Never merge
 main or deploy to Coon Media automatically.
 
+## Notifier repair published; package verified
+
+82057fa6d8 passed the full mandatory local gate:4595backend passes/20existing
+skips,86frontend tests, restored formatting and .NET10 Debug/Release. Exact-SHA
+format/API/ABI, backend Tests44001512839 and extracted-package preview44001512904
+passed; the downloaded hosted backend log also totals4595passes/20existing skips. All four browser workflows passed, including
+delete/continued playback/final server health and parent identity. Download and
+checksum are recorded in DEVELOPMENT_PROGRESS.md. Independent download verified
+compiled fixes, registry2, assets/licensing and absence of private profile state.
+This supersedes older passing previews affected by the intermittent crash.
+Next: controlled administrator-only provisioning recovery, preserving identity
+and owner bounds, with failure/restart/HTTP/UI/package verification. Recovery is
+still unavailable; deletion and ambiguous legacy states must never be reactivated.
+
 ## Confirmed notifier crash fix in verification
 
 Retained diagnostics proved that a queued playback notification for a deleted user
