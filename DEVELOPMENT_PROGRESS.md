@@ -14,6 +14,39 @@ Linux-only server policy and mandatory validation remain in effect. Never merge
 main or deploy to Coon Media automatically.
 
 
+## Lifecycle checkpoint and preview transport investigation
+
+Published application3d37a8348f0b8d49c81fd1c40f5cb938a14acf7d completed its normal gate:
+restored format2453files/zero changes/no workspace warning, .NET10 Debug/Release
+0warnings/errors,17backend suites4590passed/20existing skips, Node24.22.1
+typecheck/lint/81tests/build. Logs:/tmp/castlumora-prepush.2QO9aami. Exact-SHA GitHub
+Tests43916016948/job133470455714 independently matched the backend totals;
+Format43916017116, ABI43916017178 and OpenAPI43916016993 passed.
+
+Preview43916016903/job133470407789 failed after successful profile deletion:
+Playwright's separate GET checking the deleted user received ECONNRESET before any
+HTTP status could be asserted. Sanitized diagnostic14251315437 shows the admin UI
+had completed removal; it does not prove the server never faulted. No application
+archive was uploaded. The root server-side cause of the reset remains unconfirmed.
+
+The harness now allows exactly one Playwright transport-only retry for idempotent
+GETs. It never retries HTTP statuses or mutations; existing401/404/500, permissions,
+movie identity/history and decoded/advancing playback assertions remain required.
+Five real loopback-server tests passed: one reset recovers, a second fails, and
+HTTP401/404/500 return unchanged after one request. Failure call logs redact fixture
+Authorization values. The actual workflow sanitizer was exercised against password,
+hex/non-hex authorization and environment secrets. Failure diagnostics now include
+bounded/redacted server-log tails plus process/health status, with no HAR/traces or
+raw credential files. No timeouts, required checks or production safeguards changed.
+
+The new policy-only commit must pass its normal hook and a new actual packaged
+run before delivery. It reuses the unchanged3d37backend locally; hosted CI still
+runs all required suites. Latest independently downloaded working preview remains
+0d59a68a39 below. Lifecycle2 is implemented; reactivation remains unavailable.
+Next: administrator-only recovery of explicitly provisioning records, preserving
+identity/history/key and owner bounds; never revive deleting/review/active records.
+Usage status: Not accessible. Branch/PR3 and all prior checkpoints remain unchanged.
+
 ## Current increment — durable profile lifecycle, 2026-11-16
 
 Registry2 persists provisioning intent and requested libraries before credential/

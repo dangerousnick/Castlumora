@@ -13,6 +13,16 @@ feature status; a development preview does not establish stable-release readines
 Linux-only server policy and mandatory validation remain in effect. Never merge
 main or deploy to Coon Media automatically.
 
+## Lifecycle validation and preview transport
+
+3d37a8348f passed full local and exact-SHA backend/format/API/ABI checks:4590backend
+passes/20existing skips and81frontend passes. Its package run failed on a GET TCP
+reset after profile deletion, so it is not a downloadable deliverable. The harness
+now retries only one GET ECONNRESET, preserving every HTTP/mutation/playback check;
+five real socket/HTTP tests passed. Bounded sanitized server/health diagnostics make
+any recurring server fault visible. A new full package run is required. No new
+recovery action is exposed, and the earlier0d59a68a39 verified preview remains.
+
 ## Profile lifecycle foundation in validation
 
 Registry2 distinguishes interrupted provisioning, deletion and ambiguous legacy

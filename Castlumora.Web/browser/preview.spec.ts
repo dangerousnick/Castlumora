@@ -2,6 +2,7 @@
 import { test, expect } from '@playwright/test';
 import type { MediaSource } from '../src/api/types';
 import { verifyPreferredFixtureTracks } from './media-preference-proof';
+import { readPreview } from './preview-read';
 const preview = process.env.CASTLUMORA_PREVIEW_URL;
 const password = process.env.CASTLUMORA_PREVIEW_PASSWORD;
 test('packaged preview: fresh setup, login, administration and logout', async ({
@@ -16,7 +17,7 @@ test('packaged preview: fresh setup, login, administration and logout', async ({
   page.setDefaultTimeout(20000);
   const errors: string[] = [];
   page.on('pageerror', (error) => errors.push(error.message));
-  const manifest = await request.get(new URL('BUILD_INFO.json', preview!).href);
+  const manifest = await readPreview(request, new URL('BUILD_INFO.json', preview!).href);
   expect(manifest.ok()).toBe(true);
   expect((await manifest.json()).selfContainedDotnet).toBe(true);
   await page.goto(preview!);
@@ -34,13 +35,15 @@ test('packaged preview: fresh setup, login, administration and logout', async ({
   await expect(page.locator('header').getByRole('link', { name: 'Castlumora home' })).toBeVisible();
   await page.getByRole('link', { name: 'Administration', exact: true }).click();
   await expect(page.getByRole('heading', { name: 'Your castle. Your rules.' })).toBeVisible();
-  const legacy = await request.get(new URL('legacy/', preview!).href);
+  const legacy = await readPreview(request, new URL('legacy/', preview!).href);
   expect(await legacy.text()).toContain('does not silently install an older incompatible client');
   const session = await page.evaluate(() =>
     JSON.parse(sessionStorage.getItem('castlumora-session')!),
   );
   const auth = { Authorization: `MediaBrowser Token="${session.token}"` };
-  const info = await request.get(new URL('../System/Info', preview!).href, { headers: auth });
+  const info = await readPreview(request, new URL('../System/Info', preview!).href, {
+    headers: auth,
+  });
   expect((await info.json()).ProgramDataPath).toContain('/tmp/castlumora-preview-fresh/data');
   const setupAgain = await request.post(new URL('../Startup/User', preview!).href, {
     data: { Name: 'Intruder', Password: 'not-used-password' },
@@ -72,7 +75,9 @@ test('packaged preview: restart retains owner and creates/scans a library throug
     JSON.parse(sessionStorage.getItem('castlumora-session')!),
   );
   const auth = { Authorization: `MediaBrowser Token="${session.token}"` };
-  const info = await request.get(new URL('../System/Info', preview!).href, { headers: auth });
+  const info = await readPreview(request, new URL('../System/Info', preview!).href, {
+    headers: auth,
+  });
   expect((await info.json()).ProgramDataPath).toBe('/tmp/castlumora-preview-fresh/data');
   await page.getByRole('link', { name: 'Administration', exact: true }).click();
   await page
@@ -90,7 +95,7 @@ test('packaged preview: restart retains owner and creates/scans a library throug
   await expect
     .poll(
       async () => {
-        const response = await request.get(new URL('../Items', preview!).href, {
+        const response = await readPreview(request, new URL('../Items', preview!).href, {
           headers: auth,
           params: {
             UserId: session.user.Id,
@@ -121,16 +126,20 @@ test('packaged preview: restart retains owner and creates/scans a library throug
   page.once('dialog', (dialog) => dialog.accept());
   await page.getByRole('button', { name: 'Install bundled runtime', exact: true }).click();
   await expect(page.getByText('Ready', { exact: true })).toBeVisible();
-  const runtime = await request.get(new URL('../Castlumora/Imports/Runtime', preview!).href, {
-    headers: auth,
-  });
+  const runtime = await readPreview(
+    request,
+    new URL('../Castlumora/Imports/Runtime', preview!).href,
+    {
+      headers: auth,
+    },
+  );
   expect(runtime.ok()).toBe(true);
   const tool = await runtime.json();
   expect(tool.ready).toBe(true);
   expect(tool.bundleAvailable).toBe(true);
   expect(tool.downloadJobsAvailable).toBe(true);
   await expect(page.getByRole('heading', { name: 'Import a video', exact: true })).toBeVisible();
-  const queue = await request.get(new URL('../Castlumora/Imports/Queue', preview!).href, {
+  const queue = await readPreview(request, new URL('../Castlumora/Imports/Queue', preview!).href, {
     headers: auth,
   });
   expect(queue.ok()).toBe(true);
@@ -158,7 +167,7 @@ test('packaged preview: authorized public import indexes, deduplicates and plays
   const headers = { Authorization: `MediaBrowser Token="${session.token}"` };
   const endpoint = (path: string) => new URL('../' + path, preview!).href;
   const get = async (path: string) => {
-    const response = await request.get(endpoint(path), { headers });
+    const response = await readPreview(request, endpoint(path), { headers });
     expect(response.ok()).toBe(true);
     return response.json();
   };
@@ -438,7 +447,7 @@ test('packaged preview: restart managed profiles isolate preferences and revoke 
   expect(child.user.Id).not.toBe(owner.user.Id);
   expect(child.token).not.toBe(owner.token);
   expect(
-    (await request.get(endpoint('Users/Me'), { headers: headers(owner.token) })).status(),
+    (await readPreview(request, endpoint('Users/Me'), { headers: headers(owner.token) })).status(),
   ).toBe(401);
   expect(
     (
@@ -468,7 +477,7 @@ test('packaged preview: restart managed profiles isolate preferences and revoke 
   await expect
     .poll(
       async () => {
-        const response = await request.get(endpoint('Items'), {
+        const response = await readPreview(request, endpoint('Items'), {
           headers: headers(child.token),
           params: {
             UserId: child.user.Id,
@@ -526,13 +535,13 @@ test('packaged preview: restart managed profiles isolate preferences and revoke 
   await expect(page.getByRole('link', { name: 'Administration', exact: true })).toBeVisible();
   const returned = await session();
   expect(returned.user.Id).toBe(owner.user.Id);
-  const preferences = await request.get(endpoint('Castlumora/Presentation/Preferences'), {
+  const preferences = await readPreview(request, endpoint('Castlumora/Presentation/Preferences'), {
     headers: headers(returned.token),
   });
   expect(preferences.ok()).toBe(true);
   expect((await preferences.json()).hiddenResume).not.toContain(marker);
   expect(
-    (await request.get(endpoint('Users/Me'), { headers: headers(child.token) })).status(),
+    (await readPreview(request, endpoint('Users/Me'), { headers: headers(child.token) })).status(),
   ).toBe(401);
   await page.getByRole('link', { name: 'Administration', exact: true }).click();
   await page
@@ -540,7 +549,9 @@ test('packaged preview: restart managed profiles isolate preferences and revoke 
     .getByRole('link', { name: 'Users & devices', exact: true })
     .click();
   const childItemUrl = endpoint('Items/' + fixture!.Id + '?userId=' + child.user.Id);
-  const beforeRename = await request.get(childItemUrl, { headers: headers(returned.token) });
+  const beforeRename = await readPreview(request, childItemUrl, {
+    headers: headers(returned.token),
+  });
   expect(beforeRename.ok()).toBe(true);
   const watched = (await beforeRename.json()).UserData;
   expect(watched.LastPlayedDate).toBeTruthy();
@@ -550,10 +561,12 @@ test('packaged preview: restart managed profiles isolate preferences and revoke 
   await expect(
     page.getByRole('button', { name: 'Rename Packaged Family Updated', exact: true }),
   ).toBeVisible();
-  const afterRename = await request.get(childItemUrl, { headers: headers(returned.token) });
+  const afterRename = await readPreview(request, childItemUrl, {
+    headers: headers(returned.token),
+  });
   expect(afterRename.ok()).toBe(true);
   expect((await afterRename.json()).UserData).toEqual(watched);
-  const retainedUser = await request.get(endpoint('Users/' + child.user.Id), {
+  const retainedUser = await readPreview(request, endpoint('Users/' + child.user.Id), {
     headers: headers(returned.token),
   });
   expect(retainedUser.ok()).toBe(true);
@@ -565,10 +578,12 @@ test('packaged preview: restart managed profiles isolate preferences and revoke 
   await expect(page.getByText('No managed profiles.', { exact: true })).toBeVisible();
   expect(
     (
-      await request.get(endpoint('Users/' + child.user.Id), { headers: headers(returned.token) })
+      await readPreview(request, endpoint('Users/' + child.user.Id), {
+        headers: headers(returned.token),
+      })
     ).status(),
   ).toBe(404);
-  const retainedMovieResponse = await request.get(endpoint('Items/' + fixture!.Id), {
+  const retainedMovieResponse = await readPreview(request, endpoint('Items/' + fixture!.Id), {
     headers: headers(returned.token),
   });
   expect(retainedMovieResponse.ok()).toBe(true);

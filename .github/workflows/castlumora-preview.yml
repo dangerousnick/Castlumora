@@ -133,16 +133,42 @@ jobs:
         if: failure()
         run: |
           python3 - <<'PY'
-          import os, pathlib, re
+          import json, os, pathlib, re, urllib.request, urllib.error
           output = pathlib.Path(os.environ['RUNNER_TEMP']) / 'castlumora-preview-diagnostics'
           output.mkdir(exist_ok=True)
-          password = os.environ.get('CASTLUMORA_PREVIEW_PASSWORD', '')
+          secrets = sorted({value for name, value in os.environ.items()
+                            if value and (name == 'CASTLUMORA_PREVIEW_PASSWORD' or
+                            (len(value) >= 8 and re.search(r'(?i)token|password|secret|credential', name)))}, key=len, reverse=True)
+          def redact(text):
+              for secret in secrets:
+                  text = text.replace(secret, '[redacted-secret]')
+              text = re.sub(r'(?i)authorization\s*:[^\r\n]*', 'Authorization: [redacted]', text)
+              return re.sub(r'(?i)[a-f0-9]{32,}', '[redacted-id-or-secret]', text)
           for index, source in enumerate(pathlib.Path('Castlumora.Web/test-results').rglob('error-context.md')):
-              text = source.read_text(errors='replace')
-              if password:
-                  text = text.replace(password, '[redacted-password]')
-              text = re.sub(r'(?i)[a-f0-9]{32,}', '[redacted-id-or-secret]', text)
-              (output / f'context-{index}.txt').write_text(text)
+              (output / f'context-{index}.txt').write_text(redact(source.read_text(errors='replace')))
+          for name in ('castlumora-server.log', 'castlumora-restart.log'):
+              source = pathlib.Path(os.environ['RUNNER_TEMP']) / name
+              if source.is_file():
+                  with source.open('rb') as stream:
+                      stream.seek(max(0, source.stat().st_size - 1048576))
+                      text = stream.read().decode(errors='replace')
+                  (output / (source.stem + '.txt')).write_text(redact(text))
+          health = {'processAlive': False, 'httpStatus': None}
+          try:
+              pid = int(os.environ.get('PREVIEW_PID', '0'))
+              if pid > 0:
+                  os.kill(pid, 0)
+                  health['processAlive'] = True
+          except (OSError, ValueError):
+              pass
+          try:
+              with urllib.request.urlopen('http://127.0.0.1:28096/health', timeout=3) as response:
+                  health['httpStatus'] = response.status
+          except urllib.error.HTTPError as error:
+              health['httpStatus'] = error.code
+          except OSError:
+              health['httpStatus'] = 'unavailable'
+          (output / 'health.txt').write_text(json.dumps(health))
           PY
       - name: Preserve failed browser diagnostics
         if: failure()
