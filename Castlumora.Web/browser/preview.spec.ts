@@ -626,4 +626,11 @@ test('packaged preview: restart managed profiles isolate preferences and revoke 
       timeout: 20000,
     })
     .toBeGreaterThan(position + 0.2);
+  const healthy = await readPreview(request, endpoint('health'));
+  expect(healthy.status()).toBe(200);
+  const retainedOwner = await readPreview(request, endpoint('Users/Me'), {
+    headers: headers(returned.token),
+  });
+  expect(retainedOwner.ok()).toBe(true);
+  expect((await retainedOwner.json()).Id).toBe(owner.user.Id);
 });

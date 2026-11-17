@@ -14,6 +14,37 @@ Linux-only server policy and mandatory validation remain in effect. Never merge
 main or deploy to Coon Media automatically.
 
 
+## Confirmed server crash — deleted-user notification race
+
+Preview43994056476/job133741709536 correctly failed instead of uploading an archive.
+Diagnostics14290000909 show processAlive=false, health unavailable and an unhandled
+ArgumentException from UserDataChangeNotifier.GetUserDataChangeInfo: playback had
+queued an update before profile deletion; the500ms timer later looked up the deleted
+user and its async-void exception terminated the server. This explains the captured
+Browse Failed-to-fetch/reset failures; a display-title change was not the cause of
+this observed run. Do not treat old passing previews as free of this intermittent
+bug or publish a new build until the production fix passes package verification.
+
+The notifier now drops missing recipients, captures existing identities before lazy
+delivery, logs/contains recipient/payload failures and continues other/future batches.
+A final timer exception boundary protects server liveness; stop/dispose cancel queued
+work. The original3-argument public constructor,500ms window,2000-item batching goal,
+user-scoped message shape and healthy delivery remain. Logging uses an additive
+constructor; no authentication or media/database identifiers were changed.
+
+Six focused notifier tests passed, including a real timer, deferred deletion,
+payload/send failures, healthy recipients/future batches and stop cleanup. Required
+DTO fixture data and analyzer formatting/disposal issues were corrected before
+publication. Non-waiting timer cancellation remains in the atomic synchronous drain:
+awaiting disposal from its own callback would wait on itself. No analyzer was disabled.
+The deleted-recipient test asserts attempted recipients outside the guarded callback
+so a caught test assertion cannot create a false pass. The strengthened real-timer case also passed on its final rerun; the mandatory
+full gate and actual package still must pass.
+Packaged checks additionally require health200 and the retained parent identity after
+continued movie playback. No assertion was removed, no timeout increased, and no
+server restart/retry is used to hide a crash. Further profile recovery work waits
+until this correctness milestone is verified and published. Usage: Not accessible.
+
 ## Lifecycle checkpoint and preview transport investigation
 
 Published application3d37a8348f0b8d49c81fd1c40f5cb938a14acf7d completed its normal gate:

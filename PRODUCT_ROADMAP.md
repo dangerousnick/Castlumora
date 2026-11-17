@@ -13,6 +13,15 @@ feature status; a development preview does not establish stable-release readines
 Linux-only server policy and mandatory validation remain in effect. Never merge
 main or deploy to Coon Media automatically.
 
+## Confirmed notifier crash fix in verification
+
+Retained diagnostics proved that a queued playback notification for a deleted user
+could throw from an async-void timer and terminate the server. Missing recipients
+are now skipped; captured identities and logged failure boundaries preserve healthy
+and future notifications. Constructor compatibility,500ms batching and user scoping
+remain. Focused regressions passed; full gate and an actual packaged run are required
+before another preview is delivered. Profile reactivation remains unimplemented.
+
 ## Lifecycle validation and preview transport
 
 3d37a8348f passed full local and exact-SHA backend/format/API/ABI checks:4590backend

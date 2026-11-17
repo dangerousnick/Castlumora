@@ -3,12 +3,15 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Jellyfin.Database.Implementations.Entities;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Session;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Session;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 
 namespace Emby.Server.Implementations.EntryPoints
 {
@@ -23,12 +26,14 @@ namespace Emby.Server.Implementations.EntryPoints
         private readonly ISessionManager _sessionManager;
         private readonly IUserDataManager _userDataManager;
         private readonly IUserManager _userManager;
+        private readonly ILogger<UserDataChangeNotifier> _logger;
 
         private readonly Dictionary<Guid, Dictionary<Guid, BaseItem>> _changedItems = [];
         private readonly Lock _syncLock = new();
 
         private Timer? _updateTimer;
         private int _changedItemCount;
+        private bool _stopped;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="UserDataChangeNotifier"/> class.
@@ -40,7 +45,23 @@ namespace Emby.Server.Implementations.EntryPoints
             IUserDataManager userDataManager,
             ISessionManager sessionManager,
             IUserManager userManager)
+            : this(userDataManager, sessionManager, userManager, NullLogger<UserDataChangeNotifier>.Instance)
         {
+        }
+
+        /// <summary>Initializes a notifier with isolated background-delivery error logging.</summary>
+        /// <param name="userDataManager">User data changes.</param>
+        /// <param name="sessionManager">Existing user-scoped delivery.</param>
+        /// <param name="userManager">Current user identities.</param>
+        /// <param name="logger">Background-delivery diagnostics.</param>
+        public UserDataChangeNotifier(
+            IUserDataManager userDataManager,
+            ISessionManager sessionManager,
+            IUserManager userManager,
+            ILogger<UserDataChangeNotifier> logger)
+        {
+            ArgumentNullException.ThrowIfNull(logger);
+            _logger = logger;
             _userDataManager = userDataManager;
             _sessionManager = sessionManager;
             _userManager = userManager;
@@ -49,6 +70,11 @@ namespace Emby.Server.Implementations.EntryPoints
         /// <inheritdoc />
         public Task StartAsync(CancellationToken cancellationToken)
         {
+            lock (_syncLock)
+            {
+                _stopped = false;
+            }
+
             _userDataManager.UserDataSaved += OnUserDataManagerUserDataSaved;
 
             return Task.CompletedTask;
@@ -58,7 +84,7 @@ namespace Emby.Server.Implementations.EntryPoints
         public Task StopAsync(CancellationToken cancellationToken)
         {
             _userDataManager.UserDataSaved -= OnUserDataManagerUserDataSaved;
-
+            ClearPending();
             return Task.CompletedTask;
         }
 
@@ -71,6 +97,11 @@ namespace Emby.Server.Implementations.EntryPoints
 
             lock (_syncLock)
             {
+                if (_stopped)
+                {
+                    return;
+                }
+
                 // The window runs from the first change of a batch and is never extended, so a stream
                 // of changes that never pauses - a library scan - still closes its batches instead of
                 // holding every item it touched alive until the stream stops.
@@ -123,19 +154,46 @@ namespace Emby.Server.Implementations.EntryPoints
 
         private async void UpdateTimerCallback(object? state)
         {
+            try
+            {
+                await FlushAsync().ConfigureAwait(false);
+            }
+            catch (Exception exception)
+            {
+                // A timer callback must never terminate the server on notification failure.
+                _logger.LogError(exception, "Error processing queued user data notifications");
+            }
+        }
+
+        private List<KeyValuePair<Guid, Dictionary<Guid, BaseItem>>> TakePendingBatch()
+        {
             List<KeyValuePair<Guid, Dictionary<Guid, BaseItem>>> changes;
             lock (_syncLock)
             {
+                if (_stopped)
+                {
+                    return [];
+                }
+
                 changes = _changedItems.ToList();
                 _changedItems.Clear();
                 _changedItemCount = 0;
 
                 if (_updateTimer is not null)
                 {
+                    // Non-waiting cancellation: awaiting disposal from this timer's own
+                    // callback would wait for the callback itself. Keep the batch drain atomic.
                     _updateTimer.Dispose();
                     _updateTimer = null;
                 }
             }
+
+            return changes;
+        }
+
+        internal async Task FlushAsync()
+        {
+            var changes = TakePendingBatch();
 
             if (changes.Count == 0)
             {
@@ -144,22 +202,40 @@ namespace Emby.Server.Implementations.EntryPoints
 
             foreach (var (userId, changedItems) in changes)
             {
-                await _sessionManager.SendMessageToUserSessions(
-                    [userId],
-                    SessionMessageType.UserDataChanged,
-                    () => GetUserDataChangeInfo(userId, changedItems.Values),
-                    default).ConfigureAwait(false);
+                if (Volatile.Read(ref _stopped))
+                {
+                    return;
+                }
+
+                try
+                {
+                    // Playback can queue an update just before this user is deleted.
+                    var user = _userManager.GetUserById(userId);
+                    if (user is null)
+                    {
+                        continue;
+                    }
+
+                    // Capture the identity before lazy session delivery; deletion must not cause
+                    // a second lookup to throw from the timer's async-void entry point.
+                    await _sessionManager.SendMessageToUserSessions(
+                        [userId],
+                        SessionMessageType.UserDataChanged,
+                        () => GetUserDataChangeInfo(user, changedItems.Values),
+                        default).ConfigureAwait(false);
+                }
+                catch (Exception exception)
+                {
+                    _logger.LogError(exception, "Error sending user data notifications for user {UserId}", userId);
+                }
             }
         }
 
-        private UserDataChangeInfo GetUserDataChangeInfo(Guid userId, IEnumerable<BaseItem> changedItems)
+        private UserDataChangeInfo GetUserDataChangeInfo(User user, IEnumerable<BaseItem> changedItems)
         {
-            var user = _userManager.GetUserById(userId)
-                ?? throw new ArgumentException("Invalid user ID", nameof(userId));
-
             return new UserDataChangeInfo
             {
-                UserId = userId,
+                UserId = user.Id,
                 UserDataList = changedItems
                     .Select(i =>
                     {
@@ -180,8 +256,20 @@ namespace Emby.Server.Implementations.EntryPoints
         /// <inheritdoc />
         public void Dispose()
         {
-            _updateTimer?.Dispose();
-            _updateTimer = null;
+            _userDataManager.UserDataSaved -= OnUserDataManagerUserDataSaved;
+            ClearPending();
+        }
+
+        private void ClearPending()
+        {
+            lock (_syncLock)
+            {
+                _stopped = true;
+                _updateTimer?.Dispose();
+                _updateTimer = null;
+                _changedItems.Clear();
+                _changedItemCount = 0;
+            }
         }
     }
 }
