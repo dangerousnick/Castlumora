@@ -39,7 +39,9 @@ publication. Non-waiting timer cancellation remains in the atomic synchronous dr
 awaiting disposal from its own callback would wait on itself. No analyzer was disabled.
 The deleted-recipient test asserts attempted recipients outside the guarded callback
 so a caught test assertion cannot create a false pass. The strengthened real-timer case also passed on its final rerun; the mandatory
-full gate and actual package still must pass.
+full gate and actual package still must pass. The first gate blocked publication
+on SA1642 constructor summary wording; the standard documentation prefix was
+corrected before retrying. No failing snapshot was pushed.
 Packaged checks additionally require health200 and the retained parent identity after
 continued movie playback. No assertion was removed, no timeout increased, and no
 server restart/retry is used to hide a crash. Further profile recovery work waits

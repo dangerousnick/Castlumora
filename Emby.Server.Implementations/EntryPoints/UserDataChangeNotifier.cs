@@ -49,7 +49,9 @@ namespace Emby.Server.Implementations.EntryPoints
         {
         }
 
-        /// <summary>Initializes a notifier with isolated background-delivery error logging.</summary>
+        /// <summary>
+        /// Initializes a new instance of the <see cref="UserDataChangeNotifier"/> class with background-delivery logging.
+        /// </summary>
         /// <param name="userDataManager">User data changes.</param>
         /// <param name="sessionManager">Existing user-scoped delivery.</param>
         /// <param name="userManager">Current user identities.</param>
