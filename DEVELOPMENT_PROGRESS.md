@@ -14,6 +14,26 @@ Linux-only server policy and mandatory validation remain in effect. Never merge
 main or deploy to Coon Media automatically.
 
 
+## Package fixture UUID correction
+
+Exact-SHA81d5399f35 passed Format44361465746, ABI44361465713 and OpenAPI44361465640;
+local mandatory validation passed4615backend tests/20existing skips and92frontend
+tests. The new package run44361465616/job135003856997 passed existing workflows,
+then correctly failed the first recovery run and uploaded diagnostics14454542313
+rather than an application archive. Downloaded/hash-verified diagnostics show the
+server remains alive/health200 and administrator inventory returns503 for damaged
+private state. This is not the earlier server-crash regression.
+
+The CI-only fixture incorrectly copied a compact32-character API library ID into
+PendingLibraries; the private registry uses default .NET JSON Guid arrays requiring
+canonical hyphenated UUIDs. A real .NET JSON-reader proof confirms compact rejection
+and canonical acceptance. The fixture now writes str(uuid.UUID(...)); production
+registry validation is retained, not relaxed. No assertion/timeout/retry was weakened.
+The corrected package must pass both interruption recovery and another cold restart
+before any new archive is delivered. Backend hosted tests are still being monitored.
+This fixture-only correction reuses unchanged backend evidence and runs the normal
+frontend/check/package gate; no backend result is inferred from a skipped CI job.
+
 ## Recovery validation caught DVR lifetime and session-log defects
 
 The normal push gate for local85f3b024a4 correctly blocked publication on

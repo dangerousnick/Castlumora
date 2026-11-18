@@ -13,6 +13,14 @@ feature status; a development preview does not establish stable-release readines
 Linux-only server policy and mandatory validation remain in effect. Never merge
 main or deploy to Coon Media automatically.
 
+## Package recovery fixture correction pending delivery
+
+The new recovery package correctly failed on malformed CI-written private intent;
+server health stayed200 and damaged state was denied503. The fixture now normalizes
+compact API IDs to canonical registry UUIDs; production validation and assertions
+remain unchanged. Existing workflows and local4615backend/92frontend tests passed.
+Another actual package/cold-restart run is required before the new download exists.
+
 ## Recovery validation hardening before publication
 
 The gate found a genuine DVR early-exit disposal race and blocked the push. Exit

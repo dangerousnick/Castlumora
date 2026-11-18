@@ -5,6 +5,7 @@ import os
 from pathlib import Path
 import sys
 import urllib.request
+import uuid
 
 ROOT = Path("/tmp/castlumora-preview-fresh")
 assert os.environ.get("GITHUB_ACTIONS") == "true"
@@ -62,7 +63,7 @@ elif sys.argv[1] == "interrupt":
     profile = next(profile for profile in state["Profiles"] if profile["User"].replace("-", "") == saved["id"].replace("-", ""))
     assert profile["Ready"] and profile["Lifecycle"] == "active"
     assert hashlib.sha256(key.read_bytes()).hexdigest() == saved["keySha256"]
-    profile.update(Ready=False, Lifecycle="provisioning", PendingLibraries=[saved["libraryId"]])
+    profile.update(Ready=False, Lifecycle="provisioning", PendingLibraries=[str(uuid.UUID(saved["libraryId"]))])
     save(registry, state)
     print("Recorded interrupted intent only while disposable preview was stopped; database/key preserved.")
 else:
