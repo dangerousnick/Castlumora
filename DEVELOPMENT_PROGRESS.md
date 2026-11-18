@@ -14,6 +14,42 @@ Linux-only server policy and mandatory validation remain in effect. Never merge
 main or deploy to Coon Media automatically.
 
 
+## Controlled profile provisioning recovery — implementation checkpoint
+
+The owner requested all remaining non-YouTube work. The next coherent milestone
+adds administrator-confirmed recovery only for explicit registry2 provisioning
+intent with the original existing restricted identity, enabled password-protected
+owner, current permitted libraries and unchanged key. Disable/revoke precede
+credential/policy repair; durable completion alone makes it ready. Active/deleting/
+ambiguous legacy/orphan states are never reactivated; missing keys/identities are
+never regenerated. No override payload, owner-password bypass or public fault API.
+
+Focused local results:39profile-service tests (including real intent persistence,
+failed repair after core policy enable, reopen/retry and unsafe-prerequisite denial),
+12managed-profile UI tests, and the real SQLite HTTP workflow passed. HTTP verifies
+identity/configuration/key/viewing preference retention, normal password switching,
+anonymous/child denial, invalid override rejection, owning-account404 and active409.
+Typecheck/lint, browser test discovery, actionlint, Python compilation and shell
+syntax checks passed. The focused no-restore formatter completed with a workspace
+loading warning, so it is not accepted as a complete formatting pass; the normal
+gate must restore/load the complete solution and reject any warning. Full Debug/Release/backend/frontend gate and exact-SHA
+GitHub/package results remain to run; do not claim this code is published yet.
+
+The package harness retains all four existing workflows and adds two recovery runs:
+stop only its disposable server before marking explicit interrupted intent; restart,
+recover through real Web/API, then cold-restart again and verify the same identity,
+favorite/history/configuration and normal switching persist. No production storage
+threshold or existing assertion is reduced. Manifest now advertises recovery only
+in new source; the previous verified82057preview correctly remains recovery=false.
+
+Usage status: Not accessible (no quota/reset tool exposed). Current branch remains
+development/castlumora-web-1.3; latest published checkpoint is e8c6136830, application
+82057fa6d8. Next after verification/publication: audit account-wide sessions/devices
+and existing invitation/registration coverage; finish the first concrete gap before
+starting unrelated features. Source/recovery documents and prior history preserved.
+Main-only OpenAPI reporter activation still requires reviewed main adoption; do not
+automatically merge unfinished application changes. YouTube expansion stays deferred.
+
 ## Published notifier fix and verified Linux preview — 2026-11-16
 
 - Latest published application: `82057fa6d821390ece6fb182ea8ebf418bb28314`

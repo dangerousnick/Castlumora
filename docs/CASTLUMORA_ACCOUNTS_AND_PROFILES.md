@@ -83,9 +83,23 @@ neither registry nor snapshot is overwritten. A matching snapshot allows a safe
 retry after an interrupted migration.
 
 Administration shows provisioning interrupted, deletion pending, or legacy review
-as distinct unavailable states. Reactivation and preset/library editing are still
-separate future milestones. There is no recovery endpoint/button that could revive
-a deletion-pending or ambiguous profile. Ordinary account administration remains
+as distinct unavailable states. **Recover [profile name]** is available only for an
+existing identity with explicit version2 provisioning intent. An administrator must
+confirm it; the server rechecks the enabled/password-protected owner, the original
+restricted managed identity, currently available/owner-permitted libraries and the
+existing private key. It disables the child and revokes its sessions before repairing
+the original derived password and owner-bounded preset. Only a durable completed
+registry update marks it available. Identity, display name, key, history, watchlists
+and media/presentation preferences remain; account passwords are not requested or
+changed. Switching afterward still requires the owner's password normally.
+
+Recovery never creates a replacement user/key, guesses a missing library, accepts
+policy/identity overrides, or reactivates active, deletion-pending or ambiguous
+legacy-review records. Unknown IDs return404; unsafe states return409; damaged
+configuration/failed repair returns503 and remains unavailable/retryable. Preserve
+all private files and correct the problem before retrying. Do not use recovery to
+undo an administrator's deliberate disablement of an active profile. Preset/library
+editing remains separate unfinished work. Ordinary account administration remains
 available if profile-only configuration is damaged.
 
 Back up the user database and the entire private profile directory before upgrading.

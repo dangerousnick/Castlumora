@@ -1,5 +1,12 @@
 # Castlumora Phase 1.4 — retained master task
 
+## Current scope confirmation
+
+Continue all remaining non-YouTube Phase1.4 work through release readiness in
+verified, published milestones. Further YouTube importing and creator metadata
+remain deferred; preserve completed implementations. This is not a reduction of
+other permanent product requirements, an automatic main merge or a deployment.
+
 ## Owner priority update — accounts through release readiness (2026-11-14)
 
 Defer further YouTube importing and creator-metadata development at the owner's

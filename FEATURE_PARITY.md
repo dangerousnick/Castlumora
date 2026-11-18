@@ -13,6 +13,17 @@ feature status; a development preview does not establish stable-release readines
 Linux-only server policy and mandatory validation remain in effect. Never merge
 main or deploy to Coon Media automatically.
 
+## Profile provisioning recovery in validation
+
+Administrator-confirmed recovery now resumes only saved explicit provisioning with
+the original restricted identity/key and current owner/library bounds. Durable denial
+persists until repair completes; deletion/legacy review/active/orphan records never
+reactivate. Identity/configuration/history are retained, with no override or missing-
+key recreation. Focused service39/UI12 and real SQLite HTTP tests passed; full gate
+and the new extracted-package/cold-restart workflow remain required before delivery.
+Preset/library editing, account-wide session/invitation gaps and remaining non-YouTube
+product/release scope continue afterward. Existing implementations are preserved.
+
 ## Notifier repair published; package verified
 
 82057fa6d8 passed the full mandatory local gate:4595backend passes/20existing

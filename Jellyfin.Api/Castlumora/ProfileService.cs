@@ -179,7 +179,7 @@ public sealed class ProfileService : IDisposable
                 });
             }
 
-            return new JsonObject { ["profiles"] = entries };
+            return new JsonObject { ["profiles"] = entries, ["recoveryAvailable"] = true };
         }
         finally
         {
@@ -274,6 +274,66 @@ public sealed class ProfileService : IDisposable
         }
     }
 
+    /// <summary>Resumes only explicit interrupted provisioning using the original managed identity.</summary>
+    /// <param name="actor">Authenticated administrator.</param>
+    /// <param name="identity">Existing provisioning identity.</param>
+    /// <param name="token">Cancellation before recovery mutations begin.</param>
+    /// <returns>False for an unknown identity; never recreates a user or missing key.</returns>
+    public async Task<bool> RecoverAsync(Guid actor, Guid identity, CancellationToken token)
+    {
+        RequireAdministrator(actor);
+        await _gate.WaitAsync(token).ConfigureAwait(false);
+        try
+        {
+            var state = Read();
+            var index = state.Profiles.FindIndex(profile => profile.User.Equals(identity));
+            if (index < 0)
+            {
+                return false;
+            }
+
+            var profile = state.Profiles[index];
+            if (profile.Ready || profile.Lifecycle != "provisioning" || profile.PendingLibraries is not { Length: > 0 } folders)
+            {
+                throw new InvalidOperationException("Only explicit interrupted provisioning can be recovered.");
+            }
+
+            var account = _users.GetUserById(profile.Owner);
+            var user = _users.GetUserById(identity);
+            if (account is null || account.HasPermission(PermissionKind.IsDisabled) || string.IsNullOrEmpty(account.Password)
+                || state.Profiles.Any(candidate => candidate.User.Equals(profile.Owner))
+                || user is null || user.HasPermission(PermissionKind.IsAdministrator) || !ManagedName(user.Username))
+            {
+                throw new InvalidOperationException("Recovery requires an enabled owner and the original restricted managed identity.");
+            }
+
+            var ownerPolicy = _users.GetUserDto(account).Policy;
+            var known = _libraries.GetVirtualFolders().Select(folder => Guid.TryParse(folder.ItemId, out var id) ? id : Guid.Empty).ToHashSet();
+            if (folders.Any(folder => folder.Equals(Guid.Empty) || !known.Contains(folder)
+                || (!ownerPolicy.EnableAllFolders && !ownerPolicy.EnabledFolders.Contains(folder))))
+            {
+                throw new InvalidOperationException("The original libraries must still exist and be permitted by the owner.");
+            }
+
+            var key = Key(state);
+            token.ThrowIfCancellationRequested();
+            // Durable denial already exists. Never expose a partially repaired identity as ready.
+            var disabled = _users.GetUserDto(user).Policy;
+            disabled.IsDisabled = true;
+            await _users.UpdatePolicyAsync(identity, disabled).ConfigureAwait(false);
+            await _sessions.RevokeUserTokens(identity, null).ConfigureAwait(false);
+            await _users.ChangePassword(identity, Secret(key, profile)).ConfigureAwait(false);
+            await _users.UpdatePolicyAsync(identity, BoundedPolicy(profile.Preset, folders, ownerPolicy, user)).ConfigureAwait(false);
+            state.Profiles[index] = profile with { Ready = true, Lifecycle = "active", PendingLibraries = null };
+            Write(state);
+            return true;
+        }
+        finally
+        {
+            _gate.Release();
+        }
+    }
+
     /// <summary>Creates a disabled-first managed viewing identity with explicit library access.</summary>
     /// <param name="actor">Authenticated administrator.</param>
     /// <param name="owner">Existing account identity.</param>
@@ -329,29 +389,7 @@ public sealed class ProfileService : IDisposable
             state.Profiles.Add(profile);
             Write(state);
             await _users.ChangePassword(user.Id, Secret(key, profile)).ConfigureAwait(false);
-            var policy = Preset(preset, folders);
-            // Keep the new identity's inherited providers; a new UserPolicy has null provider IDs.
-            policy.AuthenticationProviderId = user.AuthenticationProviderId;
-            policy.PasswordResetProviderId = user.PasswordResetProviderId;
-            policy.EnableRemoteAccess = ownerPolicy.EnableRemoteAccess;
-            policy.EnableMediaPlayback = ownerPolicy.EnableMediaPlayback;
-            policy.EnableAudioPlaybackTranscoding = ownerPolicy.EnableAudioPlaybackTranscoding;
-            policy.EnableVideoPlaybackTranscoding = ownerPolicy.EnableVideoPlaybackTranscoding;
-            policy.EnablePlaybackRemuxing = ownerPolicy.EnablePlaybackRemuxing;
-            policy.ForceRemoteSourceTranscoding = ownerPolicy.ForceRemoteSourceTranscoding;
-            policy.EnableContentDownloading &= ownerPolicy.EnableContentDownloading;
-            policy.EnableSyncTranscoding = false;
-            policy.MaxParentalRating = ownerPolicy.MaxParentalRating is { } maximum ? Math.Min(policy.MaxParentalRating ?? maximum, maximum) : policy.MaxParentalRating;
-            policy.MaxParentalSubRating = ownerPolicy.MaxParentalSubRating;
-            policy.BlockUnratedItems = policy.BlockUnratedItems.Union(ownerPolicy.BlockUnratedItems).ToArray();
-            policy.BlockedTags = ownerPolicy.BlockedTags.ToArray();
-            policy.AllowedTags = ownerPolicy.AllowedTags.ToArray();
-            policy.BlockedMediaFolders = ownerPolicy.BlockedMediaFolders?.ToArray() ?? [];
-            policy.EnableAllDevices = ownerPolicy.EnableAllDevices;
-            policy.EnabledDevices = ownerPolicy.EnabledDevices.ToArray();
-            policy.RemoteClientBitrateLimit = ownerPolicy.RemoteClientBitrateLimit;
-            policy.MaxActiveSessions = ownerPolicy.MaxActiveSessions;
-            policy.AccessSchedules = ownerPolicy.AccessSchedules.Select(schedule => new AccessSchedule(schedule.DayOfWeek, schedule.StartHour, schedule.EndHour, user.Id)).ToArray();
+            var policy = BoundedPolicy(preset, folders, ownerPolicy, user);
             await _users.UpdatePolicyAsync(user.Id, policy).ConfigureAwait(false);
             state.Profiles[state.Profiles.Count - 1] = profile with { Ready = true, Lifecycle = "active", PendingLibraries = null };
             Write(state);
@@ -465,6 +503,34 @@ public sealed class ProfileService : IDisposable
         MaxParentalRating = preset == "kids" ? 6 : null,
         BlockUnratedItems = preset == "kids" ? Enum.GetValues<UnratedItem>() : []
     };
+
+    private static UserPolicy BoundedPolicy(string preset, Guid[] folders, UserPolicy ownerPolicy, User user)
+    {
+        var policy = Preset(preset, folders);
+        // Keep the identity's inherited providers; a new UserPolicy has null provider IDs.
+        policy.AuthenticationProviderId = user.AuthenticationProviderId;
+        policy.PasswordResetProviderId = user.PasswordResetProviderId;
+        policy.EnableRemoteAccess = ownerPolicy.EnableRemoteAccess;
+        policy.EnableMediaPlayback = ownerPolicy.EnableMediaPlayback;
+        policy.EnableAudioPlaybackTranscoding = ownerPolicy.EnableAudioPlaybackTranscoding;
+        policy.EnableVideoPlaybackTranscoding = ownerPolicy.EnableVideoPlaybackTranscoding;
+        policy.EnablePlaybackRemuxing = ownerPolicy.EnablePlaybackRemuxing;
+        policy.ForceRemoteSourceTranscoding = ownerPolicy.ForceRemoteSourceTranscoding;
+        policy.EnableContentDownloading &= ownerPolicy.EnableContentDownloading;
+        policy.EnableSyncTranscoding = false;
+        policy.MaxParentalRating = ownerPolicy.MaxParentalRating is { } maximum ? Math.Min(policy.MaxParentalRating ?? maximum, maximum) : policy.MaxParentalRating;
+        policy.MaxParentalSubRating = ownerPolicy.MaxParentalSubRating;
+        policy.BlockUnratedItems = policy.BlockUnratedItems.Union(ownerPolicy.BlockUnratedItems).ToArray();
+        policy.BlockedTags = ownerPolicy.BlockedTags.ToArray();
+        policy.AllowedTags = ownerPolicy.AllowedTags.ToArray();
+        policy.BlockedMediaFolders = ownerPolicy.BlockedMediaFolders?.ToArray() ?? [];
+        policy.EnableAllDevices = ownerPolicy.EnableAllDevices;
+        policy.EnabledDevices = ownerPolicy.EnabledDevices.ToArray();
+        policy.RemoteClientBitrateLimit = ownerPolicy.RemoteClientBitrateLimit;
+        policy.MaxActiveSessions = ownerPolicy.MaxActiveSessions;
+        policy.AccessSchedules = ownerPolicy.AccessSchedules.Select(schedule => new AccessSchedule(schedule.DayOfWeek, schedule.StartHour, schedule.EndHour, user.Id)).ToArray();
+        return policy;
+    }
 
     private static bool ManagedName(string name) => name.StartsWith("Castlumora profile ", StringComparison.Ordinal)
         && Guid.TryParseExact(name["Castlumora profile ".Length..], "N", out _);

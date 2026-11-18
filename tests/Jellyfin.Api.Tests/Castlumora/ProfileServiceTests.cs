@@ -89,6 +89,185 @@ public sealed class ProfileServiceTests : IDisposable
     }
 
     [Fact]
+    public async Task Recover_ResumesPersistedIntentWithSameIdentityKeyAndCurrentOwnerBounds()
+    {
+        var token = TestContext.Current.CancellationToken;
+        var child = await InterruptProvisioning();
+        var user = _people[child];
+        user.AudioLanguagePreference = "spa";
+        var keyPath = Path.Combine(_root, "castlumora", "profiles", "credentials.key");
+        var key = await File.ReadAllBytesAsync(keyPath, token);
+        _policies[_owner.Id].EnableRemoteAccess = false;
+        _policies[_owner.Id].MaxParentalRating = 3;
+        _events.Clear();
+        using var reopened = Open();
+        Assert.False(await reopened.SessionAllowedAsync(child, token));
+        Assert.True(await reopened.RecoverAsync(_owner.Id, child, token));
+        Assert.Equal(new[] { "policy", "revoke-all", "password", "policy" }, _events);
+        Assert.Same(user, _people[child]);
+        Assert.Equal("spa", user.AudioLanguagePreference);
+        Assert.Equal(3, _policies[child].MaxParentalRating);
+        Assert.False(_policies[child].EnableRemoteAccess);
+        Assert.Equal("auth", _policies[child].AuthenticationProviderId);
+        Assert.False(_policies[child].IsAdministrator);
+        Assert.Equal(new[] { _folder }, _policies[child].EnabledFolders);
+        Assert.Equal(key, await File.ReadAllBytesAsync(keyPath, token));
+        using var afterRestart = Open();
+        Assert.True(await afterRestart.SessionAllowedAsync(child, token));
+        var record = (await afterRestart.ListManagedAsync(_owner.Id, token))["profiles"]!.AsArray()[0]!;
+        Assert.True(record["ready"]!.GetValue<bool>());
+        Assert.Equal("active", record["lifecycle"]!.GetValue<string>());
+        _users.Verify(users => users.CreateUserAsync(It.IsAny<string>(), true), Times.Once);
+        _sessions.Verify(sessions => sessions.RevokeUserTokens(child, null), Times.Once);
+        _sessions.Verify(sessions => sessions.RevokeUserTokens(_owner.Id, It.IsAny<string?>()), Times.Never);
+    }
+
+    [Theory]
+    [InlineData("active", true)]
+    [InlineData("deleting", false)]
+    [InlineData("review", false)]
+    public async Task Recover_NeverReactivatesOtherLifecycles(string lifecycle, bool ready)
+    {
+        var child = await InterruptProvisioning();
+        var path = Path.Combine(_root, "castlumora", "profiles", "profiles.json");
+        var state = JsonNode.Parse(await File.ReadAllTextAsync(path, TestContext.Current.CancellationToken))!;
+        var profile = state["Profiles"]!.AsArray()[0]!;
+        profile["Lifecycle"] = lifecycle;
+        profile["Ready"] = ready;
+        profile["PendingLibraries"] = null;
+        await File.WriteAllTextAsync(path, state.ToJsonString(), TestContext.Current.CancellationToken);
+        var original = await File.ReadAllBytesAsync(path, TestContext.Current.CancellationToken);
+        _events.Clear();
+        using var reopened = Open();
+        await Assert.ThrowsAsync<InvalidOperationException>(() => reopened.RecoverAsync(_owner.Id, child, TestContext.Current.CancellationToken));
+        Assert.Empty(_events);
+        Assert.Equal(original, await File.ReadAllBytesAsync(path, TestContext.Current.CancellationToken));
+    }
+
+    [Theory]
+    [InlineData("disabled-owner")]
+    [InlineData("passwordless-owner")]
+    [InlineData("missing-owner")]
+    [InlineData("missing-child")]
+    [InlineData("administrator-child")]
+    [InlineData("ordinary-identity")]
+    [InlineData("missing-library")]
+    [InlineData("denied-library")]
+    [InlineData("missing-key")]
+    public async Task Recover_RejectsUnsafePrerequisitesBeforeMutations(string problem)
+    {
+        var child = await InterruptProvisioning();
+        var keyPath = Path.Combine(_root, "castlumora", "profiles", "credentials.key");
+        // A separate real administrator can inspect an unavailable owner's profile.
+        var administrator = new User("Administrator", "auth", "reset");
+        administrator.SetPermission(PermissionKind.IsAdministrator, true);
+        _people.Add(administrator.Id, administrator);
+        switch (problem)
+        {
+            case "disabled-owner":
+                _owner.SetPermission(PermissionKind.IsDisabled, true);
+                break;
+            case "passwordless-owner":
+                _owner.Password = null;
+                break;
+            case "missing-owner":
+                _people.Remove(_owner.Id);
+                break;
+            case "missing-child":
+                _people.Remove(child);
+                break;
+            case "administrator-child":
+                _people[child].SetPermission(PermissionKind.IsAdministrator, true);
+                break;
+            case "ordinary-identity":
+                _people[child].Username = "Ordinary account";
+                break;
+            case "missing-library":
+                _libraries.Setup(libraries => libraries.GetVirtualFolders()).Returns([]);
+                break;
+            case "denied-library":
+                _policies[_owner.Id].EnableAllFolders = false;
+                _policies[_owner.Id].EnabledFolders = [];
+                break;
+            case "missing-key":
+                File.Delete(keyPath);
+                break;
+        }
+
+        _events.Clear();
+        using var reopened = Open();
+        var exception = await Record.ExceptionAsync(() => reopened.RecoverAsync(administrator.Id, child, TestContext.Current.CancellationToken));
+        if (problem == "missing-key")
+        {
+            Assert.IsType<InvalidDataException>(exception);
+            Assert.False(File.Exists(keyPath));
+        }
+        else
+        {
+            Assert.IsType<InvalidOperationException>(exception);
+        }
+
+        Assert.Empty(_events);
+        Assert.False(await reopened.SessionAllowedAsync(child, TestContext.Current.CancellationToken));
+    }
+
+    [Fact]
+    public async Task Recover_FailureAfterPolicyEnableRemainsDeniedAcrossRestartAndRetryPreservesIdentity()
+    {
+        var token = TestContext.Current.CancellationToken;
+        var child = await InterruptProvisioning();
+        _users.Setup(users => users.UpdatePolicyAsync(child, It.IsAny<UserPolicy>())).Returns((Guid id, UserPolicy policy) =>
+        {
+            _policies[id] = policy;
+            _people[id].SetPermission(PermissionKind.IsDisabled, policy.IsDisabled);
+            return policy.IsDisabled ? Task.CompletedTask : Task.FromException(new IOException("Interrupted after core policy update"));
+        });
+        using var reopened = Open();
+        await Assert.ThrowsAsync<IOException>(() => reopened.RecoverAsync(_owner.Id, child, token));
+        Assert.False(_people[child].HasPermission(PermissionKind.IsDisabled));
+        using var afterFailure = Open();
+        Assert.False(await afterFailure.SessionAllowedAsync(child, token));
+        Assert.Equal("provisioning", (await afterFailure.ListManagedAsync(_owner.Id, token))["profiles"]!.AsArray()[0]!["lifecycle"]!.GetValue<string>());
+        _users.Setup(users => users.UpdatePolicyAsync(child, It.IsAny<UserPolicy>())).Returns((Guid id, UserPolicy policy) =>
+        {
+            _policies[id] = policy;
+            _people[id].SetPermission(PermissionKind.IsDisabled, policy.IsDisabled);
+            return Task.CompletedTask;
+        });
+        Assert.True(await afterFailure.RecoverAsync(_owner.Id, child, token));
+        Assert.True(await afterFailure.SessionAllowedAsync(child, token));
+        _users.Verify(users => users.CreateUserAsync(It.IsAny<string>(), true), Times.Once);
+    }
+
+    [Fact]
+    public async Task Recover_RequiresAdministratorAndRejectsCancellationBeforeRepair()
+    {
+        var child = await InterruptProvisioning();
+        _events.Clear();
+        await Assert.ThrowsAsync<UnauthorizedAccessException>(() => _service.RecoverAsync(child, child, TestContext.Current.CancellationToken));
+        Assert.False(await _service.RecoverAsync(_owner.Id, Guid.NewGuid(), TestContext.Current.CancellationToken));
+        using var cancellation = new CancellationTokenSource();
+        await cancellation.CancelAsync();
+        await Assert.ThrowsAnyAsync<OperationCanceledException>(() => _service.RecoverAsync(_owner.Id, child, cancellation.Token));
+        Assert.Empty(_events);
+    }
+
+    private async Task<Guid> InterruptProvisioning()
+    {
+        _users.Setup(users => users.ChangePassword(It.IsAny<Guid>(), It.IsAny<string>())).ThrowsAsync(new IOException("Interrupted provisioning"));
+        await Assert.ThrowsAsync<IOException>(() => Create());
+        var child = Assert.Single(_people.Keys, id => !id.Equals(_owner.Id));
+        _users.Setup(users => users.ChangePassword(It.IsAny<Guid>(), It.IsAny<string>())).Returns((Guid id, string password) =>
+        {
+            Assert.True(_people[id].HasPermission(PermissionKind.IsDisabled));
+            _passwords[id] = password;
+            _events.Add("password");
+            return Task.CompletedTask;
+        });
+        return child;
+    }
+
+    [Fact]
     public async Task Lifecycle_InterruptedProvisioningAndDeletionRemainDistinctAcrossReopen()
     {
         var token = TestContext.Current.CancellationToken;

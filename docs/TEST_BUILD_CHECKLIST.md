@@ -107,3 +107,21 @@ matching/conflicting snapshots, invalid states, keys/policy preservation and sto
 budgeting. The normal packaged browser test covers fresh-v2 profiles and existing
 playback/security workflows; full installed-system restore/upgrade is not certified.
 Always retain a matching database/configuration/key backup before trying an upgrade.
+
+
+## Interrupted managed-profile recovery (development)
+
+Find it under Administration → Users & devices → Managed viewing profiles. Only
+explicit interrupted provisioning with an existing identity offers Recover. Confirm
+the action, check the same identity becomes available, switch with the owner password,
+and verify retained lists/preferences. Active/deleting/legacy-review/orphan records
+must not offer recovery. Missing keys/libraries/owners must produce a useful error
+without silently creating replacements. Never edit live production private files to
+manufacture this condition; report a real interruption with redacted diagnostics.
+
+Automated coverage: focused service failure/reopen tests and real SQLite HTTP
+role/override/preservation tests passed locally. UI confirmation/availability tests
+passed. The dedicated package workflow stops only its disposable server, records
+interrupted intent, restarts, recovers through the interface, and restarts again to
+verify durable identity/viewing data; consult the exact build's CI results for pass
+status. No full installed-system restore or hardware certification is implied.

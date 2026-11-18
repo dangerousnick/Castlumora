@@ -132,6 +132,45 @@ public sealed class CastlumoraProfilesControllerTests : IClassFixture<JellyfinAp
             using var childRevoked = await child.GetAsync("Users/Me", token);
             Assert.Equal(HttpStatusCode.Unauthorized, childRevoked.StatusCode);
 
+            // Only test-owned private intent is edited; identity/preferences remain real SQLite data.
+            var interrupted = JsonNode.Parse(await System.IO.File.ReadAllTextAsync(registryPath, token))!;
+            var pending = interrupted["Profiles"]!.AsArray()[0]!;
+            pending["Ready"] = false;
+            pending["Lifecycle"] = "provisioning";
+            pending["PendingLibraries"] = new JsonArray(JsonValue.Create(Guid.Parse(libraryId)));
+            await System.IO.File.WriteAllTextAsync(registryPath, interrupted.ToJsonString(), token);
+            var unavailable = await parent.GetFromJsonAsync<JsonObject>("Castlumora/Profiles/Managed", token);
+            Assert.True(unavailable!["recoveryAvailable"]!.GetValue<bool>());
+            Assert.False(unavailable["profiles"]!.AsArray()[0]!["ready"]!.GetValue<bool>());
+            using var anonymousRecovery = await anonymous.PostAsJsonAsync("Castlumora/Profiles/Managed/" + childId + "/Recover", new { }, token);
+            Assert.Equal(HttpStatusCode.Unauthorized, anonymousRecovery.StatusCode);
+            using var overrideRecovery = await parent.PostAsJsonAsync("Castlumora/Profiles/Managed/" + childId + "/Recover", new { preset = "adult" }, token);
+            Assert.Equal(HttpStatusCode.BadRequest, overrideRecovery.StatusCode);
+            using var ownerRecovery = await parent.PostAsJsonAsync("Castlumora/Profiles/Managed/" + owner + "/Recover", new { }, token);
+            Assert.Equal(HttpStatusCode.NotFound, ownerRecovery.StatusCode);
+            using var recovered = await parent.PostAsJsonAsync("Castlumora/Profiles/Managed/" + childId + "/Recover", new { }, token);
+            Assert.Equal(HttpStatusCode.NoContent, recovered.StatusCode);
+            using var activeRecovery = await parent.PostAsJsonAsync("Castlumora/Profiles/Managed/" + childId + "/Recover", new { }, token);
+            Assert.Equal(HttpStatusCode.Conflict, activeRecovery.StatusCode);
+            Assert.Equal(keyBeforeMigration, await System.IO.File.ReadAllBytesAsync(System.IO.Path.Combine(privateRoot, "credentials.key"), token));
+            var recoveredInfo = await parent.GetFromJsonAsync<JsonObject>("Users/" + childId, token);
+            Assert.Equal(configuredChild["Configuration"]!.ToJsonString(), recoveredInfo!["Configuration"]!.ToJsonString());
+            Assert.Equal(childInfo["Name"]!.GetValue<string>(), recoveredInfo["Name"]!.GetValue<string>());
+            using var recoverSwitch = await parent.PostAsJsonAsync("Castlumora/Profiles/Switch", new { profileId = childId, accountPassword = password }, token);
+            recoverSwitch.EnsureSuccessStatusCode();
+            var recoveredAuthentication = await recoverSwitch.Content.ReadFromJsonAsync<JsonObject>(token);
+            using var recoveredClient = _factory.CreateClient();
+            recoveredClient.DefaultRequestHeaders.AddAuthHeader(recoveredAuthentication!["AccessToken"]!.GetValue<string>());
+            var recoveredPreferences = await recoveredClient.GetFromJsonAsync<JsonObject>("Castlumora/Presentation/Preferences", token);
+            Assert.Contains(recoveredPreferences!["hiddenResume"]!.AsArray(), value => value!.GetValue<string>() == item);
+            using var childRecovery = await recoveredClient.PostAsJsonAsync("Castlumora/Profiles/Managed/" + childId + "/Recover", new { }, token);
+            Assert.Equal(HttpStatusCode.Forbidden, childRecovery.StatusCode);
+            using var recoverBack = await recoveredClient.PostAsJsonAsync("Castlumora/Profiles/Switch", new { profileId = owner, accountPassword = password }, token);
+            recoverBack.EnsureSuccessStatusCode();
+            var restoredParent = await recoverBack.Content.ReadFromJsonAsync<JsonObject>(token);
+            parent.DefaultRequestHeaders.Remove(AuthHelper.AuthHeaderName);
+            parent.DefaultRequestHeaders.AddAuthHeader(restoredParent!["AccessToken"]!.GetValue<string>());
+
             // Exercise owner disablement through the real administrator policy endpoint.
             using var accountCreation = await parent.PostAsJsonAsync("Users/New", new { Name = "ProfileOwner", Password = password }, token);
             accountCreation.EnsureSuccessStatusCode();

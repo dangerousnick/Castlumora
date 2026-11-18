@@ -89,6 +89,26 @@ jobs:
         run: |
           python3 ../packaging/linux/wait-preview.py
           npm run test:browser -- browser/preview.spec.ts --grep 'restart|authorized public import'
+      - name: Prepare retained-identity recovery fixture
+        run: python3 Castlumora.Web/browser/profile-recovery-fixture.py prepare
+      - name: Stop fixture and restart with interrupted provisioning intent
+        run: bash packaging/linux/restart-ci-recovery-preview.sh interrupted
+      - name: Verify actual packaged administrator recovery
+        working-directory: Castlumora.Web
+        env:
+          CASTLUMORA_PREVIEW_RECOVERY_STAGE: interrupted
+        run: |
+          python3 ../packaging/linux/wait-preview.py
+          npm run test:browser -- browser/profile-recovery.spec.ts
+      - name: Restart recovered package without modifying its state
+        run: bash packaging/linux/restart-ci-recovery-preview.sh persisted
+      - name: Verify recovered identity survives another cold restart
+        working-directory: Castlumora.Web
+        env:
+          CASTLUMORA_PREVIEW_RECOVERY_STAGE: persisted
+        run: |
+          python3 ../packaging/linux/wait-preview.py
+          npm run test:browser -- browser/profile-recovery.spec.ts
       - name: Record actual CI verification
         env:
           SOURCE_SHA: ${{ steps.identity.outputs.sha }}
@@ -102,13 +122,13 @@ jobs:
 
           Exact source commit: {sha}. Development preview, not production-stable or complete Phase 1.4 parity.
 
-          This GitHub-hosted Ubuntu 24.04 build passed frontend typecheck/lint/build and tests, self-contained linux-x64 Release publish, archive checksum verification and four browser workflows on the extracted package: fresh setup/login/admin/logout/security; restart/account persistence/native library creation/scanning/actual movie playback and native installation/integrity/version health of the bundled pinned yt-dlp executable, native single-video queue/form and persisted automatic-retry opt-in; authorized public HTTPS import of the repository-owned GPL synthetic clip, atomic rejection of an unsafe mixed batch, two authorized URL imports, native metadata/indexing, deduplication and browser playback. The managed-profile workflow also verified administrator creation, password-verified switching/reload, separate preferences, denied admin access, prior-token revocation, confirmed managed-profile deletion and continued movie playback, plus persisted media preferences, measured Spanish880Hz audio, a real preferred subtitle cue, administrator display-name editing, stale-label reload and unchanged viewing data/language settings after renaming. The server served the compiled web itself. .NET runtime is bundled; no Node/SDK/build is needed to run the preview. Native libraries and compatible FFmpeg remain external; see INSTALL_TEST_BUILD.md. No GPU or real tuner/Mint hardware certification is claimed.
+          This GitHub-hosted Ubuntu 24.04 build passed frontend typecheck/lint/build and tests, self-contained linux-x64 Release publish, archive checksum verification and six browser workflow executions on the extracted package: fresh setup/login/admin/logout/security; restart/account persistence/native library creation/scanning/actual movie playback and native installation/integrity/version health of the bundled pinned yt-dlp executable, native single-video queue/form and persisted automatic-retry opt-in; authorized public HTTPS import of the repository-owned GPL synthetic clip, atomic rejection of an unsafe mixed batch, two authorized URL imports, native metadata/indexing, deduplication and browser playback. The managed-profile workflow also verified administrator creation, password-verified switching/reload, separate preferences, denied admin access, prior-token revocation, confirmed managed-profile deletion and continued movie playback, plus persisted media preferences, measured Spanish880Hz audio, a real preferred subtitle cue, administrator display-name editing, stale-label reload and unchanged viewing data/language settings after renaming. The server served the compiled web itself. .NET runtime is bundled; no Node/SDK/build is needed to run the preview. Native libraries and compatible FFmpeg remain external; see INSTALL_TEST_BUILD.md. No GPU or real tuner/Mint hardware certification is claimed.
 
           Extract the archive, run ./start-castlumora, and open http://127.0.0.1:28096/web/. Preview state and temporary files are isolated. Check the accompanying SHA-256 file and BUILD_INFO.json. Source is the exact tested commit. No main merge or production/Coon Media deployment.
 
           Prior local packaged-output tests at application commit 8d591a4d58cc705de1668fb7dc63a0b013cc35e4 verified all thirteen media/admin/skipper/invitation/music/photo/book/collection workflows across full and targeted runs; those broader workflows were not rerun in this CI job. See the repository verification report for exact evidence.
 
-          Native local .info.json creator identification, generic-video browsing, safe descriptions and managed pinned yt-dlp runtime installation/health are included; source checkpoint documents exact local verification. The initial rights-confirmed direct MP4 queue/publication/admin workflow is included; the source also has separate owned TLS/native/index/media-bytes/restart and security tests in addition to these package workflows. Remaining: production-complete importing/online creator metadata (further development deferred by owner), DVR quotas/real-tuner certification, profile preset/library editing, safe pending recovery, account-wide session controls and complete advanced admin/release parity. Discovery/recommendation/notification, creator/business/storage/offline/plugin/native-client work has mixed existing implementations and unfinished scope; consult FEATURE_PARITY.md and PRODUCT_ROADMAP.md for per-feature evidence rather than interpreting these areas as absent. Registry-v2 lifecycle labels are included; reactivation is not exposed. Migration/private-snapshot coverage belongs to the backend suites, while this browser job verifies fresh-v2 profiles rather than a restored-system upgrade. Display-name and isolated media-preference editing are implemented and tested; this preview does not complete Phase1.4 or stable1.0. Compiled legacy Web is not bundled; compatible-assets attachment is documented. Native administration and inherited backend functionality are preserved. The source checkpoint's progress notes precede this post-build report.
+          Native local .info.json creator identification, generic-video browsing, safe descriptions and managed pinned yt-dlp runtime installation/health are included; source checkpoint documents exact local verification. The initial rights-confirmed direct MP4 queue/publication/admin workflow is included; the source also has separate owned TLS/native/index/media-bytes/restart and security tests in addition to these package workflows. Remaining: production-complete importing/online creator metadata (further development deferred by owner), DVR quotas/real-tuner certification, profile preset/library editing, account-wide session controls and complete advanced admin/release parity. Discovery/recommendation/notification, creator/business/storage/offline/plugin/native-client work has mixed existing implementations and unfinished scope; consult FEATURE_PARITY.md and PRODUCT_ROADMAP.md for per-feature evidence rather than interpreting these areas as absent. Registry-v2 lifecycle labels and administrator-confirmed recovery of explicit interrupted provisioning are included. Two additional browser runs stop the disposable server before recording interrupted intent, recover the original identity through the real interface, and verify another cold restart retains identity, viewing data, configuration and password-verified switching. Deletion/ambiguous legacy/active states are never reactivated. Keys and databases are retained; no production fault endpoint is added. Migration/private-snapshot coverage belongs to the backend suites, while this browser job verifies fresh-v2 profiles rather than a restored-system upgrade. Display-name and isolated media-preference editing are implemented and tested; this preview does not complete Phase1.4 or stable1.0. Compiled legacy Web is not bundled; compatible-assets attachment is documented. Native administration and inherited backend functionality are preserved. The source checkpoint's progress notes precede this post-build report.
 
           GitHub Actions artifact is retained for 30 days and requires GitHub sign-in. Report issues with exact commit/environment and redacted logs, never credentials.
           '''
@@ -146,7 +166,7 @@ jobs:
               return re.sub(r'(?i)[a-f0-9]{32,}', '[redacted-id-or-secret]', text)
           for index, source in enumerate(pathlib.Path('Castlumora.Web/test-results').rglob('error-context.md')):
               (output / f'context-{index}.txt').write_text(redact(source.read_text(errors='replace')))
-          for name in ('castlumora-server.log', 'castlumora-restart.log'):
+          for name in ('castlumora-server.log', 'castlumora-restart.log', 'castlumora-recovery-interrupted.log', 'castlumora-recovery-persisted.log'):
               source = pathlib.Path(os.environ['RUNNER_TEMP']) / name
               if source.is_file():
                   with source.open('rb') as stream:

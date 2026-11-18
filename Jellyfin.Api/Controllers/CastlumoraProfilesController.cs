@@ -109,6 +109,39 @@ public sealed class CastlumoraProfilesController : BaseJellyfinApiController
         }
     }
 
+    /// <summary>Resumes only the saved creation plan of an interrupted managed profile.</summary>
+    /// <param name="profileId">Original managed identity.</param>
+    /// <param name="value">An empty confirmation object; no identity or policy overrides.</param>
+    /// <param name="token">Cancellation before repair begins.</param>
+    /// <returns>No content on success, not found for unknown identities, conflict for unsafe states.</returns>
+    [HttpPost("Managed/{profileId:guid}/Recover")]
+    [Authorize(Policy = Policies.RequiresElevation)]
+    [RequestSizeLimit(4096)]
+    public async Task<ActionResult> Recover([FromRoute] Guid profileId, [FromBody] JsonObject value, CancellationToken token)
+    {
+        if (value.Count != 0)
+        {
+            return BadRequest("Recovery accepts no identity, permission or library overrides.");
+        }
+
+        try
+        {
+            return await _profiles.RecoverAsync(User.GetUserId(), profileId, token).ConfigureAwait(false) ? NoContent() : NotFound();
+        }
+        catch (UnauthorizedAccessException)
+        {
+            return Forbid();
+        }
+        catch (InvalidOperationException)
+        {
+            return Conflict("Recovery requires explicit interrupted provisioning, the original restricted identity and currently permitted owner/libraries.");
+        }
+        catch (Exception exception) when (exception is IOException or InvalidDataException or JsonException)
+        {
+            return StatusCode(StatusCodes.Status503ServiceUnavailable, "Recovery did not complete. Preserve the profile, key and configuration; correct the problem before retrying.");
+        }
+    }
+
     /// <summary>Deletes only a managed profile, preserving its account and media files.</summary>
     /// <param name="profileId">Managed identity.</param>
     /// <param name="token">Cancellation before deletion begins.</param>

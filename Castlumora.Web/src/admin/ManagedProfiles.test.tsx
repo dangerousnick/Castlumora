@@ -150,3 +150,126 @@ it.each([
   expect(screen.queryByRole('button', { name: /recover|reactivate/i })).toBeNull();
   expect(screen.getByRole('button', { name: 'Delete Kids' })).toBeTruthy();
 });
+
+it('confirms recovery of explicit provisioning and refreshes only after server success', async () => {
+  const api = new Api('https://example.test');
+  let ready = false;
+  const request = vi.spyOn(api, 'request').mockImplementation(async (path) => {
+    if (path === 'Users' || path === 'Library/VirtualFolders') return [];
+    if (path === 'Castlumora/Profiles/Managed/child/Recover') {
+      ready = true;
+      return undefined;
+    }
+    return {
+      recoveryAvailable: true,
+      profiles: [
+        {
+          id: 'child',
+          name: 'Kids',
+          accountName: 'Account',
+          preset: 'kids',
+          ready,
+          exists: true,
+          lifecycle: ready ? 'active' : 'provisioning',
+        },
+      ],
+    };
+  });
+  const confirm = vi.spyOn(window, 'confirm').mockReturnValue(false);
+  const onChanged = vi.fn();
+  try {
+    render(
+      <AppContext value={{ api } as unknown as AppState}>
+        <ManagedProfiles onChanged={onChanged} />
+      </AppContext>,
+    );
+    fireEvent.click(await screen.findByRole('button', { name: 'Recover Kids' }));
+    expect(ready).toBe(false);
+    confirm.mockReturnValue(true);
+    fireEvent.click(screen.getByRole('button', { name: 'Recover Kids' }));
+    await waitFor(() => expect(onChanged).toHaveBeenCalledOnce());
+    expect(request).toHaveBeenCalledWith('Castlumora/Profiles/Managed/child/Recover', {
+      method: 'POST',
+      body: '{}',
+    });
+    await screen.findByText('Available', { exact: true });
+    expect(screen.queryByRole('button', { name: 'Recover Kids' })).toBeNull();
+  } finally {
+    confirm.mockRestore();
+  }
+});
+
+it.each([
+  ['deleting', false, true],
+  ['review', false, true],
+  ['active', true, true],
+  ['provisioning', false, false],
+])(
+  'never offers recovery for lifecycle=%s ready=%s exists=%s',
+  async (lifecycle, ready, exists) => {
+    const api = new Api('https://example.test');
+    vi.spyOn(api, 'request').mockImplementation(async (path) =>
+      path === 'Users' || path === 'Library/VirtualFolders'
+        ? []
+        : {
+            recoveryAvailable: true,
+            profiles: [
+              {
+                id: 'child',
+                name: 'Kids',
+                accountName: 'Account',
+                preset: 'kids',
+                ready,
+                exists,
+                lifecycle,
+              },
+            ],
+          },
+    );
+    render(
+      <AppContext value={{ api } as unknown as AppState}>
+        <ManagedProfiles onChanged={() => {}} />
+      </AppContext>,
+    );
+    await screen.findByRole('button', { name: 'Rename Kids' });
+    expect(screen.queryByRole('button', { name: 'Recover Kids' })).toBeNull();
+  },
+);
+
+it('keeps failed recovery unavailable and reports the server error without a success refresh', async () => {
+  const api = new Api('https://example.test');
+  vi.spyOn(api, 'request').mockImplementation(async (path) => {
+    if (path === 'Users' || path === 'Library/VirtualFolders') return [];
+    if (path.endsWith('/Recover')) throw new Error('Private key requires administrator review');
+    return {
+      recoveryAvailable: true,
+      profiles: [
+        {
+          id: 'child',
+          name: 'Kids',
+          accountName: 'Account',
+          preset: 'kids',
+          ready: false,
+          exists: true,
+          lifecycle: 'provisioning',
+        },
+      ],
+    };
+  });
+  const confirm = vi.spyOn(window, 'confirm').mockReturnValue(true);
+  const onChanged = vi.fn();
+  try {
+    render(
+      <AppContext value={{ api } as unknown as AppState}>
+        <ManagedProfiles onChanged={onChanged} />
+      </AppContext>,
+    );
+    fireEvent.click(await screen.findByRole('button', { name: 'Recover Kids' }));
+    await screen.findByText(/Private key requires administrator review/);
+    expect(onChanged).not.toHaveBeenCalled();
+    expect(screen.queryByText('Available', { exact: true })).toBeNull();
+    expect(screen.getByRole('button', { name: 'Recover Kids' })).toBeTruthy();
+  } finally {
+    confirm.mockRestore();
+  }
+});

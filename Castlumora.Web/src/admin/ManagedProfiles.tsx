@@ -17,6 +17,7 @@ export default function ManagedProfiles({ onChanged }: { onChanged: () => void }
   const managed = useLoad(
     () =>
       api.request<{
+        recoveryAvailable?: boolean;
         profiles: {
           id: string;
           name: string;
@@ -175,6 +176,32 @@ export default function ManagedProfiles({ onChanged }: { onChanged: () => void }
                 Rename {profile.name}
               </button>
             )}
+            {managed.value?.recoveryAvailable &&
+              !profile.ready &&
+              profile.exists &&
+              profile.lifecycle === 'provisioning' && (
+                <button
+                  disabled={action.busy}
+                  onClick={() => {
+                    if (
+                      !window.confirm(
+                        `Resume interrupted creation of ${profile.name}? Its original identity, history and preferences will be retained. Current owner and library restrictions are rechecked.`,
+                      )
+                    )
+                      return;
+                    void action.run(async () => {
+                      await api.request('Castlumora/Profiles/Managed/' + profile.id + '/Recover', {
+                        method: 'POST',
+                        body: JSON.stringify({}),
+                      });
+                      setRefresh((value) => value + 1);
+                      onChanged();
+                    }, 'Profile recovered. Original identity retained; review its current policy before switching.');
+                  }}
+                >
+                  Recover {profile.name}
+                </button>
+              )}
             <button
               disabled={action.busy}
               onClick={() => {
