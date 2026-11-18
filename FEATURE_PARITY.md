@@ -13,6 +13,16 @@ feature status; a development preview does not establish stable-release readines
 Linux-only server policy and mandatory validation remain in effect. Never merge
 main or deploy to Coon Media automatically.
 
+## Recovery validation hardening before publication
+
+The gate found a genuine DVR early-exit disposal race and blocked the push. Exit
+callbacks now signal without prematurely disposing; final stderr is drained before
+recorder disposal. Five real-process focused cases passed, preserving cancellation
+and genuine failures. Recovery-triggered logout no longer writes access tokens;
+all three real logout/revocation secrecy tests passed. No failing commit has been
+published and required checks remain intact. Old generated coverage cleanup safely
+recovered about2.2GB; source/history/docs and production reserves remain unchanged.
+
 ## Profile provisioning recovery in validation
 
 Administrator-confirmed recovery now resumes only saved explicit provisioning with

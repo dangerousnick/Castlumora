@@ -36,3 +36,15 @@ The test covers real scheduling/cancellation, completed recording and media-file
 This milestone does not implement per-user DVR quotas/storage tiers, certify physical tuners/GPU paths/long-duration recordings, or finish all channel-group/timeshift/native-device requirements. These remain mandatory tracked product work. The inherited media engine, recording-folder configuration and legacy interfaces remain available.
 
 Active-stop workflow executed successfully on 2026-11-09 (1.2 minutes); frontend typecheck/lint/build and all 48 tests passed. Real recording stopped before guide end, partial output played, and ordinary-viewer stop was denied. FFmpeg may buffer before flushing output, so the fixture waits up to 45 seconds for actual nonempty media. No real tuner/GPU claim.
+
+
+## Recorder lifetime regression
+
+A fast FFmpeg failure can precede the recording-start callback returning. The exit
+handler must report completion without disposing the process or recording log
+before the stderr reader is initialized. The recorder drains stderr after actual
+process exit, then its existing owner disposes resources. Explicit stop/duration
+cancellation remains distinct from an unrequested nonzero FFmpeg exit. Five focused
+POSIX-process regressions exercise these cases and final log retention; this is not
+physical tuner/hardware certification. See the exact checkpoint for full-suite and
+packaged verification results.

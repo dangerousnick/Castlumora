@@ -14,6 +14,37 @@ Linux-only server policy and mandatory validation remain in effect. Never merge
 main or deploy to Coon Media automatically.
 
 
+## Recovery validation caught DVR lifetime and session-log defects
+
+The normal push gate for local85f3b024a4 correctly blocked publication on
+EncodedRecorderTests.UnrequestedNonzeroExit_RemainsARealRecordingFailure: an
+immediately exiting process was disposed by its event handler before stderr was
+accessed, producing ObjectDisposedException rather than FfmpegException. The other
+16backend suites passed; full restored formatting2453files and Debug/Release had
+zero changes/warnings/errors. No known failing code was pushed and no assertion
+was weakened or retried unchanged.
+
+The exit handler now only records status/signals completion. Recorder ownership
+retains the process/log until stderr has drained after exit; the existing using
+owner disposes resources, and cancellation registration is scoped to recording.
+Five focused actual POSIX-process tests passed: early0/23 exits gated before the
+startup callback returns, final stderr retention, unrequested failure, manual stop
+and duration cancellation. No tuner/hardware verification is claimed.
+
+The same recovery revocation path inherited a plaintext access-token logout log.
+It now logs only the non-secret authorization record ID. New tests call the real
+logout/revocation methods, assert removal/current-token retention and inspect both
+formatted and structured logging for secret exclusion. The first compile's
+namespace-order/Guid-comparison analyzer findings were corrected before retrying.
+All three final focused logout/revocation tests passed. The complete mandatory
+gate rerun and new hosted/package evidence are still pending at this checkpoint.
+
+Safe storage cleanup removed243older untracked generated TestResults UUID folders
+(about2.2GB), retaining the two newest per suite and all /tmp validation logs. Source,
+Git history, commits, docs, fixtures and dependencies were preserved. Free space
+rose from938MiB to3.0GiB. Production5GiB backup and2GiB startup reserves are unchanged;
+old checkpoint storage figures are historical, not the current available capacity.
+
 ## Controlled profile provisioning recovery — implementation checkpoint
 
 The owner requested all remaining non-YouTube work. The next coherent milestone
