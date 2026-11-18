@@ -195,3 +195,32 @@ revoked token returns401 while another account and another app/device retain the
 sessions/tokens, inspecting session inventory before requests could recreate them.
 Consult the latest checkpoint for complete gate and packaged evidence. A dedicated
 self-service session/device page is still a separate unfinished milestone.
+
+
+## Change your account password
+
+Open the profile menu → Viewing profiles → **Account security** while signed in to
+the owning account. Enter the current password, a new password of8–1024characters,
+and matching confirmation. If the server explicitly reports a passwordless account,
+leave the current field blank to set its first password. Server account-edit
+permissions still apply; contact the administrator when changes are disabled.
+
+The form targets only the signed-in account through the inherited authenticated
+password API, with an explicit self ID so administrator self-changes also verify
+the current password. No reset/empty-password bypass, user selection or policy
+change is exposed. Managed profiles do not display this editor; switch to the
+owning account rather than replacing their private derived credentials.
+
+The current token remains active; other sign-ins for this identity are revoked by
+the existing server. Managed viewing profiles are separate identities/sessions,
+so this does not claim an account-wide profile-session reset. Full device/session
+management remains unfinished. Password fields are cleared after success or error
+and are not written by Castlumora to local/session storage. A failed network
+response cannot prove whether the server already applied the change.
+
+Seven focused form tests plus both profile-switch tests passed locally, including
+permission/ownership limits, confirmation, passwordless setup, error clearing and
+secret-storage checks. The packaged profile workflow now also checks wrong-current-
+password403, successful change, preserved current token, revoked second token,
+old/new password sign-in behavior, cleared fields/storage and fixture restoration.
+Consult the latest checkpoint for actual packaged verification status.

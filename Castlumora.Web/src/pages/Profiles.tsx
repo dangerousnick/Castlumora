@@ -1,5 +1,7 @@
 import { useState } from 'react';
 import MediaPreferences from './MediaPreferences';
+import AccountPassword from './AccountPassword';
+import { sameId } from '../api/client';
 import { useNavigate } from 'react-router-dom';
 import { useApp, useLoad } from '../state';
 import type { User } from '../api/types';
@@ -28,6 +30,9 @@ export default function Profiles() {
       <Feedback busy={profiles.busy} error={profiles.error} />
       {profiles.value && (
         <>
+          {profiles.value.accountId && (
+            <AccountPassword accountOwner={sameId(profiles.value.accountId, session.user.Id)} />
+          )}
           <p>
             Account: {profiles.value.accountName}. Each profile has separate watch progress, lists
             and preferences.

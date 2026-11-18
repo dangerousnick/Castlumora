@@ -1,8 +1,10 @@
 export interface User {
   Id: string;
   Name: string;
+  HasPassword?: boolean;
   Policy?: {
     IsAdministrator: boolean;
+    EnableUserPreferenceAccess?: boolean;
     EnableLiveTvAccess?: boolean;
     EnableLiveTvManagement?: boolean;
     EnableContentDownloading?: boolean;

@@ -3,6 +3,7 @@ import { test, expect } from '@playwright/test';
 import type { MediaSource } from '../src/api/types';
 import { verifyPreferredFixtureTracks } from './media-preference-proof';
 import { readPreview } from './preview-read';
+import { verifyAccountPasswordChange } from './account-password-proof';
 const preview = process.env.CASTLUMORA_PREVIEW_URL;
 const password = process.env.CASTLUMORA_PREVIEW_PASSWORD;
 test('packaged preview: fresh setup, login, administration and logout', async ({
@@ -459,6 +460,9 @@ test('packaged preview: restart managed profiles isolate preferences and revoke 
   ).toBe(403);
   await page.locator('.profile-menu > summary').click();
   await page.getByRole('link', { name: 'Viewing profiles', exact: true }).click();
+  await expect(
+    page.getByRole('form', { name: 'Change account password', exact: true }),
+  ).toHaveCount(0);
   await page.getByLabel('Preferred audio language', { exact: true }).fill('spa');
   await page.getByLabel('Preferred subtitle language', { exact: true }).fill('eng');
   await page
@@ -633,4 +637,6 @@ test('packaged preview: restart managed profiles isolate preferences and revoke 
   });
   expect(retainedOwner.ok()).toBe(true);
   expect((await retainedOwner.json()).Id).toBe(owner.user.Id);
+  await page.getByRole('link', { name: 'Back', exact: true }).click();
+  await verifyAccountPasswordChange(page, request, preview!, password!);
 });

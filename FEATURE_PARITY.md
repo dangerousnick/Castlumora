@@ -13,6 +13,19 @@ feature status; a development preview does not establish stable-release readines
 Linux-only server policy and mandatory validation remain in effect. Never merge
 main or deploy to Coon Media automatically.
 
+## Account password self-service in validation
+
+Owning accounts now have a native password form using the inherited authenticated
+self-password API. It preserves server permissions, explicit current-password checks,
+identity/current token and private managed-profile credentials; other sign-ins for
+this identity are revoked. Managed-profile-wide reset/device management is not yet
+claimed. Seven form/two switch tests passed; full frontend and actual packaged proof
+remain required. The existing six-workflow preview now includes wrong-current-password
+denial, real change/sign-in/revocation/storage checks and safe fixture restoration.
+Logout-isolation sourcee3070d5798 passed full local4618backend/92frontend validation;
+its six-workflow preview and exact-SHA backend/API/ABI/format checks passed.
+All non-YouTube requirements and the existing development/review workflow remain.
+
 ## Provisioning recovery verified; logout isolation next
 
 The af8329eb9d intermediate recovery package passed all six real extracted-package

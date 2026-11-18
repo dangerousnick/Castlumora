@@ -125,3 +125,19 @@ passed. The dedicated package workflow stops only its disposable server, records
 interrupted intent, restarts, recovers through the interface, and restarts again to
 verify durable identity/viewing data; consult the exact build's CI results for pass
 status. No full installed-system restore or hardware certification is implied.
+
+
+## Self-service account password
+
+Profile menu → Viewing profiles → Account security (owning account only). With a
+second browser signed in to the same account, change your password using the
+current password and matching new entries. Expect this browser to remain signed
+in, the other sign-in to require authentication again, the old password to fail,
+and the new password to work. Do not use another person's account for this test.
+Managed profiles must not show this editor; account-edit permission restrictions
+remain enforced by the server. Managed-profile sessions are separate and are not
+claimed to be reset by this identity-scoped operation. Password fields should clear
+on success/error and should not appear in application local/session storage.
+
+Focused UI tests passed; the newly extended extracted-package workflow must pass
+before the feature is listed as verified for a particular downloadable build.

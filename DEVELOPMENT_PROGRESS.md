@@ -14,6 +14,51 @@ Linux-only server policy and mandatory validation remain in effect. Never merge
 main or deploy to Coon Media automatically.
 
 
+## Self-service account password editor — implementation in validation
+
+Continue all non-YouTube requirements. The new native Account security form is
+inside Viewing profiles for the owning account only. It reuses the inherited
+password API with an explicit self ID, CurrentPw/NewPw and ResetPassword=false;
+no backend, policy, authentication provider or database change. Managed profiles
+retain their derived credentials and cannot edit them here. Account-edit policy
+is respected; an explicitly passwordless account can set its first password.
+The current session is retained; other sessions for this identity are revoked.
+This does not claim a reset of separate managed-profile sessions or a complete
+self-service device/session dashboard, which remain subsequent work.
+
+Seven focused form tests and both profile-switch tests passed. A metadata-absent
+rendering regression was caught and corrected by withholding the credential editor
+until ownership metadata is available; original switch-denial assertions remain.
+The editor enforces confirmation/length, clears all secret fields on success/error,
+updates only the non-secret HasPassword metadata after first setup, and does not
+write passwords to local/session storage. Typecheck/lint and browser discovery
+are being verified; the normal frontend gate still must pass before publication.
+
+The retained packaged-profile workflow now additionally proves wrong-current-
+password403 even for administrator self-changes, valid change, current-token200,
+second-token401, old/new-password login, cleared fields/storage and restoration
+of only the disposable fixture password in finally. No mutation is retried, no
+existing media/security assertion is removed, and managed profiles must not show
+the password form. The successful-response report still describes six workflows;
+new assertions are within the existing managed-profile execution, not an extra
+skipped test. Actual updated packaged verification remains pending.
+
+Latest published application:e3070d5798ab39e9cc7d2101ffce1ad6084353e4 passed the normal
+full local gate:format2454files/zero changes, .NET10 Debug/Release zero warnings/errors,
+17backend suites4618passes/20existing skips and92frontend passes/typecheck/lint/build.
+Its preview44371326752/job135038819334 passed all six browser executions; backend
+GitHub44371327036/job135038775603 passed as well (downloaded logs independently
+match4618passes/20skips). Format44371326963, ABI44371326799 and OpenAPI44371326740
+passed. Intermediate download:https://github.com/dangerousnick/Castlumora/actions/runs/44371326752/artifacts/14459970217 .
+Archive:Castlumora-1.0-dev-e3070d5798ab-linux-x64.tar.gz .
+SHA-256:5708d3df7bd566c132a1f1cbd6e7dd432c91e21288283a09fb39b5892ee651e9 .
+Independent download verified source/manifest, compiled guards, licenses/branding,
+executable modes and private-state exclusion. It predates this password editor.
+Usage status: Not accessible. Branch/PR3 unchanged; no main merge/Coon deployment.
+Next after password verification/publication: current-identity device/session
+inventory/revocation, preserving account/profile boundaries; then remaining profile
+policy editing and the permanent non-YouTube release roadmap. Do not restart work.
+
 ## Verified provisioning recovery; next logout-isolation hardening
 
 Published application/fixture:`af8329eb9dc917dc0abb2abf5949d13059bfac02`. Backend
