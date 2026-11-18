@@ -7,14 +7,37 @@ on:
     types:
     - completed
 
+permissions: {}
+
 jobs:
   metadata:
     name: Generate Metadata
     runs-on: ubuntu-latest
-    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+    if: ${{ github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.event == 'pull_request' }}
+    permissions:
+      pull-requests: read
+      actions: read
     outputs:
       pr_number: ${{ steps.pr_number.outputs.pr_number }}
+      report_expected: ${{ steps.report.outputs.result }}
     steps:
+    - name: Check report generation
+      id: report
+      uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8, Node 24
+      with:
+        github-token: ${{ github.token }}
+        script: |
+          const jobs = await github.paginate(github.rest.actions.listJobsForWorkflowRun, {
+            ...context.repo, run_id: context.payload.workflow_run.id, filter: 'latest'
+          });
+          const report = jobs.filter(job => job.name === 'Generate Report');
+          if (report.length !== 1) throw new Error('Expected exactly one Generate Report job');
+          if (report[0].conclusion === 'skipped') {
+            core.notice('OpenAPI report intentionally skipped by change scope; no artifact expected.');
+            return false;
+          }
+          if (report[0].conclusion !== 'success') throw new Error('OpenAPI report generation did not succeed');
+          return true;
     - name: Get Pull Request Number
       id: pr_number
       env:
@@ -22,7 +45,7 @@ jobs:
         HEAD_SHA: ${{ github.event.workflow_run.head_sha }}
       run: |
         API_RESPONSE=$(gh pr list --repo "${GITHUB_REPOSITORY}" --search "${HEAD_SHA}" --state open --json number)
-        PR_NUMBER=$(echo "${API_RESPONSE}" | jq '.[0].number')
+        PR_NUMBER=$(echo "${API_RESPONSE}" | jq -r '.[0].number // empty')
 
         echo "repository: ${GITHUB_REPOSITORY}"
         echo "sha: ${HEAD_SHA}"
@@ -34,7 +57,7 @@ jobs:
   comment:
     name: Pull Request Comment
     runs-on: ubuntu-latest
-    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+    if: ${{ needs.metadata.outputs.pr_number != '' && needs.metadata.outputs.report_expected == 'true' }}
     needs:
     - metadata
     permissions:
@@ -42,18 +65,28 @@ jobs:
       actions: read
       contents: read
     steps:
+    # Never check out the triggering PR in this job with comment-write permission.
+    - name: Check out trusted workflow implementation
+      uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1, Node 24
+      with:
+        ref: ${{ github.workflow_sha }}
+        persist-credentials: false
     - name: Download OpenAPI Report
       id: download_report
-      uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+      uses: actions/download-artifact@v4
       with:
         name: openapi-report
         path: openapi-report
         run-id: ${{ github.event.workflow_run.id }}
         github-token: ${{ secrets.GITHUB_TOKEN }}
-    - name: Push Comment
-      uses: thollander/actions-comment-pull-request@24bffb9b452ba05a4f3f77933840a6a841d1b32b # v3.0.1
+    - name: Publish OpenAPI comment
+      uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8, Node 24
+      env:
+        REPORT_PATH: ${{ steps.download_report.outputs.download-path }}/openapi-report.md
+        PR_NUMBER: ${{ needs.metadata.outputs.pr_number }}
+        REPORT_SHA: ${{ github.event.workflow_run.head_sha }}
       with:
-        github-token: ${{ secrets.JF_BOT_TOKEN }}
-        file-path: ${{ steps.download_report.outputs.download-path }}/openapi-report.md
-        pr-number: ${{ needs.metadata.outputs.pr_number }}
-        comment-tag: openapi-report
+        github-token: ${{ github.token }}
+        script: |
+          const publish = require('./.github/scripts/publish-openapi-report.cjs');
+          await publish({ github, context, core });
