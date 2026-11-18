@@ -178,3 +178,20 @@ review, account-wide device/session controls and broader multi-device/media-hist
 verification. Inherited administrative user-policy controls remain available.
 External-auth-provider account compatibility is unverified; the initial workflow
 requires an existing local password. This increment does not complete stable 1.0.
+
+
+## Shared-device logout isolation
+
+A logout ends only live sessions matching the revoked authorization record's user,
+application and device. A supplied device ID alone is not authority over another
+account or client. This preserves other accounts' activity and avoids ending a new
+viewing profile's session while revoking its previous identity on the same browser.
+Existing per-user/device token replacement, token revocation and administrator
+device removal behavior remain; no authentication/database identifiers change.
+
+Two regression cases failed on the inherited behavior before correction, then all
+22focused session-manager tests passed. A real SQLite HTTP workflow confirms the
+revoked token returns401 while another account and another app/device retain their
+sessions/tokens, inspecting session inventory before requests could recreate them.
+Consult the latest checkpoint for complete gate and packaged evidence. A dedicated
+self-service session/device page is still a separate unfinished milestone.

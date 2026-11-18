@@ -13,6 +13,18 @@ feature status; a development preview does not establish stable-release readines
 Linux-only server policy and mandatory validation remain in effect. Never merge
 main or deploy to Coon Media automatically.
 
+## Provisioning recovery verified; logout isolation next
+
+The af8329eb9d intermediate recovery package passed all six real extracted-package
+browser executions, including another cold restart; it was independently downloaded
+and checked. Unchanged backend81d5399f35 passed4615tests/20existing skips, formatting,
+Debug/Release and hosted Linux/API/ABI; af8329's fixture-only gate passed92frontend
+tests/typecheck/lint/build. Exact download/checksum/evidence are in progress notes.
+Next hardening reproduced cross-account/application logout on shared device IDs;
+matching the stored user/app/device fixes both cases and22focused tests pass. Real
+SQLite HTTP isolation also passed; full gate/updated package remain pending. No self-service session UI is claimed
+yet; broader accounts-to-release scope and YouTube deferral remain unchanged.
+
 ## Package recovery fixture correction pending delivery
 
 The new recovery package correctly failed on malformed CI-written private intent;

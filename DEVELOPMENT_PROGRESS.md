@@ -14,6 +14,54 @@ Linux-only server policy and mandatory validation remain in effect. Never merge
 main or deploy to Coon Media automatically.
 
 
+## Verified provisioning recovery; next logout-isolation hardening
+
+Published application/fixture:`af8329eb9dc917dc0abb2abf5949d13059bfac02`. Backend
+source is unchanged from81d5399f35f5cd08e8b08e18ab52096cbb24248e, whose normal full
+gate and exact-SHA GitHub Tests44361465795/job135003896146 passed17suites,
+4615tests/20existing skips. Downloaded logs independently match. Format44361465746,
+ABI44361465713 and OpenAPI44361465640 passed too. The fixture-only af8329 gate
+passed typecheck/lint/92tests/build; its scoped backend jobs skipped, not new test
+passes. Source classification/required checks were not weakened.
+
+Preview44363797564/job135012149979 passed all six browser executions on the actual
+extracted archive: all four retained workflows plus recovery after stopped-server
+interruption and a further unmodified cold restart. Same identity/key/favorite/
+configuration/password switching persisted, unsafe active recovery returned409 and
+child recovery403. The fixture's canonical UUID correction resolved the actual
+503denial of malformed test state; no production parser/assertion was loosened.
+
+[Intermediate recovery preview](https://github.com/dangerousnick/Castlumora/actions/runs/44363797564/artifacts/14455224954):
+`Castlumora-1.0-dev-af8329eb9dc9-linux-x64.tar.gz`.
+SHA-256:`0c182c9ead5628094bebcfb2d87fac14309a266e65e0fca4964ea3d6546f5cdf`.
+Independent download verified outer/inner hashes, exact source/manifest/documents,
+compiled recovery/notifier/atomic guards, absence of the old plaintext-token log,
+all16castle assets, GPL/runtime notices, executable modes and no private key/registry.
+This is an intermediate development preview, not stable1.0/completePhase1.4.
+
+The next account-security regression reproduced another inherited logout defect:
+both token/device logout ended other users' and other applications' live sessions
+sharing the same client-supplied device ID. Both new tests failed on the published
+behavior before correction. Termination now matches the authorization record's
+stored user AND application AND device. All22focused session-manager tests pass,
+including existing control/identity protections and log-secret exclusion. An actual
+SQLite HTTP test verifies foreign tokens/sessions survive and the target token
+becomes401; that focused HTTP workflow passed. Its initial fixture assumed two
+apps for one user could retain tokens on the same device, but inherited login
+intentionally replaces the prior token there. The third app now uses a separate
+device, retaining the three-session/two-survivor and revoked-token assertions;
+production allocation was not changed. Full gate/new hosted preview remain pending.
+
+Do not present the intermediate preview as containing this next logout-scope fix.
+It remains local until mandatory verification/publication completes. Next feature
+after that: current-identity device/session controls without exposing tokens or
+crossing owner/profile boundaries; audit existing registration coverage rather
+than recreating its implemented invitation lifecycle. YouTube expansion remains
+deferred; all other permanent1.0requirements remain. Usage: Not accessible.
+Free space after safe generated-result cleanup is approximately2.8GiB; production
+backup/startup reserves remain unchanged. Branch stays development/castlumora-web-1.3,
+PR3 open, no main merge or Coon Media deployment. Preserve newer commits on resume.
+
 ## Package fixture UUID correction
 
 Exact-SHA81d5399f35 passed Format44361465746, ABI44361465713 and OpenAPI44361465640;

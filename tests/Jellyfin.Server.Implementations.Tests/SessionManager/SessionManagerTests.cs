@@ -73,6 +73,40 @@ public class SessionManagerTests
         AssertLogsExcludeSecrets(logger, current.AccessToken, other.AccessToken);
     }
 
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task Logout_SharedDeviceIdOnlyEndsTheOwningUserAndApplicationSession(bool byToken)
+    {
+        var owner = new User("Owner", "auth", "reset");
+        var other = new User("Other account", "auth", "reset");
+        var device = new Device(owner.Id, "Jellyfin Web", "1.0.0", "Shared device", "victim-tv-01");
+        var devices = new Mock<IDeviceManager>();
+        devices.Setup(manager => manager.DeleteDevice(device)).Returns(Task.CompletedTask);
+        devices.Setup(manager => manager.GetDevices(It.Is<DeviceQuery>(query => query.AccessToken == device.AccessToken)))
+            .Returns(new QueryResult<Device> { Items = [device] });
+        await using var manager = CreateSessionManagerWithDevices(devices.Object, owner, other);
+        var removed = await LogSessionActivity(manager, owner);
+        var otherAccount = await LogSessionActivity(manager, other);
+        var otherDevice = await manager.LogSessionActivity("Jellyfin Web", "1.0.0", "another-device", "Other device", "127.0.0.1", owner);
+        var otherApp = await manager.LogSessionActivity("Another application", "1.0.0", "victim-tv-01", "Shared device", "127.0.0.1", owner);
+        Assert.Equal(4, manager.Sessions.Count());
+        if (byToken)
+        {
+            await manager.Logout(device.AccessToken);
+        }
+        else
+        {
+            await manager.Logout(device);
+        }
+
+        devices.Verify(manager => manager.DeleteDevice(device), Times.Once);
+        Assert.DoesNotContain(manager.Sessions, session => session.Id.Equals(removed.Id, StringComparison.Ordinal));
+        Assert.Contains(manager.Sessions, session => session.Id.Equals(otherAccount.Id, StringComparison.Ordinal));
+        Assert.Contains(manager.Sessions, session => session.Id.Equals(otherDevice.Id, StringComparison.Ordinal));
+        Assert.Contains(manager.Sessions, session => session.Id.Equals(otherApp.Id, StringComparison.Ordinal));
+    }
+
     private static void AssertLogsExcludeSecrets(Mock<ILogger<Emby.Server.Implementations.Session.SessionManager>> logger, params string[] secrets)
     {
         var logs = logger.Invocations.Where(invocation => invocation.Method.Name == "Log").ToArray();
@@ -298,6 +332,9 @@ public class SessionManagerTests
     }
 
     private static Emby.Server.Implementations.Session.SessionManager CreateSessionManager(params User[] users)
+        => CreateSessionManagerWithDevices(Mock.Of<IDeviceManager>(), users);
+
+    private static Emby.Server.Implementations.Session.SessionManager CreateSessionManagerWithDevices(IDeviceManager devices, params User[] users)
     {
         var userManager = new Mock<IUserManager>();
         foreach (var user in users)
@@ -316,7 +353,7 @@ public class SessionManagerTests
             Mock.Of<IDtoService>(),
             Mock.Of<IImageProcessor>(),
             Mock.Of<IServerApplicationHost>(),
-            Mock.Of<IDeviceManager>(),
+            devices,
             Mock.Of<IMediaSourceManager>(),
             Mock.Of<IHostApplicationLifetime>());
     }

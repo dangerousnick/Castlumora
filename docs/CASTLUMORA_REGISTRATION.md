@@ -47,4 +47,4 @@ Run that opt-in browser case with the documented disposable credentials, CASTLUM
 npm run test:browser -- browser/real-server.spec.ts -g 'administrator invitation'
 ```
 
-This implements registration/invitation lifecycle and explicit library policy editing. Linked multiple viewing profiles per account, named kids/adult presets, paired-device refresh/revocation improvements and optional resource tiers remain separate unfinished requirements. No production server, Coon Media deployment or automatic merge is part of this work.
+This implements registration/invitation lifecycle and explicit library policy editing. Managed viewing profiles and named kids/adult presets are now implemented; see CASTLUMORA_ACCOUNTS_AND_PROFILES.md for exact lifecycle/recovery limits. Broader paired-device refresh/revocation controls, full profile preset/library editing, scale/retention and optional resource tiers remain unfinished requirements. No production server, Coon Media deployment or automatic merge is part of this work.
