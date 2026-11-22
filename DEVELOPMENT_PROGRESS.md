@@ -14,6 +14,61 @@ Linux-only server policy and mandatory validation remain in effect. Never merge
 main or deploy to Coon Media automatically.
 
 
+## Personal saved sign-ins — published verification checkpoint
+
+Latest published application commit: `ebab7567cfa7c42cbdac3ac438a236372c79427f`.
+Branch: `development/castlumora-web-1.3`; PR3 remains open; main unchanged.
+Completed: native current-identity saved-sign-in inventory, current marker,
+pagination and confirmed selected/bulk revocation. Token-free/no-store responses,
+API-key denial and identity scoping preserve other accounts/profiles. Inherited
+storage/session management and production backup safeguards remain intact.
+
+The normal complete pre-push gate passed before publication: restored formatting
+2456files/0changes/no workspace warning, .NET10.0.403 Debug and Release builds with
+0warnings/0errors, all17backend suites4619passes/20existing skips, Node24.22.1
+frontend typecheck/lint/107tests/production build, plus hook, native fixture/tool
+and report-handler checks. Logs: `/tmp/castlumora-prepush.PEtQKwd1`.
+A separately launched compiled Release server/web on Debian13 passed actual
+Chromium fresh setup, inventory/current marker and selected/bulk controls with
+real token200/401checks. A cold restart retained the identical authorization
+record/current token/identity and no revoked sign-ins. Only its marked loopback
+fixture on28098was used; it is stopped and temporary authorization proof removed.
+This local test used SDK runtime/native nightly FFmpeg only for startup, not media
+playback; it is not a self-contained package or physical Mint/NAS/GPU certification.
+
+Exact-source GitHub Format44996487248, OpenAPI Check44996487181 and
+ABI44996487286 passed. Preview44996487177/job137128578269 passed all six actual
+extracted-package browser executions, including password/device revocation,
+movie/media preferences, profile isolation/recovery and another cold restart.
+Hosted backend Tests44996487239/job137128580864 passed. Its downloaded log
+independently totals all17suites:4619passes/20existing skips/0failures.
+Artifact14743888286 was independently downloaded, ZIP/archive SHA-256 checked,
+and inspected for compiled API/UI controls, runtime, exact-source documentation,
+sixteen branding files, GPL/licenses and absence of private profile credentials.
+Download: https://github.com/dangerousnick/Castlumora/actions/runs/44996487177/artifacts/14743888286
+Archive: `Castlumora-1.0-dev-ebab7567cfa7-linux-x64.tar.gz`.
+SHA-256: `deca97f7ee4a09b2391c32ec083a276e60c34dd5a5d4633e9fd6ca8f936ef9ff`.
+This is an intermediate development preview; all remaining non-YouTube1.0scope
+remains. Parent-wide managed-profile device inventory/revocation is unfinished.
+
+Next exact milestone: verify the downloaded self-contained package on a fresh
+marked Debian13 fixture with stable system FFmpeg7.1.5, without an SDK/Node server.
+Make existing DVR browser fixtures accept an explicit isolated root and integrated
+pairing while preserving marker/actual ProgramDataPath/loopback guards; add the
+missing actual-data-path guard to synthetic Live TV setup. Exercise completed
+recording/playback/removal/deletion/permissions and active-stop retained-partial
+playback. Preserve older fixtures; use only new owned synthetic media/state.
+Fix real regressions if found, run relevant checks/normal hook, publish results,
+then continue profile permissions and the remaining non-YouTube product roadmap.
+
+Unfinished local application changes: none. The next recovery documentation commit
+only records this exact tested source. Usage status: Not accessible.
+Recovery: `git fetch origin`; inspect `git status` and this checkpoint; continue the
+existing branch without resetting local edits or recreating features. Read all
+permanent requirements. Do not merge main, modify official Jellyfin or deploy to
+Coon Media. The separate main-only OpenAPI Report still requires reviewed adoption
+of the existing development-branch fix; its status is separate from OpenAPI Check.
+
 ## Current milestone — personal saved sign-ins
 
 Latest published commit: `bd54092a7748e508ac9132fdd9e1400c4f2534c1`.

@@ -160,3 +160,7 @@ packaged single/bulk browser assertions extend the retained profile workflow.
 See DEVELOPMENT_PROGRESS.md for which exact build has passed them. Parent-wide
 profile revocation remains unfinished. Report bugs with exact commit, OS/browser,
 reproduction and redacted logs/screenshots; never share credentials or tokens.
+
+Exact-source verification: [personal sign-in report](verification-personal-sign-ins.md)
+records passing complete local/hosted checks, actual compiled-browser/cold-restart
+proof and the downloadable sourceebab7567cfa7Linux package with checksum.

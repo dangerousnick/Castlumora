@@ -1,5 +1,21 @@
 # Castlumora product roadmap
 
+## Personal saved sign-ins — implemented and published
+
+Source `ebab7567cfa7c42cbdac3ac438a236372c79427f` adds current-identity saved-device
+listing, pagination/current marker and confirmed single/bulk revocation with
+API-key/foreign/current-token protections and token-free/no-store responses.
+Full local formatting/Debug/Release4619backend passes/20existing skips and107
+frontend tests passed. Actual compiled-browser and cold-restart proof passed.
+The six-workflow extracted Linux package passed and was independently downloaded
+and checksummed (run44996487177/artifact14743888286). Hosted backend Tests44996487239 passed; its downloaded log independently
+confirms4619passes/20existing skips/0failures across17suites.
+Parent-wide profile sessions, broader account policies and all other non-YouTube
+requirements remain incomplete. Next: real self-contained stable-FFmpeg DVR
+lifecycle/active-stop verification on a separate marked fixture, then remaining
+product features. No stable readiness, physical Mint/NAS/GPU or real tuner
+certification is claimed. YouTube expansion remains deferred.
+
 ## Latest account-security increment
 
 Password self-service now has a successful actual packaged preview at commit
