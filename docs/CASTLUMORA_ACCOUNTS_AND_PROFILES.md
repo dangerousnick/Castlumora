@@ -224,3 +224,33 @@ secret-storage checks. The packaged profile workflow now also checks wrong-curre
 password403, successful change, preserved current token, revoked second token,
 old/new password sign-in behavior, cleared fields/storage and fixture restoration.
 Consult the latest checkpoint for actual packaged verification status.
+
+## Personal saved sign-ins
+
+Viewing profiles → My signed-in devices shows the current identity's saved
+sign-ins, including offline devices. Names, app versions and last activity are
+untrusted display text, never executable markup. The current sign-in is marked;
+use ordinary Sign out to end it. Confirm Sign out this device for one other
+sign-in, or Sign out other devices to retain only this sign-in. Other accounts
+and managed viewing profiles are separate identities and remain unaffected.
+Inventory is paginated, twenty rows per page, and refreshes after successful
+revocation. Older servers without the endpoint show an upgrade/administrator hint.
+
+`GET Castlumora/Account/Sessions` accepts nonnegative startIndex and limit1–100.
+Responses contain record IDs, display metadata, current marker and total, never
+access tokens or physical device IDs. The authenticated identity determines scope;
+query parameters cannot select another account. API keys are forbidden.
+`DELETE Castlumora/Account/Sessions/{id}` returns404 for foreign/unknown records,
+409 for the caller's current token, and204 after inherited scoped logout.
+`POST Castlumora/Account/Sessions/RevokeOthers` requires an empty JSON object and
+revokes only this identity's other tokens. Inventory is explicitly no-store.
+Existing authentication, profile authorization and database compatibility remain.
+
+Focused real HTTP tests exercise two ordinary accounts sharing a physical device,
+selected and bulk revocation, current retention, unauthorized and API-key denial,
+pagination, and secret-free results. UI tests cover confirmation, errors, older
+servers, pagination shrinkage and escaped client names. Packaged browser checks
+exercise real list/single/bulk controls and token validity. Check current progress
+for actual complete-gate and packaged verification status; parent-wide profile
+session management, remote physical-device certification and stable readiness are
+not claimed by this increment.

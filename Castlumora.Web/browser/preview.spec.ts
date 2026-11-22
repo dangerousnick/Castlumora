@@ -4,6 +4,7 @@ import type { MediaSource } from '../src/api/types';
 import { verifyPreferredFixtureTracks } from './media-preference-proof';
 import { readPreview } from './preview-read';
 import { verifyAccountPasswordChange } from './account-password-proof';
+import { verifyAccountSessions } from './account-sessions-proof';
 const preview = process.env.CASTLUMORA_PREVIEW_URL;
 const password = process.env.CASTLUMORA_PREVIEW_PASSWORD;
 test('packaged preview: fresh setup, login, administration and logout', async ({
@@ -639,4 +640,5 @@ test('packaged preview: restart managed profiles isolate preferences and revoke 
   expect((await retainedOwner.json()).Id).toBe(owner.user.Id);
   await page.getByRole('link', { name: 'Back', exact: true }).click();
   await verifyAccountPasswordChange(page, request, preview!, password!);
+  await verifyAccountSessions(page, request, preview!, password!);
 });

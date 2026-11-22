@@ -141,3 +141,22 @@ on success/error and should not appear in application local/session storage.
 
 Focused UI tests passed; the newly extended extracted-package workflow must pass
 before the feature is listed as verified for a particular downloadable build.
+
+## Personal saved sign-ins (consult exact-build progress)
+
+1. Open Viewing profiles → My signed-in devices. Verify only the current identity's
+   saved sign-ins appear and the current sign-in is marked.
+2. Sign in as the same identity on a second device/browser. Refresh the first;
+   the second should appear with its name, app/version and activity, without tokens.
+3. Cancel Sign out this device once; the second must still work. Confirm it;
+   its old token must fail while the first and another account remain signed in.
+4. Create two more sign-ins, confirm Sign out other devices. Only this sign-in
+   remains; other accounts/profiles are unaffected. Use ordinary Sign out for this one.
+5. With more than twenty saved sign-ins, use Next/Previous devices. Errors must
+   not show successful revocation. Older servers should offer an honest fallback.
+
+Focused component and real HTTP tests cover controls and authorization; actual
+packaged single/bulk browser assertions extend the retained profile workflow.
+See DEVELOPMENT_PROGRESS.md for which exact build has passed them. Parent-wide
+profile revocation remains unfinished. Report bugs with exact commit, OS/browser,
+reproduction and redacted logs/screenshots; never share credentials or tokens.

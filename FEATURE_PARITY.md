@@ -1,5 +1,20 @@
 # Feature parity inventory — Phase 1.3
 
+## Latest account-security increment
+
+Password self-service now has a successful actual packaged preview at commit
+`bd54092a7748e508ac9132fdd9e1400c4f2534c1` (run44994042011,
+artifact14742977997, independently downloaded/checksummed).
+Personal saved sign-in inventory and selected/bulk revocation are the next
+coherent milestone, currently in validation. This is current-identity scope:
+parent-wide managed-profile device management remains incomplete. Real HTTP
+security/persistence-backed revocation and UI component tests passed; full gate
+and the extended packaged browser workflow must pass before publication claims.
+All remaining non-YouTube1.0 requirements remain, including broader profile policy,
+DVR/media runtime coverage, creator/business/storage/resource features and release
+acceptance. YouTube expansion remains deferred at the owner's request.
+
+
 ## Owner priority update — accounts through release readiness (2026-11-14)
 
 Defer further YouTube importing and creator-metadata development at the owner's

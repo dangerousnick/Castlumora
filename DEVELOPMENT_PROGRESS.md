@@ -14,6 +14,47 @@ Linux-only server policy and mandatory validation remain in effect. Never merge
 main or deploy to Coon Media automatically.
 
 
+## Current milestone — personal saved sign-ins
+
+Latest published commit: `bd54092a7748e508ac9132fdd9e1400c4f2534c1`.
+Current branch: `development/castlumora-web-1.3`; PR3 remains open.
+The password editor preview44994042011/job137121203340 passed all six actual
+packaged browser executions, including real password rejection/change/token
+revocation and cold-restart recovery. Artifact14742977997 was independently
+downloaded, SHA-256 checked and inspected for the compiled web/server, sixteen
+branding assets, runtime, GPL, licenses and exact-source documentation.
+Archive SHA-256: `0c4d70d438836d996baf1e8e75bc48cbcf15d69a02deac7ddbede962c6c6debc`.
+Download: https://github.com/dangerousnick/Castlumora/actions/runs/44994042011/artifacts/14742977997
+This is a development preview, not stable1.0 acceptance.
+
+In development: Viewing profiles → My signed-in devices lists only the current
+identity's persisted authorizations, marks the current sign-in, and confirms
+revocation of one other sign-in or all others. It never returns access tokens or
+physical device IDs, rejects API keys and foreign targets, and retains current
+and other-identity authorizations. Uses inherited persistence/session management;
+no database migration or production backup-policy change. Parent-wide managed-
+profile session inventory and revocation remain unfinished.
+
+Focused verification: real SQLite/HTTP integration passed1test, covering anonymous
+and API-key denial, foreign/current revocation denial, pagination bounds, selected
+and bulk revocation, retained current/peer tokens and safe response contents.
+Focused UI checks passed17tests across device, password and profile-switch suites.
+The original integration compilation exposed four nullable dereferences in the
+new test; corrected before execution/publication. Full normal pre-push validation
+and exact-source Linux/package CI remain required for this new backend milestone.
+The existing packaged profile execution gains actual device-list and single/bulk
+revocation checks; these are pending execution, not additional tests claimed passed.
+
+Unfinished work: this milestone has not yet been published. Next exact steps:
+finish formatting/typecheck/lint review, commit the coherent snapshot, normal push
+through the complete required gate, inspect exact-SHA Linux/shared CI and packaged
+browser checks, independently verify the new downloadable package, update PR3 and
+record its SHA. Then continue remaining account/profile permissions and broader
+non-YouTube roadmap, including real FFmpeg/DVR packaged-runtime verification.
+Usage status: Not accessible. Recovery: fetch origin, inspect branch/status and
+this checkpoint; preserve local edits, continue this milestone without recreation.
+No main merge, production deployment or Coon Media access is authorized.
+
 ## Password preview rejection-message correction
 
 Preview44373698671/job135047258718 correctly failed and uploaded no application
