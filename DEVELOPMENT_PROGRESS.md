@@ -14,6 +14,21 @@ Linux-only server policy and mandatory validation remain in effect. Never merge
 main or deploy to Coon Media automatically.
 
 
+## Password preview rejection-message correction
+
+Preview44373698671/job135047258718 correctly failed and uploaded no application
+archive. The wrong-current-password request returned the required403, but the
+browser expected a numeric403in the displayed message; ApiError deliberately maps
+403to a friendly message without the status number. Source behavior was confirmed
+in api/client.ts. Keep the real HTTP403assertion and all session/password checks.
+
+The password editor now gives a fixed, relevant rejection message asking the user
+to check the current password and account permissions. It does not expose raw
+response bodies or secrets. The browser expects that message, and an actualApiError403
+component regression checks it plus cleared fields/no false success. Full frontend
+validation and a new actual packaged run must pass before delivery. YouTube remains
+deferred; no backend, authentication policy or required check was changed.
+
 ## Self-service account password editor — implementation in validation
 
 Continue all non-YouTube requirements. The new native Account security form is

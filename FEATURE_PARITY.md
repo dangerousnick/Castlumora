@@ -13,6 +13,15 @@ feature status; a development preview does not establish stable-release readines
 Linux-only server policy and mandatory validation remain in effect. Never merge
 main or deploy to Coon Media automatically.
 
+## Password rejection-message correction in validation
+
+The packaged wrong-password check received403as required; its UI locator incorrectly
+expected the number rather than the client's friendly message. The editor now shows
+a relevant fixed rejection message, tested with actualApiError403, and the browser
+retains its independent HTTP403assertion. No production authentication/parser/check
+was weakened. A fresh packaged pass remains required before the password preview
+is delivered. Full non-YouTube scope remains active and unfinished.
+
 ## Account password self-service in validation
 
 Owning accounts now have a native password form using the inherited authenticated

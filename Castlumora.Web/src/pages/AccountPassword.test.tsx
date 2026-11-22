@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { afterEach, expect, it, vi } from 'vitest';
-import { Api } from '../api/client';
+import { Api, ApiError } from '../api/client';
 import { AppContext, type AppState } from '../state';
 import AccountPassword from './AccountPassword';
 
@@ -117,4 +117,16 @@ it('retains the inherited administrator ability while still supplying the explic
   fireEvent.click(screen.getByRole('button', { name: 'Update account password' }));
   await waitFor(() => expect(request).toHaveBeenCalledOnce());
   expect(request.mock.calls[0][0]).toBe('Users/current-user/Password');
+});
+
+it('explains an actual API403 password rejection without exposing the server response or passwords', async () => {
+  const { request } = fixture();
+  request.mockRejectedValue(new ApiError(403, 'Your profile cannot access this feature.'));
+  fill();
+  fireEvent.click(screen.getByRole('button', { name: 'Update account password' }));
+  await screen.findByText(
+    'Password change was rejected. Check your current password and account permissions.',
+  );
+  assertCleared();
+  expect(screen.queryByText(/Password updated\./)).toBeNull();
 });

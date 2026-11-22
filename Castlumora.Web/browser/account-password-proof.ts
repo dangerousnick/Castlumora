@@ -58,7 +58,14 @@ export async function verifyAccountPasswordChange(
     );
     await page.getByRole('button', { name: 'Update account password', exact: true }).click();
     expect((await rejected).status()).toBe(403);
-    await expect(page.getByRole('status').filter({ hasText: '403' })).toBeVisible();
+    await expect(
+      page
+        .getByRole('status')
+        .filter({
+          hasText:
+            'Password change was rejected. Check your current password and account permissions.',
+        }),
+    ).toBeVisible();
     await expect(page.getByLabel('Current account password', { exact: true })).toHaveValue('');
     expect(
       (await readPreview(request, endpoint('Users/Me'), { headers: secondaryHeaders })).status(),

@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useApp } from '../state';
+import { ApiError } from '../api/client';
 import { ActionStatus, useAction } from '../admin/Controls';
 
 export default function AccountPassword({ accountOwner }: { accountOwner: boolean }) {
@@ -47,6 +48,12 @@ export default function AccountPassword({ accountOwner }: { accountOwner: boolea
             });
             session.user.HasPassword = true;
             setHasPassword(true);
+          } catch (error) {
+            if (error instanceof ApiError && error.status === 403)
+              throw new Error(
+                'Password change was rejected. Check your current password and account permissions.',
+              );
+            throw error;
           } finally {
             setCurrent('');
             setNext('');
