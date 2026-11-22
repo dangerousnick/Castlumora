@@ -14,7 +14,97 @@ Linux-only server policy and mandatory validation remain in effect. Never merge
 main or deploy to Coon Media automatically.
 
 
-## Current milestone — first-recording indexing regression
+## Latest verified application — first-recording indexing and personal sign-ins
+
+Latest published application commit: `82e78af324554110ec2709de607261ae23e947d3`.
+Current branch: `development/castlumora-web-1.3`; PR3 targets main and stays open.
+This recovery checkpoint records the tested application; subsequent documentation
+commits do not claim another application build/test pass. No source/history was reset.
+
+Completed milestones in this session:
+
+- Personal saved sign-ins, source `ebab7567cfa7c42cbdac3ac438a236372c79427f`:
+  token-free/current-identity inventory, pagination, current marker and confirmed
+  selected/bulk revocation, with real HTTP/browser/cold-restart authorization proof.
+- First-recording indexing, source `82e78af324554110ec2709de607261ae23e947d3`:
+  a successful recording in a new empty physical root now queues root validation
+  instead of silently losing the refresh. Existing indexed-parent behavior and
+  targeted metadata refresh remain. Three focused tests, unchanged real DVR
+  lifecycle/active-stop/HLS workflows and the complete mandatory gate passed.
+- Explicit disposable-root/integrated DVR fixtures and actual-data-path protection
+  for synthetic Live TV setup. Four Python guard regressions run in normal Vitest.
+
+Complete local gate: .NET10.0.403, restored formatting2457files/0changes/no workspace
+warnings, Debug/Release0warnings/0errors,17backend suites4622passes/20existing skips,
+Node24.22.1 typecheck/lint/108tests/build, four Python guard cases, plus hook/native/
+backup/security/migration/report-handler coverage. Logs: `/tmp/castlumora-prepush.eu5IwpdJ`.
+Exact-SHA hosted Format45000102922, OpenAPI Check45000102920,
+ABI45000102956 and Tests45000102945/job137139619286 passed. Downloaded hosted
+backend logs independently confirm17suites/4622passes/20existing skips/0failures.
+Preview45000102921/job137139604733 passed108frontend tests/four Python guards and
+six actual extracted-package browser workflows, including managed profiles,
+password/device revocation, media preferences/movie playback and cold recovery.
+
+NEW download: https://github.com/dangerousnick/Castlumora/actions/runs/45000102921/artifacts/14745438125
+Archive: `Castlumora-1.0-dev-82e78af32455-linux-x64.tar.gz`.
+SHA-256: `eaefaace5329b7c3012100e6f8e3ac09d400c9ce6ad8165bfe2b32c2f11208f2`.
+The actual ZIP/archive, source manifest, compiled API/UI/server, bundled runtimes,
+sixteen branding files, GPL/licenses and source documentation were independently
+verified. The older regenerable extracted preview was removed only after validation;
+source, Git history, failure/success fixture state, reports and original media remain.
+
+Independent NEW-package Debian13 verification with stable FFmpeg7.1.5 and bundled
+libcoreclr (workspace SDK paths removed) passed fresh setup/login/library/movie
+playback and both complete DVR/active-stop browser workflows. The package actually
+exercised the new first-recording root fallback. An additional HLS attempt correctly
+failed a fixture precondition: automatic English subtitles had already selected HLS,
+so raw video time was relative to a9second offset while Castlumora's logical slider
+showed12seconds. The unchanged test expects initial Direct Play. A new isolated
+fixture explicitly sets ONLY its account's subtitle preference to None, retaining
+manual subtitle selection/loaded-track checks. The complete unchanged recheck passed: DVR lifecycle1.9minutes, active-stop1.2minutes,
+HLS/quality/audio/subtitles/encoding cleanup7.1seconds, plus fresh setup/library/
+movie playback. The actual package exercised aggregate-root fallback. Cold restart
+retained setup/login, saved preferences and the partial recording in its library;
+its own libcoreclr was reconfirmed and native administrator shutdown completed.
+The temporary restart harness initially confused health liveness with API readiness,
+received startup503 and interrupted initialization. After requiring successful
+System/Info/Public readiness, the same retained fixture passed authentication,
+media persistence and clean shutdown. No production preference or assertion was
+weakened; original failures/logs remain. Owned server/media processes are stopped
+and temporary plaintext fixture passwords removed. Report:
+`/tmp/castlumora-new-package-dvr-verified.json`.
+
+Usage status: Not accessible; no reliable remaining allowance/reset API is exposed.
+No full Phase1.4/stable1.0 acceptance is claimed. All remaining non-YouTube scope
+is retained; main-only OpenAPI Report still requires reviewed adoption of the
+existing development fix, separately from passing OpenAPI Check. Linux-only policy
+stands. No main merge, official Jellyfin change or Coon Media access/deployment.
+
+Unfinished application work from these two milestones: none. Both are implemented,
+tested and published, with a verified downloadable build. This documentation-only
+checkpoint must pass its normal hook; no unchanged application test rerun is claimed.
+Verification report and installation/checklist updates are post-build evidence in
+the repository/PR; the already-produced archive retains exact source82e78af32455.
+Read docs/verification-dvr-first-recording.md for evidence and known limitations.
+
+Next development task after this checkpoint: account-owner management of managed-
+profile sign-ins. Reuse ProfileService ownership/state and the existing scoped
+session operations; do not create a parallel account store. Require an authenticated
+owning identity, deny API keys/child/foreign-account targets, keep responses token-
+free, and preserve private profile keys/identity/history. Add owner-facing controls
+without removing current-profile controls; test real SQLite HTTP cross-owner and
+child denial, selected/bulk revocation and retained owner sessions, then component/
+packaged browser cases. Full normal gate, exact-source CI and updated preview are
+required before publication claims. Continue other permanent non-YouTube features
+thereafter; no new feature was begun during the current validation.
+
+Recovery: fetch origin, inspect status/latest commits and this checkpoint on the
+existing branch. Preserve local edits; never reset/recreate completed features.
+The exact application SHA above and downloadable archive are recoverable on GitHub.
+Read the permanent requirements/parity/roadmap before starting the next task.
+Do not rerun completed full tests merely for documentation changes.
+
+## Historical investigation — first-recording indexing regression
 
 Latest published checkpoint: `bdc4bd4cf8369d272fc83ff01eca1ee51dcf8b83`.
 Last fully verified application: `ebab7567cfa7c42cbdac3ac438a236372c79427f`.

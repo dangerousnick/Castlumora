@@ -1,6 +1,27 @@
 # Feature parity inventory — Phase 1.3
 
-## Current DVR regression in verification
+## Latest published application: 82e78af32455
+
+Personal saved-sign-in controls and automatic first-recording indexing are
+implemented and published. Full local/hosted Linux/shared verification passed:
+4622backend tests/20existing skips,108frontend tests plus four Python guard cases,
+formatting and Debug/Release. The NEW extracted-package preview passed all six CI
+browser executions and was independently downloaded/checksummed. Actual Debian13 verification of that downloaded archive passed fresh setup/movie
+playback, automatic first-recording indexing, completed/retained-partial playback,
+permission/deletion checks, HLS/quality/audio/subtitles/encoding cleanup, cold-restart
+media retention and clean administrator shutdown. Tests used stable FFmpeg7.1.5,
+the bundled runtime and only marked synthetic fixtures. Harness preconditions and
+liveness/readiness corrections are documented; no assertions were weakened.
+Source: `82e78af324554110ec2709de607261ae23e947d3`.
+Download: https://github.com/dangerousnick/Castlumora/actions/runs/45000102921/artifacts/14745438125
+Next coherent feature: secure account-owner management of managed-profile sign-ins,
+with real ownership/authorization, retained owner sessions, no token exposure and
+full validation. Broader account policy/personalization/presentation/admin parity,
+creator/business/resource/cloud/offline and release acceptance remain. YouTube
+expansion stays deferred. No stable, physical Mint/NAS/GPU/tuner support is claimed.
+
+
+## Historical DVR regression verification
 
 Independent self-contained ebab7567 package setup/login/library/movie playback
 passed on fresh Debian13 with stable FFmpeg7.1.5 and bundled .NET runtime. Real

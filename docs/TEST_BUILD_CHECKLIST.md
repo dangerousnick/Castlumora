@@ -161,7 +161,7 @@ See DEVELOPMENT_PROGRESS.md for which exact build has passed them. Parent-wide
 profile revocation remains unfinished. Report bugs with exact commit, OS/browser,
 reproduction and redacted logs/screenshots; never share credentials or tokens.
 
-Exact-source verification: [personal sign-in report](verification-personal-sign-ins.md)
+Exact-source verification: [personal sign-in report](https://github.com/dangerousnick/Castlumora/blob/bdc4bd4cf8369d272fc83ff01eca1ee51dcf8b83/docs/verification-personal-sign-ins.md)
 records passing complete local/hosted checks, actual compiled-browser/cold-restart
 proof and the downloadable sourceebab7567cfa7Linux package with checksum.
 
@@ -169,7 +169,7 @@ proof and the downloadable sourceebab7567cfa7Linux package with checksum.
 ## First recording in a fresh library
 
 The ebab7567 preview exposed a known first-recording indexing defect. Check
-[the correction report](verification-dvr-first-recording.md) and current progress
+[the correction report linked from PR3](https://github.com/dangerousnick/Castlumora/pull/3) and current progress
 for the NEW fixed build before testing this case.
 
 1. On a disposable test installation, configure an authorized synthetic/local tuner
@@ -182,6 +182,8 @@ for the NEW fixed build before testing this case.
 4. Start another recording, wait for actual data, then Stop recording before its
    scheduled end. Its partial file should remain indexed and playable.
 
-Fixed compiled-server full lifecycle/active-stop and HLS browser workflows passed.
-Complete gate and NEW self-contained fixed-package verification are pending in
-this increment; consult the exact-source checkpoint before claiming they passed.
+Source82e78af32455 passed the complete local/hosted gate and actual NEW downloaded
+self-contained-package setup, DVR lifecycle/active stop, HLS/audio/subtitles,
+cold-restart retained-media access and clean shutdown on Debian13/FFmpeg7.1.5.
+See PR3's exact-source post-build report. Physical Mint/NAS/GPU/tuner checks remain
+unverified, and this is a development preview rather than stable1.0 acceptance.

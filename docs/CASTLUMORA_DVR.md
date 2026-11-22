@@ -48,3 +48,26 @@ cancellation remains distinct from an unrequested nonzero FFmpeg exit. Five focu
 POSIX-process regressions exercise these cases and final log retention; this is not
 physical tuner/hardware certification. See the exact checkpoint for full-suite and
 packaged verification results.
+
+
+## First recording in a new empty library
+
+Source82e78af32455 corrects a real first-recording indexing defect. The logical
+recording library could exist before its empty physical root had an indexed
+ancestor; completed FFmpeg output then received no refresh. Castlumora now queues
+aggregate-root validation in that case, retaining existing indexed-parent behavior
+and path-filtered metadata. It preserves timers, file paths, permissions and history.
+
+The normal local/hosted gates and actual downloaded Linux package passed completed
+DVR/deletion/permissions, active-stop retained-partial playback, HLS/audio/subtitles,
+cold-restart media persistence and clean native shutdown on Debian13/FFmpeg7.1.5.
+See [PR3's exact-source report and download](https://github.com/dangerousnick/Castlumora/pull/3).
+This is development verification, not real-tuner/GPU/Mint hardware certification.
+
+For separate integrated-package tests, set CASTLUMORA_TEST_FIXTURE_ROOT and
+CASTLUMORA_TEST_INTEGRATED=1 along with the matching loopback browser/server URLs.
+The existing HLS workflow expects initial Direct Play; set only the disposable
+account's subtitles to Off before it, retaining its later manual-subtitle checks.
+Wait for successful System/Info/Public readiness before authenticating or shutting
+down; /health alone indicates liveness before full API startup. Never change a
+production account or mark production data as disposable to satisfy these tests.
