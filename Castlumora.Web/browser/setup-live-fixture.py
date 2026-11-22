@@ -38,6 +38,8 @@ def request(path, data=None, method=None):
 
 auth = request('/Users/AuthenticateByName', {'Username': os.environ['CASTLUMORA_TEST_USER'], 'Pw': os.environ['CASTLUMORA_TEST_PASSWORD']}, 'POST')
 token = auth['AccessToken']
+if request('/System/Info')['ProgramDataPath'] != str(root / 'data'):
+    raise SystemExit('Actual server data root differs from the marked fixture; no configuration was changed.')
 config = request('/System/Configuration/livetv')
 if config.get('TunerHosts') or config.get('ListingProviders'):
     raise SystemExit('Fixture setup requires an empty tuner/provider configuration; existing sources were not modified.')

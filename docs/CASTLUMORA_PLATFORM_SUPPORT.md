@@ -1,5 +1,19 @@
 # Platform policy and verification evidence
 
+## Independent Debian13 package runtime evidence
+
+The ebab7567cfa7 self-contained Linux x64 preview was independently downloaded,
+checksummed and launched on a fresh Debian13 loopback fixture with system
+FFmpeg7.1.5 and workspace SDK paths removed. Process maps confirmed its bundled
+libcoreclr. Actual compiled-web setup/login, library creation/scanning and movie
+playback passed. Real DVR exposed a first-recording indexing defect; that original
+preview is not claimed to pass DVR. The corrected compiled server passed full DVR
+lifecycle and active-stop playback on another fresh fixture; NEW self-contained
+fixed-package verification is pending. See verification-dvr-first-recording.md.
+This is specific automated runtime evidence, not physical Mint/NAS/GPU/tuner or
+complete stable support certification. Linux-only strategy remains unchanged.
+
+
 ## Authoritative Linux-only server policy — 2026-11-13
 
 Castlumora1.0 targets Linux servers only: Mint22.3/newer compatible versions, Ubuntu

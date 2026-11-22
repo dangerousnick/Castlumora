@@ -2,7 +2,15 @@
 import { test, expect } from '@playwright/test';
 import { existsSync, readFileSync, writeFileSync } from 'node:fs';
 import { resolve, relative } from 'node:path';
-const root = '/tmp/castlumora-web-real-server';
+const root = resolve(process.env.CASTLUMORA_TEST_FIXTURE_ROOT ?? '/tmp/castlumora-web-real-server');
+// Preserve explicit pairing coverage when testing the integrated compiled web.
+test.beforeEach(async ({ page }) => {
+  if (process.env.CASTLUMORA_TEST_INTEGRATED === '1')
+    await page.addInitScript(() => {
+      if (localStorage.getItem('castlumora-server') === null)
+        localStorage.setItem('castlumora-server', '');
+    });
+});
 const server = process.env.CASTLUMORA_TEST_SERVER;
 const username = process.env.CASTLUMORA_TEST_USER;
 const password = process.env.CASTLUMORA_TEST_PASSWORD;

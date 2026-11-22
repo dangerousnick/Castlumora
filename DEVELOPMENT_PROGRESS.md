@@ -14,6 +14,70 @@ Linux-only server policy and mandatory validation remain in effect. Never merge
 main or deploy to Coon Media automatically.
 
 
+## Current milestone — first-recording indexing regression
+
+Latest published checkpoint: `bdc4bd4cf8369d272fc83ff01eca1ee51dcf8b83`.
+Last fully verified application: `ebab7567cfa7c42cbdac3ac438a236372c79427f`.
+Continue this milestone, not another feature. Branch/PR3 unchanged. Usage status:
+Not accessible; no remaining-allowance API is exposed.
+
+The downloaded self-contained ebab7567 package launched on fresh Debian13 with
+PATH=/usr/bin:/bin, DOTNET_ROOT unset and stable system FFmpeg7.1.5. Process maps
+confirmed its own bundled libcoreclr, not the workspace SDK. Actual Chromium
+setup/login/native library creation/scanning/movie playback passed.
+The real completed-recording workflow then found a genuine application defect:
+FFmpeg exited0 and produced389160bytes/22.73seconds of playable TS, but the recording
+never appeared in LiveTv/Recordings. The browser failed, and guarded cleanup
+restored only fixture-owned configuration. Evidence retained under
+`/tmp/castlumora-package-dvr-state-ebab7567` and
+`/tmp/castlumora-packaged-dvr-lifecycle.log`; its server/media processes are stopped.
+SQLite confirmed only the logical CollectionFolder existed; the new empty
+physical root was not indexed. TriggerRefresh returned without queueing anything
+when no indexed ancestor existed. This is an application defect, not disk pressure.
+The published preview therefore retains this known first-recording limitation.
+
+In progress: preserve normal indexed-parent refresh, but fall back to aggregate
+root validation when a nonempty server-generated recording directory has no
+indexed ancestor. Existing RefreshPaths constrain metadata refresh to the recording
+and its directories; structural root validation can visit configured library roots
+on this uncommon fallback. Missing directory still returns null. No auth, database,
+backup reserve, tuner or FFmpeg policy is weakened. Focused regression reproduced
+1failure/2passes before correction and all3pass afterward; fixed Release server
+build passed0warnings/0errors. A separate fresh compiled-server fixture passed the unchanged full DVR lifecycle
+in1.9minutes and active-stop/retained-partial playback in1.2minutes. Automatic
+first-recording inventory, completed playback, permission denial, retention after
+library-only removal, re-indexing, real file deletion and source preservation all
+passed. No manual scan was added before initial inventory. Active stop was denied
+to a viewer and allowed to the owner before end, retaining playable partial media.
+Both helpers restored fixture settings. The downloaded archive remains unmodified;
+these fixed-server tests are not claimed as tests of a NEW self-contained package.
+
+DVR browser fixtures now accept an explicit root and integrated pairing with the
+existing marker/actual ProgramDataPath/loopback guards. Synthetic Live TV setup
+now also checks actual ProgramDataPath before touching configuration. Four Python
+guard cases pass (missing marker, remote target, mismatched data root and matching
+root retaining existing-source protection); the normal frontend Vitest command
+invokes them. Old fixture/source/history/docs are preserved. Safe cleanup removed
+51old untracked generated coverage directories, retaining two newest per suite,
+reclaiming463313396bytes; no production reserve was lowered.
+
+The existing HLS/quality/audio/subtitle/encoding-cleanup browser workflow also
+passed in7seconds after correcting a fixture omission: initial setup copied only
+MP4/NFO and omitted the owned VTT. Its first attempt correctly failed on missing
+subtitle options; the original owned VTT was copied/indexed and all unchanged
+assertions passed. Both owned server/media processes are stopped; temporary
+plaintext fixture credentials were removed, with state/log evidence retained.
+
+Next exact steps: commit the coherent fix/guard/report snapshot, then use the
+full normal pre-push formatting,
+Debug/Release/all backend/frontend gate. Three new backend regressions and the
+frontend wrapper running four Python guard cases must remain included.
+Only publish passing fixes, inspect exact-SHA required hosted checks, build and
+independently verify a NEW preview, and rerun real DVR against that actual archive.
+Update the verification report/PR3/checkpoints, then resume other non-YouTube work.
+Fixed compiled-server DVR workflows pass; complete gate/new-package verification
+and final release readiness are not yet claimed.
+
 ## Personal saved sign-ins — published verification checkpoint
 
 Latest published application commit: `ebab7567cfa7c42cbdac3ac438a236372c79427f`.

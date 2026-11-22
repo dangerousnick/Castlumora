@@ -164,3 +164,24 @@ reproduction and redacted logs/screenshots; never share credentials or tokens.
 Exact-source verification: [personal sign-in report](verification-personal-sign-ins.md)
 records passing complete local/hosted checks, actual compiled-browser/cold-restart
 proof and the downloadable sourceebab7567cfa7Linux package with checksum.
+
+
+## First recording in a fresh library
+
+The ebab7567 preview exposed a known first-recording indexing defect. Check
+[the correction report](verification-dvr-first-recording.md) and current progress
+for the NEW fixed build before testing this case.
+
+1. On a disposable test installation, configure an authorized synthetic/local tuner
+   and XMLTV guide, then select a new empty recording folder.
+2. Schedule a short program. After completion it must appear automatically in
+   Recordings without a manual scan, and must play.
+3. A viewer without management/deletion permission must be denied cancellation
+   and deletion. Library-only removal retains the file; an explicit rescan can
+   restore it. Confirmed file deletion removes only that recording.
+4. Start another recording, wait for actual data, then Stop recording before its
+   scheduled end. Its partial file should remain indexed and playable.
+
+Fixed compiled-server full lifecycle/active-stop and HLS browser workflows passed.
+Complete gate and NEW self-contained fixed-package verification are pending in
+this increment; consult the exact-source checkpoint before claiming they passed.

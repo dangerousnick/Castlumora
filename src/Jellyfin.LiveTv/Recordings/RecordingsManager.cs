@@ -605,7 +605,7 @@ public sealed class RecordingsManager : IRecordingsManager, IDisposable
     {
         _logger.LogInformation("Triggering refresh on {Path}", path);
 
-        var item = GetAffectedBaseItem(Path.GetDirectoryName(path));
+        var item = GetAffectedBaseItem(_libraryManager, Path.GetDirectoryName(path));
         if (item is null)
         {
             return;
@@ -626,13 +626,22 @@ public sealed class RecordingsManager : IRecordingsManager, IDisposable
             RefreshPriority.High);
     }
 
-    private BaseItem? GetAffectedBaseItem(string? path)
+    /// <summary>Finds an indexed recording ancestor, or revalidates roots for a new recording library.</summary>
+    /// <param name="libraryManager">The existing library registry and indexed items.</param>
+    /// <param name="path">Server-generated recording directory, not an arbitrary request path.</param>
+    /// <returns>The nearest indexed parent or aggregate root, and null for a missing directory.</returns>
+    internal static BaseItem? GetAffectedBaseItem(ILibraryManager libraryManager, string? path)
     {
+        if (string.IsNullOrEmpty(path))
+        {
+            return null;
+        }
+
         BaseItem? item = null;
         var parentPath = Path.GetDirectoryName(path);
         while (item is null && !string.IsNullOrEmpty(path))
         {
-            item = _libraryManager.FindByPath(path, null);
+            item = libraryManager.FindByPath(path, null);
             path = Path.GetDirectoryName(path);
         }
 
@@ -647,7 +656,10 @@ public sealed class RecordingsManager : IRecordingsManager, IDisposable
             }
         }
 
-        return item;
+        // A newly registered, empty physical recording root may not have an indexed
+        // ancestor yet. Root validation discovers it; RefreshPaths still limits
+        // metadata refresh to this recording and its directories.
+        return item ?? libraryManager.RootFolder;
     }
 
     private async Task EnforceKeepUpTo(TimerInfo timer, string? seriesPath)

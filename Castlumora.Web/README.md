@@ -34,3 +34,13 @@ See root `DEVELOPMENT_PROGRESS.md` for current validation, known limitations and
 The static build includes the unchanged project GPL text as `LICENSE.txt` and runtime dependency license texts as `THIRD_PARTY_NOTICES.txt`. Keep both files with distributions; update the notices when updating runtime dependencies. Server copyright and contributor files remain unchanged.
 
 Native media guides: [music and private playlists](../docs/CASTLUMORA_MUSIC.md), [photos/books/collections and reader state](../docs/CASTLUMORA_READER_AND_SHELVES.md). The complete requirements and progress files distinguish implemented workflows from remaining work.
+
+
+Development tests require Node.js24 and Python3. The normal `npm test` command
+also executes the standard-library Python Live TV fixture-guard regressions.
+Python is a test-driver requirement here, not a new server runtime dependency.
+For opt-in DVR tests, set `CASTLUMORA_TEST_FIXTURE_ROOT` to a dedicated directory
+with the explicit disposable marker and matching server ProgramDataPath. Both DVR
+workflows support `CASTLUMORA_TEST_INTEGRATED=1` and `CASTLUMORA_BROWSER_URL` for
+compiled web served by the test server. Loopback/marker/actual-data-path guards
+remain mandatory; never target production data or use a marker to bypass them.

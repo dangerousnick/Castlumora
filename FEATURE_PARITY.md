@@ -1,5 +1,20 @@
 # Feature parity inventory — Phase 1.3
 
+## Current DVR regression in verification
+
+Independent self-contained ebab7567 package setup/login/library/movie playback
+passed on fresh Debian13 with stable FFmpeg7.1.5 and bundled .NET runtime. Real
+DVR exposed an unindexed-first-recording defect: successful nonempty recording,
+empty recordings inventory. This is not disk pressure. No passing DVR lifecycle
+is claimed for that preview. A refresh fallback preserving indexed-parent behavior
+and filtered metadata has passed3focused regressions (the new case failed before
+the fix). Unchanged actual fresh fixed-server DVR lifecycle and active-stop/
+retained-partial playback workflows both passed with stable FFmpeg7.1.5; the
+complete gate and NEW self-contained fixed-package verification remain pending. Guarded
+fixture-root/integrated browser support and four Live TV setup safety cases are
+included. Preserve all non-YouTube scope; see progress for exact recovery steps.
+
+
 ## Personal saved sign-ins — implemented and published
 
 Source `ebab7567cfa7c42cbdac3ac438a236372c79427f` adds current-identity saved-device
