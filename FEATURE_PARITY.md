@@ -10,28 +10,42 @@ its existing lifecycle gate. API keys, child callers, disabled owners and reques
 identity overrides are rejected. Other accounts remain untouched; registry, key,
 profile identities, history and production backup safeguards are preserved.
 
-Thirteen focused frontend tests/typecheck/lint/build, six profile-service tests,
-one real SQLite HTTP workflow and one actual compiled-server Chromium workflow
-passed. Browser verification includes selected/all-child and account-wide revocation,
-child denial and retained current owner. The normal full pre-push gate remains mandatory. Do not describe this
-increment as published or stable before those checks finish. The preceding9e2be5b7
-application passed local/hosted formatting, Debug/Release,4627backend tests with20
-existing skips,112frontend tests and a local compiled-server browser proof. Its
-new GitHub preview45326516352 is still installing native dependencies; no archive
-for that source is claimed. The previous82e78af3 downloadable preview remains valid
-and lacks the new profile-device controls. Separate main-only OpenAPI Report still
-requires reviewed adoption of the development fix; do not change/merge main.
+Application implementation: `974cc7961e337f99fa37403eb156490deeec0ba2`.
+The complete unchanged validation script passed on that clean snapshot: restored
+formatting2459files/0changes/no workspace warnings, .NET10.0.403 Debug/Release
+0warnings/0errors,17backend suites4629passes/20existing skips/0failures, Node24.22.1
+typecheck/lint/112tests/build and all native/backup/migration/security/hook/report
+checks. Thirteen focused UI tests, six service tests, one real SQLite HTTP workflow
+and one compiled-server Chromium workflow passed. Normal pre-push validation will
+also run before publication; no hook bypass or CI weakening is authorized.
 
-Current branch: `development/castlumora-web-1.3`; PR3 stays open.
-Latest published application: `9e2be5b7f4880acb7f1d239060601db9142a0b01`.
+Published baseline `9e2be5b7f4880acb7f1d239060601db9142a0b01` passed all required
+hosted Linux/shared checks and six actual extracted-package browser executions.
+Its GitHub artifact was independently downloaded and verified for exact source,
+archive/ZIP hashes, compiled server/web/runtime,16castle assets, GPL/dependency
+licenses and source-matching docs. This preview includes per-child device controls,
+not the newer account-wide action; a NEW preview must verify the latter.
+Download: https://github.com/dangerousnick/Castlumora/actions/runs/45326516352/artifacts/14891551437
+Archive: `Castlumora-1.0-dev-9e2be5b7f488-linux-x64.tar.gz`.
+SHA256: `2ef3a3c7332f268bd0732dd2e21bde6c7efca8aa0699fc8c0901fd0fea9c704a`.
+Separate main-only OpenAPI Report still requires reviewed adoption of the existing
+development fix. No automatic main merge or Coon Media deployment.
+
+Current branch: `development/castlumora-web-1.3`; PR3 remains open and links the
+verified baseline preview. Latest published/verified baseline:9e2be5b7f4880acb7f1d239060601db9142a0b01.
 Usage status: Not accessible. No automatic background continuation is available.
-Recovery: inspect `git status`, finish this increment's focused tests, commit the
-clean snapshot and use normal `git push origin development/castlumora-web-1.3`.
-Hold that push until the preceding preview finishes to avoid cancelling it. Verify
-exact-source hosted checks and independently download/checksum the new archive.
-Next task: audit remaining account/profile policy and invitation workflows against
-permanent requirements, then implement the first concrete gap with real permission
-and packaged-browser verification. All remaining non-YouTube1.0 requirements stay
+Recovery: inspect `git status` and `git log`, preserve974cc7961e and this checkpoint,
+then use normal `git push origin development/castlumora-web-1.3`. The previous
+preview completed successfully; publication no longer risks cancelling that build.
+After publication, verify the NEW exact-source hosted checks and independently
+download/checksum the new archive before claiming new package availability.
+Next task: administrator editing of an existing managed profile's kids/adult
+preset and explicit libraries. Reuse ProfileService's bounded policies and durable
+provisioning/recovery rather than replacing the identity or key. Deny non-admins,
+foreign/invalid libraries and owner-policy escalation; revoke affected child tokens
+before applying settings, retain history/ID, and test interrupted recovery plus
+native UI/API behavior. Complete and publish this current increment first.
+All remaining non-YouTube1.0 requirements stay
 in scope; YouTube expansion is deferred, not removed. Physical Mint/NAS/GPU/tuner
 acceptance and broader release readiness remain unverified.
 

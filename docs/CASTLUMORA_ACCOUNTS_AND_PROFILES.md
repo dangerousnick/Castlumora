@@ -172,10 +172,11 @@ packaged browser workflow covers native administration, switching/reload, separa
 preferences and return-to-account authentication. Consult DEVELOPMENT_PROGRESS.md
 for the exact checks actually run and source SHA; test presence alone is not a pass.
 
-Remaining account work includes managed-profile preset/library editing and non-destructive
-pending recovery UI, broader preference/device coverage, invitation/registration edge-case
-review, account-wide device/session controls and broader multi-device/media-history
-verification. Inherited administrative user-policy controls remain available.
+Remaining account work includes managed-profile preset/library editing,
+invitation/registration edge-case review, external-auth-provider compatibility and
+broader multi-device/media-history verification. Managed-profile recovery and
+personal/per-child/account-wide device controls are implemented; consult the exact
+checkpoint for their published/package verification. Inherited administrative user-policy controls remain available.
 External-auth-provider account compatibility is unverified; the initial workflow
 requires an existing local password. This increment does not complete stable 1.0.
 
