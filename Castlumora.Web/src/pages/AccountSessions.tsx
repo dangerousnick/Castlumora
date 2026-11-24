@@ -13,7 +13,13 @@ type SignIn = {
   current: boolean;
 };
 type Page = { identityId: string; total: number; sessions: SignIn[] };
-export default function AccountSessions() {
+export default function AccountSessions({
+  profile,
+}: { profile?: { id: string; name: string } } = {}) {
+  const base = profile
+    ? 'Castlumora/Account/ProfileSessions/' + encodeURIComponent(profile.id)
+    : 'Castlumora/Account/Sessions';
+  const heading = profile ? profile.name + ' signed-in devices' : 'My signed-in devices';
   const { api } = useApp();
   const [offset, setOffset] = useState(0);
   const [refresh, setRefresh] = useState(0);
@@ -21,11 +27,7 @@ export default function AccountSessions() {
   const size = 20;
   const inventory = useLoad(async () => {
     try {
-      const value = await api.request<Page>(
-        'Castlumora/Account/Sessions',
-        {},
-        { startIndex: offset, limit: size },
-      );
+      const value = await api.request<Page>(base, {}, { startIndex: offset, limit: size });
       if (
         !value ||
         !Number.isSafeInteger(value.total) ||
@@ -49,20 +51,24 @@ export default function AccountSessions() {
         throw new Error('Invalid server sign-in inventory.');
       return value;
     } catch (error) {
-      if (error instanceof ApiError && error.status === 404) return null;
+      if (error instanceof ApiError && error.status === 404) {
+        if (!profile) return null;
+        throw new Error('Profile sign-ins are unavailable. Refresh your profile list.');
+      }
       throw error;
     }
-  }, [api, offset, refresh]);
+  }, [api, base, offset, refresh]);
   const reload = () => {
     setOffset(0);
     setRefresh((value) => value + 1);
   };
   return (
-    <section className="panel" aria-label="My signed-in devices">
-      <h2>My signed-in devices</h2>
+    <section className="panel" aria-label={heading}>
+      <h2>{heading}</h2>
       <p>
-        Only sign-ins for this account or viewing profile are shown. Other identities are managed
-        separately. Saved sign-ins can be revoked even when a device is offline.
+        {profile
+          ? 'Manage only this viewing profile’s saved sign-ins. Your account and other profiles stay signed in. Profile history, preferences and credentials are preserved.'
+          : 'Only sign-ins for this account or viewing profile are shown. Other identities are managed separately. Saved sign-ins can be revoked even when a device is offline.'}
       </p>
       <Feedback busy={inventory.busy} error={inventory.error} />
       {inventory.value === null && (
@@ -74,24 +80,31 @@ export default function AccountSessions() {
       {inventory.value && (
         <>
           <button
-            disabled={action.busy || inventory.busy || inventory.value.total <= 1}
+            disabled={action.busy || inventory.busy || inventory.value.total <= (profile ? 0 : 1)}
             onClick={() => {
               if (
                 !window.confirm(
-                  'Sign out all other devices for this identity? This device stays signed in; other accounts and viewing profiles are unaffected.',
+                  profile
+                    ? 'Sign out every device for this viewing profile? Your account and other profiles stay signed in.'
+                    : 'Sign out all other devices for this identity? This device stays signed in; other accounts and viewing profiles are unaffected.',
                 )
               )
                 return;
-              void action.run(async () => {
-                await api.request('Castlumora/Account/Sessions/RevokeOthers', {
-                  method: 'POST',
-                  body: '{}',
-                });
-                reload();
-              }, 'Other sign-ins for this identity were revoked. This device remains signed in.');
+              void action.run(
+                async () => {
+                  await api.request(base + (profile ? '/RevokeAll' : '/RevokeOthers'), {
+                    method: 'POST',
+                    body: '{}',
+                  });
+                  reload();
+                },
+                profile
+                  ? 'Viewing profile signed out on all devices. Your account remains signed in.'
+                  : 'Other sign-ins for this identity were revoked. This device remains signed in.',
+              );
             }}
           >
-            Sign out other devices
+            {profile ? 'Sign out all profile devices' : 'Sign out other devices'}
           </button>
           {inventory.value.sessions.length === 0 && <p>No saved sign-ins on this page.</p>}
           <div className="admin-list">
@@ -117,7 +130,7 @@ export default function AccountSessions() {
                       )
                         return;
                       void action.run(async () => {
-                        await api.request('Castlumora/Account/Sessions/' + row.id, {
+                        await api.request(base + '/' + row.id, {
                           method: 'DELETE',
                         });
                         reload();

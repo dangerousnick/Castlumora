@@ -14,6 +14,7 @@ export default function Profiles() {
   const navigate = useNavigate();
   const [password, setPassword] = useState('');
   const [target, setTarget] = useState('');
+  const [deviceProfile, setDeviceProfile] = useState('');
   const action = useAction();
   const profiles = useLoad(
     () =>
@@ -34,6 +35,36 @@ export default function Profiles() {
         <>
           {profiles.value.accountId && (
             <AccountPassword accountOwner={sameId(profiles.value.accountId, session.user.Id)} />
+          )}
+          {profiles.value.accountId && sameId(profiles.value.accountId, session.user.Id) && (
+            <section className="panel" aria-label="Viewing profile devices">
+              <h2>Viewing profile devices</h2>
+              <label>
+                Manage profile sign-ins
+                <select
+                  value={deviceProfile}
+                  onChange={(event) => setDeviceProfile(event.target.value)}
+                >
+                  <option value="">Choose a viewing profile</option>
+                  {profiles.value.profiles
+                    .filter((profile) => !sameId(profile.id, profiles.value!.accountId))
+                    .map((profile) => (
+                      <option key={profile.id} value={profile.id}>
+                        {profile.name}
+                        {!profile.ready ? ' — unavailable' : ''}
+                      </option>
+                    ))}
+                </select>
+              </label>
+              {profiles.value.profiles
+                .filter(
+                  (profile) =>
+                    profile.id === deviceProfile && !sameId(profile.id, profiles.value!.accountId),
+                )
+                .map((profile) => (
+                  <AccountSessions key={profile.id} profile={profile} />
+                ))}
+            </section>
           )}
           <p>
             Account: {profiles.value.accountName}. Each profile has separate watch progress, lists

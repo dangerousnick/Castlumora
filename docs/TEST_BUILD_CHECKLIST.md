@@ -187,3 +187,22 @@ self-contained-package setup, DVR lifecycle/active stop, HLS/audio/subtitles,
 cold-restart retained-media access and clean shutdown on Debian13/FFmpeg7.1.5.
 See PR3's exact-source post-build report. Physical Mint/NAS/GPU/tuner checks remain
 unverified, and this is a development preview rather than stable1.0 acceptance.
+
+## Owner management of viewing-profile devices
+
+1. As the owning account, open Viewing profiles → Viewing profile devices and
+   choose a child. My signed-in devices continues to show your own sign-ins.
+2. Sign into that child on two test devices. Refresh the owner's page; both should
+   appear without tokens. Cancel one confirmation, then confirm Sign out this device.
+   The selected device must require authentication, while the other child device
+   and owner still work.
+3. Confirm Sign out all profile devices, including when only one remains. That
+   child must require authentication everywhere; owner and sibling profiles stay in.
+4. Verify profile history/preferences/identity remain. A child cannot see owner
+   controls. Another account or API key must not list or revoke this profile.
+5. An unavailable profile may have old sign-ins revoked without becoming active.
+
+Focused service/real HTTP/component tests passed during implementation. Consult
+DEVELOPMENT_PROGRESS.md for the exact complete-gate and packaged-browser result;
+new assertions are included in the existing actual profile workflow, not a skipped
+placeholder. No stable release or completion of all account features is claimed.

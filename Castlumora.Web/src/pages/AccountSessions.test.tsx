@@ -80,14 +80,12 @@ it('confirms sign-out of other devices without sending an identity or token over
 });
 it('retains a previous-page control when concurrent revocation shrinks the inventory', async () => {
   const api = new Api('https://example.test');
-  const request = vi
-    .spyOn(api, 'request')
-    .mockImplementation(async (_path, _options, params) => ({
-      identityId: 'owner',
-      total: params?.startIndex === 20 ? 1 : 21,
-      sessions:
-        params?.startIndex === 20 ? [] : Array.from({ length: 20 }, (_, i) => row(i + 1, i === 0)),
-    }));
+  const request = vi.spyOn(api, 'request').mockImplementation(async (_path, _options, params) => ({
+    identityId: 'owner',
+    total: params?.startIndex === 20 ? 1 : 21,
+    sessions:
+      params?.startIndex === 20 ? [] : Array.from({ length: 20 }, (_, i) => row(i + 1, i === 0)),
+  }));
   view(api);
   fireEvent.click(await screen.findByRole('button', { name: 'Next devices' }));
   await screen.findByText('No saved sign-ins on this page.');
@@ -135,4 +133,50 @@ it('rejects malformed inventory without rendering authorization controls', async
   view(api);
   await screen.findByText('Invalid server sign-in inventory.');
   expect(screen.queryByRole('button', { name: 'Sign out this device' })).toBeNull();
+});
+
+it('revokes a single owned profile device even when only one remains and never targets the owner', async () => {
+  const api = new Api('https://example.test');
+  let sessions = [row(2)];
+  const request = vi.spyOn(api, 'request').mockImplementation(async (path) => {
+    if (path.endsWith('/RevokeAll')) {
+      sessions = [];
+      return;
+    }
+    return { identityId: 'child', total: sessions.length, sessions };
+  });
+  vi.spyOn(window, 'confirm').mockReturnValue(true);
+  render(
+    <AppContext value={{ api } as unknown as AppState}>
+      <AccountSessions profile={{ id: 'child', name: 'Kids' }} />
+    </AppContext>,
+  );
+  fireEvent.click(await screen.findByRole('button', { name: 'Sign out all profile devices' }));
+  await screen.findByText(
+    'Viewing profile signed out on all devices. Your account remains signed in.',
+  );
+  expect(request).toHaveBeenCalledWith('Castlumora/Account/ProfileSessions/child/RevokeAll', {
+    method: 'POST',
+    body: '{}',
+  });
+  await waitFor(() =>
+    expect(
+      (screen.getByRole('button', { name: 'Sign out all profile devices' }) as HTMLButtonElement)
+        .disabled,
+    ).toBe(true),
+  );
+  expect(request.mock.calls.every(([path]) => !path.includes('Account/Sessions'))).toBe(true);
+});
+
+it('reports denied owned-profile access without claiming successful revocation or an older server', async () => {
+  const api = new Api('https://example.test');
+  vi.spyOn(api, 'request').mockRejectedValue(new ApiError(403, 'Denied profile'));
+  render(
+    <AppContext value={{ api } as unknown as AppState}>
+      <AccountSessions profile={{ id: 'foreign', name: 'Other' }} />
+    </AppContext>,
+  );
+  await screen.findByText('Denied profile');
+  expect(screen.queryByRole('button', { name: 'Sign out all profile devices' })).toBeNull();
+  expect(screen.queryByText(/requires a newer/)).toBeNull();
 });

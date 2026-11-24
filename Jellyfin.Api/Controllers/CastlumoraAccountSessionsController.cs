@@ -41,8 +41,12 @@ public sealed class CastlumoraAccountSessionsController : BaseJellyfinApiControl
             return Forbid();
         }
 
-        var identity = User.GetUserId();
-        var found = _devices.GetDevices(new DeviceQuery { UserId = identity, Skip = startIndex, Limit = limit });
+        return Describe(_devices, User.GetUserId(), User.GetToken(), startIndex, limit);
+    }
+
+    internal static JsonObject Describe(IDeviceManager devices, Guid identity, string? currentToken, int startIndex, int limit)
+    {
+        var found = devices.GetDevices(new DeviceQuery { UserId = identity, Skip = startIndex, Limit = limit });
         var entries = new JsonArray();
         foreach (var device in found.Items)
         {
@@ -53,7 +57,7 @@ public sealed class CastlumoraAccountSessionsController : BaseJellyfinApiControl
                 ["appName"] = device.AppName,
                 ["appVersion"] = device.AppVersion,
                 ["lastActive"] = DateTime.SpecifyKind(device.DateLastActivity, DateTimeKind.Utc),
-                ["current"] = string.Equals(device.AccessToken, User.GetToken(), StringComparison.OrdinalIgnoreCase)
+                ["current"] = currentToken is not null && string.Equals(device.AccessToken, currentToken, StringComparison.OrdinalIgnoreCase)
             });
         }
 

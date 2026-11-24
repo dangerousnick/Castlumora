@@ -254,3 +254,24 @@ exercise real list/single/bulk controls and token validity. Check current progre
 for actual complete-gate and packaged verification status; parent-wide profile
 session management, remote physical-device certification and stable readiness are
 not claimed by this increment.
+
+
+## Account-owner controls for viewing-profile sign-ins
+
+The owning account can choose a child under Viewing profiles → Viewing profile
+devices. It may revoke one saved sign-in or all devices for that child; its own and
+sibling sessions remain. An unavailable child can have old tokens revoked without
+reactivation. Profile identity, key, lifecycle, preferences and history are preserved.
+The existing My signed-in devices section still manages only the current identity.
+
+GET Castlumora/Account/ProfileSessions/{profileId} accepts bounded pagination like
+personal sessions and returns only display metadata and record IDs, never tokens
+or physical device IDs. DELETE its /{recordId} revokes only an owned child record;
+POST /RevokeAll requires an empty JSON object. The authenticated caller must be an
+enabled owning identity, not a managed child or API key. Admin status alone does
+not grant access to another account's children. Unknown/foreign targets return404,
+child/machine callers403, invalid body/page bounds400. No target account override
+is accepted. Ownership checks and operations share the registry lifecycle lock.
+
+See DEVELOPMENT_PROGRESS.md for actual verification/publication status. The current
+increment is not a claim that all account or Phase1.4 requirements are complete.

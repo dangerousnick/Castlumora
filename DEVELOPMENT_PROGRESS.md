@@ -14,6 +14,40 @@ Linux-only server policy and mandatory validation remain in effect. Never merge
 main or deploy to Coon Media automatically.
 
 
+## Current milestone — account-owner management of profile sign-ins
+
+Continue the existing branch/PR3 from checkpoint6669c3dc5d; no work was reset.
+Usage status: Not accessible. Git fetch confirmed no newer development commit.
+The next feature is implemented locally and undergoing focused verification:
+owning accounts choose one registered child and inspect/revoke its saved sign-ins,
+including all devices for that profile. Existing current-identity controls remain.
+The backend derives ownership from ProfileService and serializes authorization and
+session operations with registry lifecycle changes. API keys/children/foreign
+accounts and administrator ownership bypasses are denied. Tokens/physical device
+IDs are never returned. Owner/sibling tokens, profile keys/registry/history remain.
+Unavailable profiles may have old tokens revoked without reactivation or key repair.
+
+Thirteen focused UI tests passed, including owner-only visibility, child denial UI,
+profile-scoped bulk revocation when one device remains, and existing controls.
+Typecheck/lint passed; new packaged browser assertions retain original profile/media/
+password/device/recovery checks and add actual child revocation plus unchanged
+viewing history. They have been discovered, not yet executed. Initial HTTP-test
+compilation found missing cleanup braces; corrected before publication. The focused SQLite HTTP test passed, including ordinary-owner/foreign/admin/key/
+child boundaries, selected/bulk revocation, retained owner/sibling tokens and unchanged
+registry/key bytes. All four service/lifecycle tests passed: unavailable-state
+containment, corrupt registry denial, callback-failure gate release and serialized
+deletion. New test style errors were corrected before publication.
+The complete pre-push gate and exact-source hosted/package checks remain required.
+No new application commit has been published yet.
+
+Next exact steps: inspect /tmp/castlumora-owned-sessions-http2.log and
+/tmp/castlumora-owned-service-tests.log; fix actual failures without relaxing checks.
+Review scope/format, commit this coherent milestone and normal push through the
+mandatory full Debug/Release/backend/frontend gate. Verify exact-source required
+hosted checks and the new extracted-package owner-controls browser assertions,
+independently download/checksum the preview, update PR3 and this checkpoint, then
+continue remaining non-YouTube requirements. Do not merge main or access Coon Media.
+
 ## Latest verified application — first-recording indexing and personal sign-ins
 
 Latest published application commit: `82e78af324554110ec2709de607261ae23e947d3`.

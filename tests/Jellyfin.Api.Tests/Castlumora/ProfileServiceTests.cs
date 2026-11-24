@@ -691,6 +691,89 @@ public sealed class ProfileServiceTests : IDisposable
         await Assert.ThrowsAsync<InvalidDataException>(() => _service.CreateAsync(_owner.Id, child, "Nested", "adult", [_folder], TestContext.Current.CancellationToken));
     }
 
+    [Fact]
+    public async Task OwnerSessions_RejectsChildForeignAndAccountTargetsWithoutCallingOperation()
+    {
+        var token = TestContext.Current.CancellationToken;
+        var child = await Create();
+        var calls = 0;
+        Task<int> Operation(string name)
+        {
+            calls++;
+            return Task.FromResult(1);
+        }
+
+        await Assert.ThrowsAsync<UnauthorizedAccessException>(() => _service.UseOwnedProfileSessionsAsync(child, child, Operation, token));
+        await Assert.ThrowsAsync<KeyNotFoundException>(() => _service.UseOwnedProfileSessionsAsync(_owner.Id, _owner.Id, Operation, token));
+        await Assert.ThrowsAsync<KeyNotFoundException>(() => _service.UseOwnedProfileSessionsAsync(_owner.Id, Guid.NewGuid(), Operation, token));
+        Assert.Equal(0, calls);
+        _owner.SetPermission(PermissionKind.IsDisabled, true);
+        await Assert.ThrowsAsync<UnauthorizedAccessException>(() => _service.UseOwnedProfileSessionsAsync(_owner.Id, child, Operation, token));
+        Assert.Equal(0, calls);
+    }
+
+    [Fact]
+    public async Task OwnerSessions_AllowsRevocationOfUnavailableProfileWithoutReactivationOrWrites()
+    {
+        var token = TestContext.Current.CancellationToken;
+        var child = await InterruptProvisioning();
+        var registryPath = Path.Combine(_root, "castlumora", "profiles", "profiles.json");
+        var before = await File.ReadAllBytesAsync(registryPath, token);
+        Assert.Equal("Kids", await _service.UseOwnedProfileSessionsAsync(_owner.Id, child, Task.FromResult, token));
+        Assert.Equal(before, await File.ReadAllBytesAsync(registryPath, token));
+        Assert.False(await _service.SessionAllowedAsync(child, token));
+    }
+
+    [Fact]
+    public async Task OwnerSessions_CorruptRegistryCannotAuthorizeAndFailureReleasesGate()
+    {
+        var token = TestContext.Current.CancellationToken;
+        var child = await Create();
+        await Assert.ThrowsAsync<InvalidOperationException>(() => _service.UseOwnedProfileSessionsAsync<int>(_owner.Id, child, _ => throw new InvalidOperationException(), token));
+        Assert.Equal(1, await _service.UseOwnedProfileSessionsAsync(_owner.Id, child, _ => Task.FromResult(1), token));
+        var registryPath = Path.Combine(_root, "castlumora", "profiles", "profiles.json");
+        await File.WriteAllTextAsync(registryPath, "damaged registry", token);
+        var called = false;
+        Task<int> RecordOperation(string name)
+        {
+            called = true;
+            return Task.FromResult(1);
+        }
+
+        await Assert.ThrowsAsync<System.Text.Json.JsonException>(() => _service.UseOwnedProfileSessionsAsync(_owner.Id, child, RecordOperation, token));
+        Assert.False(called);
+    }
+
+    [Fact]
+    public async Task OwnerSessions_SerializesDeletionUntilSessionOperationCompletes()
+    {
+        var token = TestContext.Current.CancellationToken;
+        var child = await Create();
+        var entered = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var release = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        async Task<int> GateOperation(string name)
+        {
+            entered.SetResult();
+            await release.Task;
+            return 1;
+        }
+
+        var operation = _service.UseOwnedProfileSessionsAsync(_owner.Id, child, GateOperation, token);
+        await entered.Task;
+        var deletion = _service.DeleteAsync(_owner.Id, child, token);
+        try
+        {
+            Assert.False(deletion.IsCompleted);
+        }
+        finally
+        {
+            release.SetResult();
+        }
+
+        Assert.Equal(1, await operation);
+        Assert.True(await deletion);
+    }
+
     private async Task<Guid> Create() => Guid.Parse((await _service.CreateAsync(_owner.Id, _owner.Id, "Kids", "kids", [_folder], TestContext.Current.CancellationToken))["id"]!.GetValue<string>());
 
     private static AuthorizationInfo Auth() => new() { Token = "parent-token", Client = "Castlumora Web", Version = "1.0", Device = "Browser", DeviceId = "device" };

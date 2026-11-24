@@ -5,6 +5,7 @@ import { verifyPreferredFixtureTracks } from './media-preference-proof';
 import { readPreview } from './preview-read';
 import { verifyAccountPasswordChange } from './account-password-proof';
 import { verifyAccountSessions } from './account-sessions-proof';
+import { verifyOwnedProfileSessions } from './owned-profile-sessions-proof';
 const preview = process.env.CASTLUMORA_PREVIEW_URL;
 const password = process.env.CASTLUMORA_PREVIEW_PASSWORD;
 test('packaged preview: fresh setup, login, administration and logout', async ({
@@ -578,6 +579,12 @@ test('packaged preview: restart managed profiles isolate preferences and revoke 
   const retainedConfiguration = (await retainedUser.json()).Configuration;
   expect(retainedConfiguration.AudioLanguagePreference).toBe('spa');
   expect(retainedConfiguration.SubtitleLanguagePreference).toBe('eng');
+  await verifyOwnedProfileSessions(page, request, preview!, password!, child.user.Id);
+  const afterSignOut = await readPreview(request, childItemUrl, {
+    headers: headers(returned.token),
+  });
+  expect(afterSignOut.ok()).toBe(true);
+  expect((await afterSignOut.json()).UserData).toEqual(watched);
   page.once('dialog', (dialog) => dialog.accept());
   await page.getByRole('button', { name: 'Delete Packaged Family Updated', exact: true }).click();
   await expect(page.getByText('No managed profiles.', { exact: true })).toBeVisible();

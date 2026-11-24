@@ -1,5 +1,16 @@
 # Feature parity inventory — Phase 1.3
 
+## Account-owner profile sign-ins — implementation in validation
+
+Current local milestone extends completed personal-device controls to one registered
+child profile owned by the signed-in account. Real ownership/lifecycle serialization,
+no administrator bypass, no API keys/child/foreign access, bounded token-free inventory,
+selected/all-child revocation, and preserved owner/sibling identity/history are required.
+Thirteen focused UI tests passed; focused real HTTP/service tests, full mandatory
+gate and actual packaged browser verification remain pending. No full Phase1.4 or
+stable readiness claim. All non-YouTube requirements remain; YouTube expansion deferred.
+
+
 ## Latest published application: 82e78af32455
 
 Personal saved-sign-in controls and automatic first-recording indexing are

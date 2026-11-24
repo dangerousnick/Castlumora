@@ -127,6 +127,44 @@ public sealed class ProfileService : IDisposable
         }
     }
 
+    /// <summary>Runs a sign-in operation only for a profile owned by the authenticated account.</summary>
+    /// <typeparam name="T">Safe operation result.</typeparam>
+    /// <param name="caller">Authenticated owning identity, never a requested account override.</param>
+    /// <param name="identity">Registered child profile.</param>
+    /// <param name="operation">Existing scoped session operation, serialized with registry changes.</param>
+    /// <param name="token">Cancellation before the operation begins.</param>
+    /// <returns>The operation result without changing profile lifecycle or credentials.</returns>
+    public async Task<T> UseOwnedProfileSessionsAsync<T>(Guid caller, Guid identity, Func<string, Task<T>> operation, CancellationToken token)
+    {
+        ArgumentNullException.ThrowIfNull(operation);
+        await _gate.WaitAsync(token).ConfigureAwait(false);
+        try
+        {
+            var state = Read();
+            var account = _users.GetUserById(caller);
+            if (account is null || account.HasPermission(PermissionKind.IsDisabled) || ManagedName(account.Username)
+                || state.Profiles.Any(profile => profile.User.Equals(caller)))
+            {
+                throw new UnauthorizedAccessException();
+            }
+
+            var profile = state.Profiles.SingleOrDefault(profile => profile.User.Equals(identity)
+                && profile.Owner.Equals(caller) && !profile.User.Equals(caller));
+            if (profile is null)
+            {
+                throw new KeyNotFoundException();
+            }
+
+            token.ThrowIfCancellationRequested();
+            // Unavailable/pending profiles can still have old tokens; never reactivate them here.
+            return await operation(profile.Name).ConfigureAwait(false);
+        }
+        finally
+        {
+            _gate.Release();
+        }
+    }
+
     /// <summary>Checks whether a ready managed profile's owner permits media preference editing.</summary>
     /// <param name="identity">Identity supplied by the authenticated caller, not a requested target.</param>
     /// <param name="token">Request cancellation.</param>

@@ -94,3 +94,68 @@ it('does not replace the session after denied authentication', async () => {
   await waitFor(() => expect(screen.getByRole('status').textContent).toContain('Denied'));
   expect(replaceSession).not.toHaveBeenCalled();
 });
+
+it.each(['owner', 'child'])(
+  'shows owned-profile device management only to the owning identity (%s)',
+  async (identity) => {
+    const api = new Api('https://example.test');
+    const request = vi.spyOn(api, 'request').mockImplementation(async (path) => {
+      if (path === 'Castlumora/Profiles')
+        return {
+          accountId: 'owner',
+          accountName: 'Account',
+          profiles: [
+            { id: 'owner', name: 'Account', preset: 'account', ready: true },
+            { id: 'child', name: 'Kids', preset: 'kids', ready: false },
+          ],
+        };
+      if (path.endsWith('/MediaPreferences'))
+        return {
+          canEdit: false,
+          audioLanguage: null,
+          subtitleLanguage: null,
+          useDefaultAudioTrack: true,
+          subtitleMode: 'None',
+        };
+      return { identityId: identity, total: 0, sessions: [] };
+    });
+    render(
+      <MemoryRouter>
+        <AppContext
+          value={
+            {
+              api,
+              session: {
+                user: { Id: identity, Name: identity, HasPassword: true },
+                server: api.server,
+                token: 'owned',
+                deviceId: 'browser',
+              },
+            } as unknown as AppState
+          }
+        >
+          <Profiles />
+        </AppContext>
+      </MemoryRouter>,
+    );
+    await screen.findByText(
+      'Account: Account. Each profile has separate watch progress, lists and preferences.',
+    );
+    if (identity === 'child') {
+      expect(screen.queryByRole('combobox', { name: 'Manage profile sign-ins' })).toBeNull();
+    } else {
+      fireEvent.change(screen.getByRole('combobox', { name: 'Manage profile sign-ins' }), {
+        target: { value: 'child' },
+      });
+      await screen.findByRole('heading', { name: 'Kids signed-in devices' });
+      await waitFor(() =>
+        expect(request).toHaveBeenCalledWith(
+          'Castlumora/Account/ProfileSessions/child',
+          {},
+          { startIndex: 0, limit: 20 },
+        ),
+      );
+      expect(screen.queryByRole('option', { name: 'Account' })).toBeNull();
+    }
+  },
+);
