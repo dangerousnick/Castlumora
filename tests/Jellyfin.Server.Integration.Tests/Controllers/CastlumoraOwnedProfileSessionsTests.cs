@@ -134,6 +134,27 @@ public sealed class CastlumoraOwnedProfileSessionsTests : IClassFixture<Jellyfin
             Assert.Equal(registry, await File.ReadAllBytesAsync(Path.Combine(privateRoot, "profiles.json"), ct));
             Assert.Equal(key, await File.ReadAllBytesAsync(Path.Combine(privateRoot, "credentials.key"), ct));
             Assert.Equal(0, (await ownerClient.GetFromJsonAsync<JsonObject>(path, ct))!["total"]!.GetValue<int>());
+            const string accountRoute = "Castlumora/Account/ProfileSessions/RevokeOthers";
+            var otherOwnerDevice = await SignIn(names[0]);
+            var newChildDevice = await SignIn(names[0], children[0]);
+            Assert.Equal(HttpStatusCode.Unauthorized, (await anonymous.PostAsJsonAsync(accountRoute, new { }, ct)).StatusCode);
+            Assert.Equal(HttpStatusCode.Forbidden, (await sibling.PostAsJsonAsync(accountRoute, new { }, ct)).StatusCode);
+            Assert.Equal(HttpStatusCode.BadRequest, (await ownerClient.PostAsJsonAsync(accountRoute, new { accountId = people[1] }, ct)).StatusCode);
+            Assert.Equal(HttpStatusCode.OK, (await otherOwnerDevice.GetAsync("Users/Me", ct)).StatusCode);
+            Assert.Equal(HttpStatusCode.OK, (await newChildDevice.GetAsync("Users/Me", ct)).StatusCode);
+            Assert.Equal(HttpStatusCode.NoContent, (await ownerClient.PostAsJsonAsync(accountRoute, new { }, ct)).StatusCode);
+            foreach (var revoked in new[] { otherOwnerDevice, newChildDevice, sibling })
+            {
+                Assert.Equal(HttpStatusCode.Unauthorized, (await revoked.GetAsync("Users/Me", ct)).StatusCode);
+            }
+
+            foreach (var retained in new[] { ownerClient, peer, foreignChild })
+            {
+                Assert.Equal(HttpStatusCode.OK, (await retained.GetAsync("Users/Me", ct)).StatusCode);
+            }
+
+            Assert.Equal(registry, await File.ReadAllBytesAsync(Path.Combine(privateRoot, "profiles.json"), ct));
+            Assert.Equal(key, await File.ReadAllBytesAsync(Path.Combine(privateRoot, "credentials.key"), ct));
             using var issue = await admin.PostAsync("Auth/Keys?app=OwnedProfile" + suffix, null, ct);
             issue.EnsureSuccessStatusCode();
             var keys = await admin.GetFromJsonAsync<JsonObject>("Auth/Keys", ct);
@@ -143,6 +164,7 @@ public sealed class CastlumoraOwnedProfileSessionsTests : IClassFixture<Jellyfin
             Assert.Equal(HttpStatusCode.Forbidden, (await machine.GetAsync(path, ct)).StatusCode);
             Assert.Equal(HttpStatusCode.Forbidden, (await machine.DeleteAsync(path + "/" + record, ct)).StatusCode);
             Assert.Equal(HttpStatusCode.Forbidden, (await machine.PostAsJsonAsync(path + "/RevokeAll", new { }, ct)).StatusCode);
+            Assert.Equal(HttpStatusCode.Forbidden, (await machine.PostAsJsonAsync(accountRoute, new { }, ct)).StatusCode);
         }
         finally
         {

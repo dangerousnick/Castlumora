@@ -1,5 +1,41 @@
 # Castlumora product roadmap
 
+## Account-wide session containment — current increment
+
+Extends the published account-owner profile-device controls from
+`9e2be5b7f4880acb7f1d239060601db9142a0b01`. An owning account can confirm sign-out
+of its other account devices and every registered child profile while retaining
+its current session. Child IDs come exclusively from the private registry under
+its existing lifecycle gate. API keys, child callers, disabled owners and request
+identity overrides are rejected. Other accounts remain untouched; registry, key,
+profile identities, history and production backup safeguards are preserved.
+
+Thirteen focused frontend tests/typecheck/lint/build, six profile-service tests,
+one real SQLite HTTP workflow and one actual compiled-server Chromium workflow
+passed. Browser verification includes selected/all-child and account-wide revocation,
+child denial and retained current owner. The normal full pre-push gate remains mandatory. Do not describe this
+increment as published or stable before those checks finish. The preceding9e2be5b7
+application passed local/hosted formatting, Debug/Release,4627backend tests with20
+existing skips,112frontend tests and a local compiled-server browser proof. Its
+new GitHub preview45326516352 is still installing native dependencies; no archive
+for that source is claimed. The previous82e78af3 downloadable preview remains valid
+and lacks the new profile-device controls. Separate main-only OpenAPI Report still
+requires reviewed adoption of the development fix; do not change/merge main.
+
+Current branch: `development/castlumora-web-1.3`; PR3 stays open.
+Latest published application: `9e2be5b7f4880acb7f1d239060601db9142a0b01`.
+Usage status: Not accessible. No automatic background continuation is available.
+Recovery: inspect `git status`, finish this increment's focused tests, commit the
+clean snapshot and use normal `git push origin development/castlumora-web-1.3`.
+Hold that push until the preceding preview finishes to avoid cancelling it. Verify
+exact-source hosted checks and independently download/checksum the new archive.
+Next task: audit remaining account/profile policy and invitation workflows against
+permanent requirements, then implement the first concrete gap with real permission
+and packaged-browser verification. All remaining non-YouTube1.0 requirements stay
+in scope; YouTube expansion is deferred, not removed. Physical Mint/NAS/GPU/tuner
+acceptance and broader release readiness remain unverified.
+
+
 ## Account-owner profile sign-ins — implementation in validation
 
 Current local milestone extends completed personal-device controls to one registered

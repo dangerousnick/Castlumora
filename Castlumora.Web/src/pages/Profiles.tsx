@@ -16,6 +16,8 @@ export default function Profiles() {
   const [target, setTarget] = useState('');
   const [deviceProfile, setDeviceProfile] = useState('');
   const action = useAction();
+  const familyAction = useAction();
+  const [sessionRevision, setSessionRevision] = useState(0);
   const profiles = useLoad(
     () =>
       api.request<{
@@ -29,7 +31,7 @@ export default function Profiles() {
     <main className="page">
       <h1>Viewing profiles</h1>
       <MediaPreferences />
-      <AccountSessions />
+      <AccountSessions key={sessionRevision} />
       <Feedback busy={profiles.busy} error={profiles.error} />
       {profiles.value && (
         <>
@@ -39,6 +41,33 @@ export default function Profiles() {
           {profiles.value.accountId && sameId(profiles.value.accountId, session.user.Id) && (
             <section className="panel" aria-label="Viewing profile devices">
               <h2>Viewing profile devices</h2>
+              <p>
+                Sign out every viewing profile and your other account devices. This account device
+                stays signed in.
+              </p>
+              <button
+                type="button"
+                disabled={familyAction.busy}
+                onClick={() => {
+                  if (
+                    !window.confirm(
+                      'Sign out all viewing profiles and other account devices? Your current account session stays signed in.',
+                    )
+                  )
+                    return;
+                  void familyAction.run(async () => {
+                    await api.request('Castlumora/Account/ProfileSessions/RevokeOthers', {
+                      method: 'POST',
+                      body: '{}',
+                    });
+                    setDeviceProfile('');
+                    setSessionRevision((revision) => revision + 1);
+                  }, 'Other account and viewing-profile devices signed out. This device remains signed in.');
+                }}
+              >
+                Sign out other account and profile devices
+              </button>
+              <ActionStatus message={familyAction.message} />
               <label>
                 Manage profile sign-ins
                 <select

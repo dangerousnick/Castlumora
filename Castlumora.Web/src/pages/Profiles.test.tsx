@@ -7,7 +7,10 @@ import { AppContext } from '../state';
 import type { AppState } from '../state';
 import Profiles from './Profiles';
 
-afterEach(cleanup);
+afterEach(() => {
+  cleanup();
+  vi.restoreAllMocks();
+});
 it('switches only using account password and replaces the active user-scoped session', async () => {
   const api = new Api('https://example.test');
   const request = vi.spyOn(api, 'request').mockImplementation(async (path) =>
@@ -143,6 +146,9 @@ it.each(['owner', 'child'])(
     );
     if (identity === 'child') {
       expect(screen.queryByRole('combobox', { name: 'Manage profile sign-ins' })).toBeNull();
+      expect(
+        screen.queryByRole('button', { name: 'Sign out other account and profile devices' }),
+      ).toBeNull();
     } else {
       fireEvent.change(screen.getByRole('combobox', { name: 'Manage profile sign-ins' }), {
         target: { value: 'child' },
@@ -156,6 +162,22 @@ it.each(['owner', 'child'])(
         ),
       );
       expect(screen.queryByRole('option', { name: 'Account' })).toBeNull();
+      const confirm = vi.spyOn(window, 'confirm').mockReturnValue(false);
+      const button = screen.getByRole('button', {
+        name: 'Sign out other account and profile devices',
+      });
+      fireEvent.click(button);
+      expect(request.mock.calls.some(([path]) => path.endsWith('/RevokeOthers'))).toBe(false);
+      confirm.mockReturnValue(true);
+      fireEvent.click(button);
+      await screen.findByText(
+        'Other account and viewing-profile devices signed out. This device remains signed in.',
+      );
+      expect(request).toHaveBeenCalledWith('Castlumora/Account/ProfileSessions/RevokeOthers', {
+        method: 'POST',
+        body: '{}',
+      });
+      expect(screen.queryByRole('heading', { name: 'Kids signed-in devices' })).toBeNull();
     }
   },
 );

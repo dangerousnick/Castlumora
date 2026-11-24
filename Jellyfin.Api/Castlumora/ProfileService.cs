@@ -141,12 +141,7 @@ public sealed class ProfileService : IDisposable
         try
         {
             var state = Read();
-            var account = _users.GetUserById(caller);
-            if (account is null || account.HasPermission(PermissionKind.IsDisabled) || ManagedName(account.Username)
-                || state.Profiles.Any(profile => profile.User.Equals(caller)))
-            {
-                throw new UnauthorizedAccessException();
-            }
+            RequireOwningAccount(state, caller);
 
             var profile = state.Profiles.SingleOrDefault(profile => profile.User.Equals(identity)
                 && profile.Owner.Equals(caller) && !profile.User.Equals(caller));
@@ -162,6 +157,41 @@ public sealed class ProfileService : IDisposable
         finally
         {
             _gate.Release();
+        }
+    }
+
+    /// <summary>Runs account-wide session containment against server-derived child identities.</summary>
+    /// <typeparam name="T">Safe operation result.</typeparam>
+    /// <param name="caller">Authenticated owning account.</param>
+    /// <param name="operation">Operation serialized with profile lifecycle changes.</param>
+    /// <param name="token">Cancellation before revocation begins.</param>
+    /// <returns>The result without changing credentials or registry state.</returns>
+    public async Task<T> UseOwnedAccountSessionsAsync<T>(Guid caller, Func<Guid[], Task<T>> operation, CancellationToken token)
+    {
+        ArgumentNullException.ThrowIfNull(operation);
+        await _gate.WaitAsync(token).ConfigureAwait(false);
+        try
+        {
+            var state = Read();
+            RequireOwningAccount(state, caller);
+            var children = state.Profiles.Where(profile => profile.Owner.Equals(caller) && !profile.User.Equals(caller))
+                .Select(profile => profile.User).ToArray();
+            token.ThrowIfCancellationRequested();
+            return await operation(children).ConfigureAwait(false);
+        }
+        finally
+        {
+            _gate.Release();
+        }
+    }
+
+    private void RequireOwningAccount(State state, Guid caller)
+    {
+        var account = _users.GetUserById(caller);
+        if (account is null || account.HasPermission(PermissionKind.IsDisabled) || ManagedName(account.Username)
+            || state.Profiles.Any(profile => profile.User.Equals(caller)))
+        {
+            throw new UnauthorizedAccessException();
         }
     }
 

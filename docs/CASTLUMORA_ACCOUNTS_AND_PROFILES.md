@@ -275,3 +275,22 @@ is accepted. Ownership checks and operations share the registry lifecycle lock.
 
 See DEVELOPMENT_PROGRESS.md for actual verification/publication status. The current
 increment is not a claim that all account or Phase1.4 requirements are complete.
+
+## Account-wide other-device sign-out
+
+Owning accounts can use **Viewing profiles → Sign out other account and profile
+devices**. Confirmation signs out every registered viewing profile and all other
+account authorizations; this owner browser stays signed in. Use it after a lost
+device or when reviewing shared access. Profiles must authenticate again through
+the normal account-password switch. It does not change passwords, keys, profile
+state or watch history, and does not affect other accounts. For narrower action,
+use the existing one-profile selected/all-device controls instead.
+
+`POST /Castlumora/Account/ProfileSessions/RevokeOthers` accepts only `{}`. The
+server derives all targets from authenticated ownership, serializes revocation
+with lifecycle changes and denies child/API-key callers. Unknown/corrupt ownership
+fails closed; a storage failure never reports success. If native revocation fails
+mid-operation, some sessions may already be revoked: repair the failure and retry
+the idempotent action. Once revocation begins, request cancellation does not abort
+remaining native operations. No production setting or account override is exposed.
+Consult the exact-source progress checkpoint for test/package verification.

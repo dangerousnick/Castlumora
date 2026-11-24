@@ -774,6 +774,42 @@ public sealed class ProfileServiceTests : IDisposable
         Assert.True(await deletion);
     }
 
+    [Fact]
+    public async Task AccountSessions_DerivesChildrenAndPreservesRegistryAndCredentials()
+    {
+        var token = TestContext.Current.CancellationToken;
+        var child = await Create();
+        var privateRoot = Path.Combine(_root, "castlumora", "profiles");
+        var registry = await File.ReadAllBytesAsync(Path.Combine(privateRoot, "profiles.json"), token);
+        var key = await File.ReadAllBytesAsync(Path.Combine(privateRoot, "credentials.key"), token);
+        var identities = await _service.UseOwnedAccountSessionsAsync(_owner.Id, Task.FromResult, token);
+        Assert.Equal(new[] { child }, identities);
+        await Assert.ThrowsAsync<UnauthorizedAccessException>(() => _service.UseOwnedAccountSessionsAsync(child, Task.FromResult, token));
+        Assert.Equal(registry, await File.ReadAllBytesAsync(Path.Combine(privateRoot, "profiles.json"), token));
+        Assert.Equal(key, await File.ReadAllBytesAsync(Path.Combine(privateRoot, "credentials.key"), token));
+        _owner.SetPermission(PermissionKind.IsDisabled, true);
+        await Assert.ThrowsAsync<UnauthorizedAccessException>(() => _service.UseOwnedAccountSessionsAsync(_owner.Id, Task.FromResult, token));
+    }
+
+    [Fact]
+    public async Task AccountSessions_FailureReleasesGateAndCorruptRegistryNeverAuthorizes()
+    {
+        var token = TestContext.Current.CancellationToken;
+        await Create();
+        await Assert.ThrowsAsync<InvalidOperationException>(() => _service.UseOwnedAccountSessionsAsync<int>(_owner.Id, _ => throw new InvalidOperationException(), token));
+        Assert.Single(await _service.UseOwnedAccountSessionsAsync(_owner.Id, Task.FromResult, token));
+        await File.WriteAllTextAsync(Path.Combine(_root, "castlumora", "profiles", "profiles.json"), "damaged", token);
+        var called = false;
+        Task<int> Record(Guid[] identities)
+        {
+            called = true;
+            return Task.FromResult(identities.Length);
+        }
+
+        await Assert.ThrowsAsync<System.Text.Json.JsonException>(() => _service.UseOwnedAccountSessionsAsync(_owner.Id, Record, token));
+        Assert.False(called);
+    }
+
     private async Task<Guid> Create() => Guid.Parse((await _service.CreateAsync(_owner.Id, _owner.Id, "Kids", "kids", [_folder], TestContext.Current.CancellationToken))["id"]!.GetValue<string>());
 
     private static AuthorizationInfo Auth() => new() { Token = "parent-token", Client = "Castlumora Web", Version = "1.0", Device = "Browser", DeviceId = "device" };

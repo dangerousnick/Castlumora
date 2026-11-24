@@ -206,3 +206,16 @@ Focused service/real HTTP/component tests passed during implementation. Consult
 DEVELOPMENT_PROGRESS.md for the exact complete-gate and packaged-browser result;
 new assertions are included in the existing actual profile workflow, not a skipped
 placeholder. No stable release or completion of all account features is claimed.
+
+## Account-wide other-device sign-out
+
+In a preview explicitly containing this increment, sign in an owner on two devices
+and switch two additional devices into different owned viewing profiles. Keep a
+separate account signed in. Under Viewing profiles, cancel **Sign out other account
+and profile devices** once: all remain authorized. Confirm it: the current owner
+stays signed in, its other device and both profiles must authenticate again, and
+the unrelated account stays signed in. Reload and confirm profile watch history
+and identities remain unchanged. Child and API-key requests must be denied, and
+an account-ID override must be rejected. Record the tested commit and whether this
+was automated or manually checked. Exact package availability is in progress docs;
+older previews do not claim these controls.

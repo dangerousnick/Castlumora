@@ -17,7 +17,7 @@ export async function verifyOwnedProfileSessions(
     JSON.parse(sessionStorage.getItem('castlumora-session')!),
   );
   const ownerHeaders = { Authorization: `MediaBrowser Token="${owner.token}"` };
-  const createChildSignIn = async (device: string) => {
+  const createChildSignIn = async (device: string, switchProfile = true) => {
     const header = `MediaBrowser Client="Owned profile fixture", Device="${device}", DeviceId="${randomUUID()}", Version="1"`;
     try {
       const login = await request.post(endpoint('Users/AuthenticateByName'), {
@@ -26,6 +26,7 @@ export async function verifyOwnedProfileSessions(
       });
       expect(login.ok()).toBe(true);
       const token = (await login.json()).AccessToken;
+      if (!switchProfile) return { Authorization: header + `, Token="${token}"` };
       const switched = await request.post(endpoint('Castlumora/Profiles/Switch'), {
         headers: { Authorization: header + `, Token="${token}"` },
         data: { profileId, accountPassword: password },
@@ -72,6 +73,24 @@ export async function verifyOwnedProfileSessions(
   expect(await status(second)).toBe(401);
   expect(await status(ownerHeaders)).toBe(200);
   await expect(panel.getByRole('article')).toHaveCount(0);
+  const freshChild = await createChildSignIn('Account-wide child fixture');
+  const otherOwner = await createChildSignIn('Account-wide owner fixture', false);
+  expect(await status(freshChild)).toBe(200);
+  expect(await status(otherOwner)).toBe(200);
+  page.once('dialog', (dialog) => dialog.accept());
+  await page
+    .getByRole('button', { name: 'Sign out other account and profile devices', exact: true })
+    .click();
+  await expect(
+    page.getByText(
+      'Other account and viewing-profile devices signed out. This device remains signed in.',
+      { exact: true },
+    ),
+  ).toBeVisible();
+  expect(await status(freshChild)).toBe(401);
+  expect(await status(otherOwner)).toBe(401);
+  expect(await status(ownerHeaders)).toBe(200);
+  await expect(panel).toHaveCount(0);
   await page.getByRole('link', { name: 'Administration', exact: true }).click();
   await page
     .getByRole('navigation', { name: 'Administration sections' })

@@ -100,7 +100,37 @@ public sealed class CastlumoraOwnedProfileSessionsController : BaseJellyfinApiCo
             },
             token);
 
-    private async Task<ActionResult<JsonObject>> Owned(Guid identity, Func<string, Task<ActionResult<JsonObject>>> operation, CancellationToken token)
+    /// <summary>Signs out other account devices and all registered child-profile devices.</summary>
+    /// <param name="value">Empty confirmation object, never target identities.</param>
+    /// <param name="token">Cancellation before revocation begins.</param>
+    /// <returns>No content; the current owning-account session remains authorized.</returns>
+    [HttpPost("/Castlumora/Account/ProfileSessions/RevokeOthers")]
+    [RequestSizeLimit(1024)]
+    public Task<ActionResult<JsonObject>> RevokeOtherAccountDevices([FromBody] JsonObject value, CancellationToken token)
+        => HandleOwner(() => _profiles.UseOwnedAccountSessionsAsync<ActionResult<JsonObject>>(
+            User.GetUserId(),
+            async children =>
+            {
+                if (value.Count != 0)
+                {
+                    return BadRequest("Account sign-out accepts no identity or permission overrides.");
+                }
+
+                // Finish containment once started; request cancellation must not leave a partial success response.
+                await _sessions.RevokeUserTokens(User.GetUserId(), User.GetToken()).ConfigureAwait(false);
+                foreach (var child in children)
+                {
+                    await _sessions.RevokeUserTokens(child, null).ConfigureAwait(false);
+                }
+
+                return NoContent();
+            },
+            token));
+
+    private Task<ActionResult<JsonObject>> Owned(Guid identity, Func<string, Task<ActionResult<JsonObject>>> operation, CancellationToken token)
+        => HandleOwner(() => _profiles.UseOwnedProfileSessionsAsync(User.GetUserId(), identity, operation, token));
+
+    private async Task<ActionResult<JsonObject>> HandleOwner(Func<Task<ActionResult<JsonObject>>> operation)
     {
         if (User.GetIsApiKey() || User.GetUserId().Equals(Guid.Empty) || string.IsNullOrEmpty(User.GetToken()))
         {
@@ -109,7 +139,7 @@ public sealed class CastlumoraOwnedProfileSessionsController : BaseJellyfinApiCo
 
         try
         {
-            return await _profiles.UseOwnedProfileSessionsAsync(User.GetUserId(), identity, operation, token).ConfigureAwait(false);
+            return await operation().ConfigureAwait(false);
         }
         catch (UnauthorizedAccessException)
         {
