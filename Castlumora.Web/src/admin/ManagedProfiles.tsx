@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { sameId } from '../api/client';
 import { useApp, useLoad } from '../state';
 import type { User } from '../api/types';
 import { Feedback } from '../components/Media';
@@ -14,10 +15,15 @@ export default function ManagedProfiles({ onChanged }: { onChanged: () => void }
   const [refresh, setRefresh] = useState(0);
   const [editing, setEditing] = useState('');
   const [displayName, setDisplayName] = useState('');
+  const [accessEditing, setAccessEditing] = useState('');
+  const [accessPreset, setAccessPreset] = useState('kids');
+  const [accessFolders, setAccessFolders] = useState<string[]>([]);
+  const [accessRevision, setAccessRevision] = useState('');
   const managed = useLoad(
     () =>
       api.request<{
         recoveryAvailable?: boolean;
+        accessEditingAvailable?: boolean;
         profiles: {
           id: string;
           name: string;
@@ -25,7 +31,10 @@ export default function ManagedProfiles({ onChanged }: { onChanged: () => void }
           preset: string;
           ready: boolean;
           lifecycle?: string;
+          libraries?: string[];
+          accessRevision?: string | null;
           exists: boolean;
+          disabled?: boolean;
         }[];
       }>('Castlumora/Profiles/Managed'),
     [api, refresh],
@@ -113,8 +122,8 @@ export default function ManagedProfiles({ onChanged }: { onChanged: () => void }
         <button disabled={action.busy || !owner || !name.trim() || !folders.length}>
           Create viewing profile
         </button>
-        <ActionStatus message={action.message} />
       </form>
+      <ActionStatus message={action.message} />
       <h3>Existing managed profiles</h3>
       <Feedback busy={managed.busy} error={managed.error} />
       {managed.value?.profiles.length === 0 && <p>No managed profiles.</p>}
@@ -169,12 +178,121 @@ export default function ManagedProfiles({ onChanged }: { onChanged: () => void }
               <button
                 disabled={action.busy}
                 onClick={() => {
+                  setAccessEditing('');
                   setEditing(profile.id);
                   setDisplayName(profile.name);
                 }}
               >
                 Rename {profile.name}
               </button>
+            )}
+            {managed.value?.accessEditingAvailable &&
+              profile.exists &&
+              profile.lifecycle === 'active' &&
+              !profile.disabled &&
+              accessEditing !== profile.id && (
+                <button
+                  disabled={action.busy || !profile.accessRevision}
+                  onClick={() => {
+                    setEditing('');
+                    setAccessEditing(profile.id);
+                    setAccessPreset(profile.preset);
+                    setAccessFolders(profile.libraries || []);
+                    setAccessRevision(profile.accessRevision || '');
+                  }}
+                >
+                  Edit access for {profile.name}
+                </button>
+              )}
+            {accessEditing === profile.id && (
+              <form
+                className="settings-fields"
+                aria-label={`Access settings for ${profile.name}`}
+                onSubmit={(event) => {
+                  event.preventDefault();
+                  if (
+                    !window.confirm(
+                      `Apply ${accessPreset} preset and selected libraries to ${profile.name}? This replaces custom permissions within the owner's limits and signs out this profile's devices. Identity and viewing history are retained.`,
+                    )
+                  )
+                    return;
+                  void action.run(async () => {
+                    try {
+                      await api.request('Castlumora/Profiles/Managed/' + profile.id + '/Access', {
+                        method: 'PUT',
+                        body: JSON.stringify({
+                          preset: accessPreset,
+                          libraries: accessFolders,
+                          revision: accessRevision,
+                        }),
+                      });
+                      setAccessEditing('');
+                      onChanged();
+                    } finally {
+                      setRefresh((value) => value + 1);
+                    }
+                  }, 'Profile access updated. Devices signed out; identity and viewing history retained.');
+                }}
+              >
+                <p>
+                  Reapply a preset with explicit libraries. Custom profile permissions are replaced
+                  within the current owner's limits; other profiles and accounts are unchanged.
+                </p>
+                {profile.lifecycle !== 'active' && (
+                  <p>
+                    Setup is interrupted. Preserve this profile and use its recovery action before
+                    editing again.
+                  </p>
+                )}
+                <fieldset
+                  disabled={action.busy || profile.lifecycle !== 'active' || profile.disabled}
+                >
+                  <legend>Profile access</legend>
+                  <label>
+                    Updated profile preset
+                    <select
+                      value={accessPreset}
+                      onChange={(event) => setAccessPreset(event.target.value)}
+                    >
+                      <option value="kids">Kids</option>
+                      <option value="adult">Adult</option>
+                    </select>
+                  </label>
+                  <fieldset>
+                    <legend>Access libraries</legend>
+                    {libraries.value?.map((folder) => (
+                      <label key={folder.ItemId}>
+                        <input
+                          type="checkbox"
+                          checked={accessFolders.some((id) => sameId(id, folder.ItemId))}
+                          onChange={(event) =>
+                            setAccessFolders(
+                              event.target.checked
+                                ? [...accessFolders, folder.ItemId]
+                                : accessFolders.filter((id) => !sameId(id, folder.ItemId)),
+                            )
+                          }
+                        />
+                        {folder.Name}
+                      </label>
+                    ))}
+                  </fieldset>
+                  <button
+                    disabled={
+                      !accessFolders.length ||
+                      accessFolders.length > 100 ||
+                      !accessRevision ||
+                      libraries.busy ||
+                      !!libraries.error
+                    }
+                  >
+                    Apply profile access
+                  </button>
+                </fieldset>
+                <button type="button" disabled={action.busy} onClick={() => setAccessEditing('')}>
+                  Cancel access edit
+                </button>
+              </form>
             )}
             {managed.value?.recoveryAvailable &&
               !profile.ready &&
@@ -185,7 +303,7 @@ export default function ManagedProfiles({ onChanged }: { onChanged: () => void }
                   onClick={() => {
                     if (
                       !window.confirm(
-                        `Resume interrupted creation of ${profile.name}? Its original identity, history and preferences will be retained. Current owner and library restrictions are rechecked.`,
+                        `Resume interrupted setup of ${profile.name}? Its original identity, history and preferences will be retained. Current owner and library restrictions are rechecked.`,
                       )
                     )
                       return;

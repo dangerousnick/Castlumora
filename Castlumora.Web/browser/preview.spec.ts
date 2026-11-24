@@ -6,6 +6,7 @@ import { readPreview } from './preview-read';
 import { verifyAccountPasswordChange } from './account-password-proof';
 import { verifyAccountSessions } from './account-sessions-proof';
 import { verifyOwnedProfileSessions } from './owned-profile-sessions-proof';
+import { verifyProfileAccess } from './profile-access-proof';
 const preview = process.env.CASTLUMORA_PREVIEW_URL;
 const password = process.env.CASTLUMORA_PREVIEW_PASSWORD;
 test('packaged preview: fresh setup, login, administration and logout', async ({
@@ -22,7 +23,9 @@ test('packaged preview: fresh setup, login, administration and logout', async ({
   page.on('pageerror', (error) => errors.push(error.message));
   const manifest = await readPreview(request, new URL('BUILD_INFO.json', preview!).href);
   expect(manifest.ok()).toBe(true);
-  expect((await manifest.json()).selfContainedDotnet).toBe(true);
+  const buildInfo = await manifest.json();
+  expect(buildInfo.selfContainedDotnet).toBe(true);
+  expect(buildInfo.profileAccessEditingAvailable).toBe(true);
   await page.goto(preview!);
   await expect(page.getByRole('heading', { name: 'Set up Castlumora' })).toBeVisible();
   await page.getByLabel('Server name', { exact: true }).fill('Castlumora Packaged Preview');
@@ -580,6 +583,7 @@ test('packaged preview: restart managed profiles isolate preferences and revoke 
   expect(retainedConfiguration.AudioLanguagePreference).toBe('spa');
   expect(retainedConfiguration.SubtitleLanguagePreference).toBe('eng');
   await verifyOwnedProfileSessions(page, request, preview!, password!, child.user.Id);
+  await verifyProfileAccess(page, request, preview!, password!, child.user.Id, childItemUrl);
   const afterSignOut = await readPreview(request, childItemUrl, {
     headers: headers(returned.token),
   });

@@ -1,11 +1,14 @@
 // @vitest-environment jsdom
-import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
+import { cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import { afterEach, expect, it, vi } from 'vitest';
 import { Api } from '../api/client';
 import { AppContext, type AppState } from '../state';
 import ManagedProfiles from './ManagedProfiles';
 
-afterEach(cleanup);
+afterEach(() => {
+  cleanup();
+  vi.restoreAllMocks();
+});
 
 it('requires explicit libraries and submits the chosen owning account and kids preset', async () => {
   const api = new Api('https://example.test');
@@ -273,3 +276,86 @@ it('keeps failed recovery unavailable and reports the server error without a suc
     confirm.mockRestore();
   }
 });
+
+it.each([false, true])(
+  'confirms scoped access editing with a reviewed revision and handles denial (%s)',
+  async (denied) => {
+    const api = new Api('https://example.test');
+    const first = '123456781234123412341234567890ab';
+    const formatted = '12345678-1234-1234-1234-1234567890ab';
+    const revision = 'a'.repeat(64);
+    const onChanged = vi.fn();
+    const request = vi.spyOn(api, 'request').mockImplementation(async (path) => {
+      if (path === 'Users') return [];
+      if (path === 'Library/VirtualFolders')
+        return [
+          { ItemId: first, Name: 'Original library' },
+          { ItemId: 'second', Name: 'New library' },
+        ];
+      if (path.endsWith('/Access')) {
+        if (denied) throw new Error('Access changed. Cancel access edit and reopen it.');
+        return undefined;
+      }
+      return {
+        accessEditingAvailable: true,
+        profiles: [
+          {
+            id: 'child',
+            name: 'Kids',
+            accountName: 'Owner',
+            preset: 'kids',
+            lifecycle: 'active',
+            ready: true,
+            exists: true,
+            libraries: [formatted],
+            accessRevision: revision,
+          },
+        ],
+      };
+    });
+    render(
+      <AppContext value={{ api } as unknown as AppState}>
+        <ManagedProfiles onChanged={onChanged} />
+      </AppContext>,
+    );
+    fireEvent.click(await screen.findByRole('button', { name: 'Edit access for Kids' }));
+    const form = within(screen.getByRole('form', { name: 'Access settings for Kids' }));
+    const original = form.getByRole('checkbox', { name: 'Original library' }) as HTMLInputElement;
+    expect(original.checked).toBe(true);
+    fireEvent.click(original);
+    const apply = form.getByRole('button', { name: 'Apply profile access' }) as HTMLButtonElement;
+    expect(apply.disabled).toBe(true);
+    fireEvent.click(form.getByRole('checkbox', { name: 'New library' }));
+    fireEvent.change(form.getByLabelText('Updated profile preset'), { target: { value: 'adult' } });
+    const confirm = vi.spyOn(window, 'confirm').mockReturnValue(false);
+    fireEvent.click(apply);
+    expect(request.mock.calls.some(([path]) => path.endsWith('/Access'))).toBe(false);
+    confirm.mockReturnValue(true);
+    fireEvent.click(apply);
+    await waitFor(() =>
+      expect(request).toHaveBeenCalledWith('Castlumora/Profiles/Managed/child/Access', {
+        method: 'PUT',
+        body: JSON.stringify({ preset: 'adult', libraries: ['second'], revision }),
+      }),
+    );
+    if (denied) {
+      await screen.findByText('Access changed. Cancel access edit and reopen it.');
+      expect(onChanged).not.toHaveBeenCalled();
+      expect(
+        screen.queryByText(
+          'Profile access updated. Devices signed out; identity and viewing history retained.',
+        ),
+      ).toBeNull();
+      expect(form.getByLabelText('Updated profile preset')).toHaveProperty('value', 'adult');
+      fireEvent.click(form.getByRole('button', { name: 'Cancel access edit' }));
+    } else {
+      await screen.findByText(
+        'Profile access updated. Devices signed out; identity and viewing history retained.',
+      );
+      expect(onChanged).toHaveBeenCalledOnce();
+    }
+    await waitFor(() =>
+      expect(screen.queryByRole('form', { name: 'Access settings for Kids' })).toBeNull(),
+    );
+  },
+);

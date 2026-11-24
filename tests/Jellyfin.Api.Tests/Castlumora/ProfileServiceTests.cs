@@ -810,6 +810,133 @@ public sealed class ProfileServiceTests : IDisposable
         Assert.False(called);
     }
 
+    [Fact]
+    public async Task UpdateAccess_RetainsIdentityKeyAndPreferencesWithCurrentOwnerBounds()
+    {
+        var token = TestContext.Current.CancellationToken;
+        var child = await Create();
+        var user = _people[child];
+        user.AudioLanguagePreference = "spa";
+        var secret = _passwords[child];
+        var keyPath = Path.Combine(_root, "castlumora", "profiles", "credentials.key");
+        var key = await File.ReadAllBytesAsync(keyPath, token);
+        var next = Guid.NewGuid();
+        _libraries.Setup(libraries => libraries.GetVirtualFolders()).Returns([new VirtualFolderInfo { ItemId = _folder.ToString("N") }, new VirtualFolderInfo { ItemId = next.ToString("N") }]);
+        _policies[_owner.Id].EnableAllFolders = false;
+        _policies[_owner.Id].EnabledFolders = [_folder, next];
+        _policies[_owner.Id].MaxParentalRating = 9;
+        _policies[_owner.Id].MaxActiveSessions = 2;
+        var revision = await ReviewedAccess(child);
+        Assert.True(await _service.UpdateAccessAsync(_owner.Id, child, "adult", [next], revision, token));
+        Assert.Same(user, _people[child]);
+        Assert.Equal("spa", user.AudioLanguagePreference);
+        Assert.Equal(secret, _passwords[child]);
+        Assert.Equal(key, await File.ReadAllBytesAsync(keyPath, token));
+        Assert.Equal(new[] { next }, _policies[child].EnabledFolders);
+        Assert.False(_policies[child].IsAdministrator);
+        Assert.False(_policies[child].EnableAllFolders);
+        Assert.Equal(9, _policies[child].MaxParentalRating);
+        Assert.Equal(2, _policies[child].MaxActiveSessions);
+        Assert.True(await _service.SessionAllowedAsync(child, token));
+        _sessions.Verify(sessions => sessions.RevokeUserTokens(child, null), Times.Once);
+        _sessions.Verify(sessions => sessions.RevokeUserTokens(_owner.Id, It.IsAny<string>()), Times.Never);
+        _users.Verify(users => users.CreateUserAsync(It.IsAny<string>(), true), Times.Once);
+    }
+
+    [Fact]
+    public async Task UpdateAccess_RejectsUnauthorizedInvalidForbiddenAndStaleEditsWithoutMutation()
+    {
+        var token = TestContext.Current.CancellationToken;
+        var child = await Create();
+        var revision = await ReviewedAccess(child);
+        var registryPath = Path.Combine(_root, "castlumora", "profiles", "profiles.json");
+        var before = await File.ReadAllBytesAsync(registryPath, token);
+        await Assert.ThrowsAsync<UnauthorizedAccessException>(() => _service.UpdateAccessAsync(child, child, "adult", [_folder], revision, token));
+        await Assert.ThrowsAsync<ArgumentException>(() => _service.UpdateAccessAsync(_owner.Id, child, "admin", [_folder], revision, token));
+        await Assert.ThrowsAsync<ArgumentException>(() => _service.UpdateAccessAsync(_owner.Id, child, "adult", [_folder, _folder], revision, token));
+        await Assert.ThrowsAsync<ArgumentException>(() => _service.UpdateAccessAsync(_owner.Id, child, "adult", [Guid.NewGuid()], revision, token));
+        var forbidden = Guid.NewGuid();
+        _libraries.Setup(libraries => libraries.GetVirtualFolders()).Returns([new VirtualFolderInfo { ItemId = _folder.ToString("N") }, new VirtualFolderInfo { ItemId = forbidden.ToString("N") }]);
+        _policies[_owner.Id].EnableAllFolders = false;
+        _policies[_owner.Id].EnabledFolders = [_folder];
+        await Assert.ThrowsAsync<InvalidOperationException>(() => _service.UpdateAccessAsync(_owner.Id, child, "adult", [_folder], revision, token));
+        var current = await ReviewedAccess(child);
+        await Assert.ThrowsAsync<ArgumentException>(() => _service.UpdateAccessAsync(_owner.Id, child, "adult", [forbidden], current, token));
+        Assert.Equal(before, await File.ReadAllBytesAsync(registryPath, token));
+        _sessions.Verify(sessions => sessions.RevokeUserTokens(It.IsAny<Guid>(), It.IsAny<string>()), Times.Never);
+    }
+
+    [Fact]
+    public async Task UpdateAccess_InterruptedPolicyApplyPersistsExactPlanAndRecoversOriginalIdentity()
+    {
+        var token = TestContext.Current.CancellationToken;
+        var child = await Create();
+        var original = _people[child];
+        original.AudioLanguagePreference = "spa";
+        var keyPath = Path.Combine(_root, "castlumora", "profiles", "credentials.key");
+        var key = await File.ReadAllBytesAsync(keyPath, token);
+        var revision = await ReviewedAccess(child);
+        _users.Setup(users => users.UpdatePolicyAsync(child, It.Is<UserPolicy>(policy => !policy.IsDisabled))).ThrowsAsync(new IOException("Synthetic interruption"));
+        await Assert.ThrowsAsync<IOException>(() => _service.UpdateAccessAsync(_owner.Id, child, "adult", [_folder], revision, token));
+        Assert.False(await _service.SessionAllowedAsync(child, token));
+        var registry = JsonNode.Parse(await File.ReadAllTextAsync(Path.Combine(_root, "castlumora", "profiles", "profiles.json"), token))!;
+        var entry = Assert.Single(registry["Profiles"]!.AsArray())!;
+        Assert.Equal("adult", entry["Preset"]!.GetValue<string>());
+        Assert.Equal("provisioning", entry["Lifecycle"]!.GetValue<string>());
+        Assert.Equal(_folder, Guid.Parse(Assert.Single(entry["PendingLibraries"]!.AsArray())!.GetValue<string>()));
+        _users.Setup(users => users.UpdatePolicyAsync(child, It.IsAny<UserPolicy>())).Returns((Guid id, UserPolicy policy) =>
+        {
+            _policies[id] = policy;
+            _people[id].SetPermission(PermissionKind.IsDisabled, policy.IsDisabled);
+            return Task.CompletedTask;
+        });
+        using var reopened = Open();
+        Assert.True(await reopened.RecoverAsync(_owner.Id, child, token));
+        Assert.Same(original, _people[child]);
+        Assert.Equal("spa", original.AudioLanguagePreference);
+        Assert.Equal(key, await File.ReadAllBytesAsync(keyPath, token));
+        Assert.True(await reopened.SessionAllowedAsync(child, token));
+        Assert.Equal(new[] { _folder }, _policies[child].EnabledFolders);
+    }
+
+    [Fact]
+    public async Task UpdateAccess_MissingKeyAndElevatedIdentityCannotBeRepairedByEditing()
+    {
+        var token = TestContext.Current.CancellationToken;
+        var child = await Create();
+        var revision = await ReviewedAccess(child);
+        var registryPath = Path.Combine(_root, "castlumora", "profiles", "profiles.json");
+        var before = await File.ReadAllBytesAsync(registryPath, token);
+        File.Delete(Path.Combine(_root, "castlumora", "profiles", "credentials.key"));
+        await Assert.ThrowsAsync<InvalidDataException>(() => _service.UpdateAccessAsync(_owner.Id, child, "adult", [_folder], revision, token));
+        Assert.False(File.Exists(Path.Combine(_root, "castlumora", "profiles", "credentials.key")));
+        _people[child].SetPermission(PermissionKind.IsDisabled, true);
+        await Assert.ThrowsAsync<InvalidOperationException>(() => _service.UpdateAccessAsync(_owner.Id, child, "adult", [_folder], revision, token));
+        _people[child].SetPermission(PermissionKind.IsDisabled, false);
+        _people[child].SetPermission(PermissionKind.IsAdministrator, true);
+        await Assert.ThrowsAsync<InvalidOperationException>(() => _service.UpdateAccessAsync(_owner.Id, child, "adult", [_folder], revision, token));
+        Assert.Equal(before, await File.ReadAllBytesAsync(registryPath, token));
+        _sessions.Verify(sessions => sessions.RevokeUserTokens(It.IsAny<Guid>(), It.IsAny<string>()), Times.Never);
+    }
+
+    [Fact]
+    public async Task UpdateAccess_RevisionCannotBeReusedForAnotherIdenticalProfile()
+    {
+        var token = TestContext.Current.CancellationToken;
+        var first = await Create();
+        var second = Guid.Parse((await _service.CreateAsync(_owner.Id, _owner.Id, "Other", "kids", [_folder], token))["id"]!.GetValue<string>());
+        var revision = await ReviewedAccess(first);
+        Assert.NotEqual(revision, await ReviewedAccess(second));
+        await Assert.ThrowsAsync<InvalidOperationException>(() => _service.UpdateAccessAsync(_owner.Id, second, "adult", [_folder], revision, token));
+        _sessions.Verify(sessions => sessions.RevokeUserTokens(It.IsAny<Guid>(), It.IsAny<string>()), Times.Never);
+    }
+
+    private async Task<string> ReviewedAccess(Guid identity)
+    {
+        var page = await _service.ListManagedAsync(_owner.Id, TestContext.Current.CancellationToken);
+        return page["profiles"]!.AsArray().Single(profile => Guid.Parse(profile!["id"]!.GetValue<string>()).Equals(identity))!["accessRevision"]!.GetValue<string>();
+    }
+
     private async Task<Guid> Create() => Guid.Parse((await _service.CreateAsync(_owner.Id, _owner.Id, "Kids", "kids", [_folder], TestContext.Current.CancellationToken))["id"]!.GetValue<string>());
 
     private static AuthorizationInfo Auth() => new() { Token = "parent-token", Client = "Castlumora Web", Version = "1.0", Device = "Browser", DeviceId = "device" };

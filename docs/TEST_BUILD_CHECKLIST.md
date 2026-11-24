@@ -219,3 +219,19 @@ and identities remain unchanged. Child and API-key requests must be denied, and
 an account-ID override must be rejected. Record the tested commit and whether this
 was automated or manually checked. Exact package availability is in progress docs;
 older previews do not claim these controls.
+
+## Administrator profile access editing
+
+In a preview declaring profileAccessEditingAvailable, create an owned synthetic movie
+library and a second empty library. Create an adult viewing profile, record a played
+item and media preferences, then sign in that profile on another device. In Users &
+devices choose Edit access, select Kids and only the second library. Cancel once:
+no permissions/tokens change. Confirm: old profile devices require authentication;
+new profile sign-ins cannot see the first library's movie. Owner/sibling sessions
+remain valid. Reopen and restore the original preset/libraries: the same profile ID,
+played history and language preferences return. Test stale edits by changing owner
+permissions in another admin session; expect409 and review/reopen, not an overwrite.
+Ordinary users/API keys must be denied and manually disabled identities remain
+unavailable. Interrupted updates require explicit recovery; never recreate the
+profile or key. Record source/archive SHA and automated/manual status when reporting
+issues. Consult DEVELOPMENT_PROGRESS.md for which exact package has passed.

@@ -172,7 +172,8 @@ packaged browser workflow covers native administration, switching/reload, separa
 preferences and return-to-account authentication. Consult DEVELOPMENT_PROGRESS.md
 for the exact checks actually run and source SHA; test presence alone is not a pass.
 
-Remaining account work includes managed-profile preset/library editing,
+The current access-editing increment addresses preset/library changes; consult its
+exact-source checkpoint for validation and package availability. Remaining account work includes
 invitation/registration edge-case review, external-auth-provider compatibility and
 broader multi-device/media-history verification. Managed-profile recovery and
 personal/per-child/account-wide device controls are implemented; consult the exact
@@ -295,3 +296,29 @@ mid-operation, some sessions may already be revoked: repair the failure and retr
 the idempotent action. Once revocation begins, request cancellation does not abort
 remaining native operations. No production setting or account override is exposed.
 Consult the exact-source progress checkpoint for test/package verification.
+
+## Administrator preset and library editing
+
+In Administration → Users & devices → Managed viewing profiles choose **Edit access
+for [profile]**. Select Kids or Adult and explicit allowed libraries, then confirm
+**Apply profile access**. This reapplies the preset's permissions within the current
+owner's restrictions, signs out that profile's devices and keeps its original
+identity, watch history, media preferences and private key. Other profiles/account
+sessions stay signed in. It intentionally replaces custom child permissions; use
+the legacy policy editor for advanced changes. Manually disabled/elevated profiles,
+missing identities and interrupted operations cannot be re-enabled through this form.
+
+The endpoint `PUT Castlumora/Profiles/Managed/{id}/Access` accepts only preset,
+libraries and revision. The revision binds reviewed profile/owner identities and
+policies. A stale review returns409: cancel the access edit and reopen it. Invalid,
+duplicate, unknown or owner-forbidden library IDs return400 without mutations.
+Non-admins and API keys are denied. No account/credential/permission override or
+filesystem destination is accepted. The request is bounded to8192bytes/100libraries.
+
+A durable unavailable provisioning plan is written before native policy changes.
+Failure never reports success or silently creates another identity/key. Preserve
+the original profile, key and configuration and use its explicit **Recover** action
+to resume the recorded setup after correcting the cause. Recovery rechecks current
+owner/library restrictions, retains identity/history and reuses the original derived
+secret. Legacy ambiguous review/deletion states are not reactivated. Check the
+published-source checkpoint before claiming a downloadable preview has this feature.

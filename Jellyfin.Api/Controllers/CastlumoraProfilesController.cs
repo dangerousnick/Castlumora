@@ -109,7 +109,60 @@ public sealed class CastlumoraProfilesController : BaseJellyfinApiController
         }
     }
 
-    /// <summary>Resumes only the saved creation plan of an interrupted managed profile.</summary>
+    /// <summary>Updates a managed profile's preset and explicit libraries without replacing its identity.</summary>
+    /// <param name="profileId">Existing managed identity.</param>
+    /// <param name="value">Preset, library IDs and reviewed policy revision only.</param>
+    /// <param name="token">Cancellation before the durable update begins.</param>
+    /// <returns>No content after applying; conflict for stale or unavailable profiles.</returns>
+    [HttpPut("Managed/{profileId:guid}/Access")]
+    [Authorize(Policy = Policies.RequiresElevation)]
+    [RequestSizeLimit(8192)]
+    public async Task<ActionResult> UpdateAccess([FromRoute] Guid profileId, [FromBody] JsonObject value, CancellationToken token)
+    {
+        if (User.GetIsApiKey() || User.GetUserId().Equals(Guid.Empty))
+        {
+            return Forbid();
+        }
+
+        if (value.Count != 3 || value["preset"] is not JsonValue preset || !preset.TryGetValue<string>(out var presetName)
+            || value["revision"] is not JsonValue revision || !revision.TryGetValue<string>(out var expectedRevision)
+            || value["libraries"] is not JsonArray libraries || libraries.Count is < 1 or > 100)
+        {
+            return BadRequest("Supply only a preset, explicit library IDs and the reviewed access revision.");
+        }
+
+        var folders = new Guid[libraries.Count];
+        for (var index = 0; index < folders.Length; index++)
+        {
+            if (libraries[index] is not JsonValue library || !library.TryGetValue<string>(out var text) || !Guid.TryParse(text, out folders[index]))
+            {
+                return BadRequest("Choose valid library IDs.");
+            }
+        }
+
+        try
+        {
+            return await _profiles.UpdateAccessAsync(User.GetUserId(), profileId, presetName, folders, expectedRevision, token).ConfigureAwait(false) ? NoContent() : NotFound();
+        }
+        catch (UnauthorizedAccessException)
+        {
+            return Forbid();
+        }
+        catch (ArgumentException exception)
+        {
+            return BadRequest(exception.Message);
+        }
+        catch (InvalidOperationException exception)
+        {
+            return Conflict(exception.Message);
+        }
+        catch (Exception exception) when (exception is IOException or InvalidDataException or JsonException)
+        {
+            return StatusCode(StatusCodes.Status503ServiceUnavailable, "Profile access did not complete. Preserve the identity, key and configuration; review interrupted setup before retrying.");
+        }
+    }
+
+    /// <summary>Resumes only the saved setup plan of an interrupted managed profile.</summary>
     /// <param name="profileId">Original managed identity.</param>
     /// <param name="value">An empty confirmation object; no identity or policy overrides.</param>
     /// <param name="token">Cancellation before repair begins.</param>

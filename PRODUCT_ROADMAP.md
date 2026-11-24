@@ -1,5 +1,48 @@
 # Castlumora product roadmap
 
+## Current milestone — administrator profile access editing
+
+Continues published checkpoint `e0c8e4baef9d8cda39b0c6950e4d76d344aad81b`;
+verified application/preview remainsd15f49d99554 below. No existing work was reset.
+Implemented locally: administrator preset/library editing for an existing managed
+identity with explicit confirmation, reviewed identity-bound profile/owner-policy
+revision, current owner limits and strict payloads. API keys and non-admins are
+denied; unknown/forbidden libraries, stale/cross-profile revisions and unavailable,
+elevated or manually disabled identities cannot be applied. Existing private keys,
+identity, preferences and history remain; only the edited child's tokens are revoked.
+
+Updates persist an unavailable provisioning intent before native disable/revoke/
+policy changes. Interrupted operations retain exact preset/library repair inputs
+and reuse existing explicit recovery, with no new key, user or schema. Administrators
+can repair owner-bound restrictions on an otherwise enabled profile; this does not
+silently reactivate manually disabled profiles. Reapplying a preset intentionally
+replaces custom child permissions within the owner's bounds. Legacy policy tools remain.
+
+Focused verification passed:20targeted service/recovery tests and all50profile-service
+regressions; one real SQLite HTTP workflow;
+14administrator UI tests plus typecheck/lint/build; one fresh compiled-server browser
+workflow with synthetic media, cancelled confirmation, real library exclusion404,
+token rejection, restored access and retained watch history/preferences. HTTP testing
+caught legacy API-key administrator authority; explicit endpoint denial was added
+and verified without relaxing the403 assertion. Local compile/assertion errors were
+corrected before publication. Browser fixture issues were diagnosed: exact label
+selection of a nested select was replaced by its accessible combobox role, response
+matching normalizes GUID formats, and fresh setup waits for actual startup rather
+than treating an early temporary503 as ready. The final browser proof passed17.2seconds.
+
+Full normal pre-push formatting/Debug/Release/all-suite/frontend checks and NEW exact-
+source hosted/package verification remain required. Do not claim these pending
+checks passed. Current scope is implemented; no unrelated feature starts before
+this increment is validated, committed and published. Usage status: Not accessible.
+
+Next exact steps: apply repository whitespace formatting, inspect the final diff,
+commit a clean snapshot and use normal `git push origin development/castlumora-web-1.3`.
+Verify hosted Linux/shared checks and the actual extracted package; independently
+download/checksum the NEW archive and updatePR3. The previousd15f49d9 preview below
+remains available and does not include access editing. Preserve all remaining non-
+YouTube1.0 requirements; YouTube expansion stays deferred. No main merge/deployment.
+
+
 ## Verified account-wide session containment checkpoint
 
 Latest published application: `d15f49d99554961343a82bd2e4cfe29853b5044b`.

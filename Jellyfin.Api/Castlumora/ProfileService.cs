@@ -12,6 +12,7 @@ using Jellyfin.Data;
 using Jellyfin.Data.Enums;
 using Jellyfin.Database.Implementations.Entities;
 using Jellyfin.Database.Implementations.Enums;
+using Jellyfin.Extensions.Json;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Controller.Authentication;
 using MediaBrowser.Controller.Library;
@@ -230,6 +231,8 @@ public sealed class ProfileService : IDisposable
             {
                 var owner = _users.GetUserById(profile.Owner);
                 var user = _users.GetUserById(profile.User);
+                var ownerPolicy = owner is null ? null : _users.GetUserDto(owner).Policy;
+                var childPolicy = user is null ? null : _users.GetUserDto(user).Policy;
                 entries.Add(new JsonObject
                 {
                     ["id"] = profile.User.ToString("N"),
@@ -237,17 +240,20 @@ public sealed class ProfileService : IDisposable
                     ["accountName"] = owner?.Username ?? "Deleted account",
                     ["name"] = profile.Name,
                     ["preset"] = profile.Preset,
+                    ["libraries"] = JsonSerializer.SerializeToNode(childPolicy?.EnabledFolders ?? Array.Empty<Guid>(), JsonDefaults.Options),
+                    ["accessRevision"] = ownerPolicy is not null && childPolicy is not null ? AccessRevision(profile, childPolicy, ownerPolicy) : null,
                     ["exists"] = user is not null,
+                    ["disabled"] = user is null || user.HasPermission(PermissionKind.IsDisabled),
                     ["lifecycle"] = profile.Lifecycle,
                     ["ready"] = profile.Ready && owner is not null && user is not null
                         && !owner.HasPermission(PermissionKind.IsDisabled)
                         && !user.HasPermission(PermissionKind.IsDisabled)
                         && !user.HasPermission(PermissionKind.IsAdministrator)
-                        && WithinPolicy(_users.GetUserDto(owner).Policy, _users.GetUserDto(user).Policy)
+                        && WithinPolicy(ownerPolicy!, childPolicy!)
                 });
             }
 
-            return new JsonObject { ["profiles"] = entries, ["recoveryAvailable"] = true };
+            return new JsonObject { ["profiles"] = entries, ["recoveryAvailable"] = true, ["accessEditingAvailable"] = true };
         }
         finally
         {
@@ -385,21 +391,97 @@ public sealed class ProfileService : IDisposable
 
             var key = Key(state);
             token.ThrowIfCancellationRequested();
-            // Durable denial already exists. Never expose a partially repaired identity as ready.
-            var disabled = _users.GetUserDto(user).Policy;
-            disabled.IsDisabled = true;
-            await _users.UpdatePolicyAsync(identity, disabled).ConfigureAwait(false);
-            await _sessions.RevokeUserTokens(identity, null).ConfigureAwait(false);
-            await _users.ChangePassword(identity, Secret(key, profile)).ConfigureAwait(false);
-            await _users.UpdatePolicyAsync(identity, BoundedPolicy(profile.Preset, folders, ownerPolicy, user)).ConfigureAwait(false);
-            state.Profiles[index] = profile with { Ready = true, Lifecycle = "active", PendingLibraries = null };
-            Write(state);
+            await CompleteProvisioning(state, index, profile, user, ownerPolicy, folders, key).ConfigureAwait(false);
             return true;
         }
         finally
         {
             _gate.Release();
         }
+    }
+
+    /// <summary>Reapplies an administrator-confirmed bounded preset and libraries to an existing profile.</summary>
+    /// <param name="actor">Authenticated administrator.</param>
+    /// <param name="identity">Existing managed identity, never a replacement account.</param>
+    /// <param name="preset">Kids or adult preset.</param>
+    /// <param name="folders">Explicit currently permitted libraries.</param>
+    /// <param name="expectedRevision">Reviewed profile and owner policy revision.</param>
+    /// <param name="token">Cancellation before the durable update begins.</param>
+    /// <returns>Whether the profile exists; interrupted updates retain recoverable provisioning intent.</returns>
+    public async Task<bool> UpdateAccessAsync(Guid actor, Guid identity, string preset, Guid[] folders, string expectedRevision, CancellationToken token)
+    {
+        RequireAdministrator(actor);
+        ArgumentNullException.ThrowIfNull(folders);
+        ArgumentNullException.ThrowIfNull(expectedRevision);
+        folders = folders.ToArray();
+        if (preset is not ("kids" or "adult") || folders.Length is < 1 or > 100 || folders.Distinct().Count() != folders.Length
+            || folders.Contains(Guid.Empty) || expectedRevision.Length != 64 || expectedRevision.Any(character => !Uri.IsHexDigit(character)))
+        {
+            throw new ArgumentException("Choose a preset, explicit libraries and a reviewed access revision.");
+        }
+
+        await _gate.WaitAsync(token).ConfigureAwait(false);
+        try
+        {
+            RequireAdministrator(actor);
+            var state = Read();
+            var index = state.Profiles.FindIndex(profile => profile.User.Equals(identity));
+            if (index < 0)
+            {
+                return false;
+            }
+
+            var profile = state.Profiles[index];
+            var owner = _users.GetUserById(profile.Owner);
+            var user = _users.GetUserById(identity);
+            if (!profile.Ready || profile.Lifecycle != "active" || owner is null || owner.HasPermission(PermissionKind.IsDisabled)
+                || string.IsNullOrEmpty(owner.Password) || state.Profiles.Any(candidate => candidate.User.Equals(profile.Owner))
+                || user is null || user.HasPermission(PermissionKind.IsDisabled) || user.HasPermission(PermissionKind.IsAdministrator) || !ManagedName(user.Username))
+            {
+                throw new InvalidOperationException("Review the existing enabled profile and owner; interrupted setup requires recovery.");
+            }
+
+            var ownerPolicy = _users.GetUserDto(owner).Policy;
+            if (!string.Equals(expectedRevision, AccessRevision(profile, _users.GetUserDto(user).Policy, ownerPolicy), StringComparison.OrdinalIgnoreCase))
+            {
+                throw new InvalidOperationException("Profile or owner access changed. Cancel access edit and reopen it to review current settings.");
+            }
+
+            var known = _libraries.GetVirtualFolders().Select(folder => Guid.TryParse(folder.ItemId, out var id) ? id : Guid.Empty).ToHashSet();
+            if (folders.Any(folder => !known.Contains(folder) || (!ownerPolicy.EnableAllFolders && !ownerPolicy.EnabledFolders.Contains(folder))))
+            {
+                throw new ArgumentException("Select existing libraries permitted by the owning account.");
+            }
+
+            var key = Key(state);
+            token.ThrowIfCancellationRequested();
+            var planned = profile with { Preset = preset, Ready = false, Lifecycle = "provisioning", PendingLibraries = folders };
+            state.Profiles[index] = planned;
+            // Persist denial and the exact repair plan before disabling/revoking or changing native policy.
+            Write(state);
+            await CompleteProvisioning(state, index, planned, user, ownerPolicy, folders, key).ConfigureAwait(false);
+            return true;
+        }
+        finally
+        {
+            _gate.Release();
+        }
+    }
+
+    private static string AccessRevision(ViewingProfile profile, UserPolicy child, UserPolicy owner)
+        => Convert.ToHexStringLower(SHA256.HashData(JsonSerializer.SerializeToUtf8Bytes(new { profile.Owner, profile.User, profile.Preset, ChildPolicy = child, OwnerPolicy = owner }, JsonDefaults.Options)));
+
+    private async Task CompleteProvisioning(State state, int index, ViewingProfile profile, User user, UserPolicy ownerPolicy, Guid[] folders, byte[] key)
+    {
+        // Durable denial already exists. Never expose a partially repaired identity as ready.
+        var disabled = _users.GetUserDto(user).Policy;
+        disabled.IsDisabled = true;
+        await _users.UpdatePolicyAsync(user.Id, disabled).ConfigureAwait(false);
+        await _sessions.RevokeUserTokens(user.Id, null).ConfigureAwait(false);
+        await _users.ChangePassword(user.Id, Secret(key, profile)).ConfigureAwait(false);
+        await _users.UpdatePolicyAsync(user.Id, BoundedPolicy(profile.Preset, folders, ownerPolicy, user)).ConfigureAwait(false);
+        state.Profiles[index] = profile with { Ready = true, Lifecycle = "active", PendingLibraries = null };
+        Write(state);
     }
 
     /// <summary>Creates a disabled-first managed viewing identity with explicit library access.</summary>
