@@ -26,6 +26,10 @@ a cold restart of the same server data. The packaged browser suite additionally
 checks membership at both existing cold-restart stages. These NEW package assertions
 have not yet run on GitHub; no new archive or full-suite pass is claimed yet.
 
+An initial local gate was deliberately stopped before publication to include the new
+guide in both preview documentation locations. The final snapshot must pass the
+normal gate again; no validation bypass or failing application push occurred.
+
 Next exact steps: finish focused regressions, format changed C# using repository
 settings, commit a clean snapshot, and push through the unchanged full pre-push gate.
 Verify exact-source hosted Linux/shared checks and six extracted-package executions;
