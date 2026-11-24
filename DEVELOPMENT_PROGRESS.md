@@ -38,7 +38,11 @@ registry/key bytes. All four service/lifecycle tests passed: unavailable-state
 containment, corrupt registry denial, callback-failure gate release and serialized
 deletion. New test style errors were corrected before publication.
 The complete pre-push gate and exact-source hosted/package checks remain required.
-No new application commit has been published yet.
+The mandatory full gate blocked the first push on RS0030: Guid equality operators
+are banned by the repository analyzer. The new controller now uses .Equals, matching
+existing authentication code. A restored whitespace pass found0changes across2459
+files; the entire normal gate will rerun on the corrected committed snapshot.
+No failing application commit was published.
 
 Next exact steps: inspect /tmp/castlumora-owned-sessions-http2.log and
 /tmp/castlumora-owned-service-tests.log; fix actual failures without relaxing checks.

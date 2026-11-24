@@ -102,7 +102,7 @@ public sealed class CastlumoraOwnedProfileSessionsController : BaseJellyfinApiCo
 
     private async Task<ActionResult<JsonObject>> Owned(Guid identity, Func<string, Task<ActionResult<JsonObject>>> operation, CancellationToken token)
     {
-        if (User.GetIsApiKey() || User.GetUserId() == Guid.Empty || string.IsNullOrEmpty(User.GetToken()))
+        if (User.GetIsApiKey() || User.GetUserId().Equals(Guid.Empty) || string.IsNullOrEmpty(User.GetToken()))
         {
             return Forbid();
         }
