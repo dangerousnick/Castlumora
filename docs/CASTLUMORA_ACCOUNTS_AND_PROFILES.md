@@ -172,8 +172,9 @@ packaged browser workflow covers native administration, switching/reload, separa
 preferences and return-to-account authentication. Consult DEVELOPMENT_PROGRESS.md
 for the exact checks actually run and source SHA; test presence alone is not a pass.
 
-The current access-editing increment addresses preset/library changes; consult its
-exact-source checkpoint for validation and package availability. Remaining account work includes
+Preset/library access editing is published and verified ata158773565dd, including
+actual packaged browser workflows. Consult the latest progress checkpoint for its
+GitHub download/checksum and remaining release limitations. Remaining account work includes
 invitation/registration edge-case review, external-auth-provider compatibility and
 broader multi-device/media-history verification. Managed-profile recovery and
 personal/per-child/account-wide device controls are implemented; consult the exact

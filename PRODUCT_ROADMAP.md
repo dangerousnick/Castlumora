@@ -1,47 +1,67 @@
 # Castlumora product roadmap
 
-## Current milestone — administrator profile access editing
+## Verified administrator profile-access checkpoint
 
-Continues published checkpoint `e0c8e4baef9d8cda39b0c6950e4d76d344aad81b`;
-verified application/preview remainsd15f49d99554 below. No existing work was reset.
-Implemented locally: administrator preset/library editing for an existing managed
-identity with explicit confirmation, reviewed identity-bound profile/owner-policy
-revision, current owner limits and strict payloads. API keys and non-admins are
-denied; unknown/forbidden libraries, stale/cross-profile revisions and unavailable,
-elevated or manually disabled identities cannot be applied. Existing private keys,
-identity, preferences and history remain; only the edited child's tokens are revoked.
+Last completed milestone: administrator preset/library editing with reviewed policies
+and durable interrupted-update recovery. Latest published application:
+`a158773565dd7c7c1c041f2f5a87c6bfeb1de744`.
+Current branch: `development/castlumora-web-1.3`; PR3 remains open. No work was reset.
 
-Updates persist an unavailable provisioning intent before native disable/revoke/
-policy changes. Interrupted operations retain exact preset/library repair inputs
-and reuse existing explicit recovery, with no new key, user or schema. Administrators
-can repair owner-bound restrictions on an otherwise enabled profile; this does not
-silently reactivate manually disabled profiles. Reapplying a preset intentionally
-replaces custom child permissions within the owner's bounds. Legacy policy tools remain.
+Admins can reapply Kids/Adult and explicit libraries to an existing managed identity.
+Identity-bound profile/owner-policy revisions reject stale and cross-profile reviews.
+Only the edited child's tokens are revoked; owner/sibling sessions, identity, key,
+watch history and preferences remain. Invalid/owner-forbidden libraries, non-admins,
+API keys and unavailable/elevated/manually disabled profiles are denied. A durable
+unavailable provisioning intent precedes native changes; explicit recovery rechecks
+the saved plan/current owner bounds and retains the original identity/key. Reapplying
+a preset replaces custom child permissions within owner limits; legacy tools remain.
 
-Focused verification passed:20targeted service/recovery tests and all50profile-service
-regressions; one real SQLite HTTP workflow;
-14administrator UI tests plus typecheck/lint/build; one fresh compiled-server browser
-workflow with synthetic media, cancelled confirmation, real library exclusion404,
-token rejection, restored access and retained watch history/preferences. HTTP testing
-caught legacy API-key administrator authority; explicit endpoint denial was added
-and verified without relaxing the403 assertion. Local compile/assertion errors were
-corrected before publication. Browser fixture issues were diagnosed: exact label
-selection of a nested select was replaced by its accessible combobox role, response
-matching normalizes GUID formats, and fresh setup waits for actual startup rather
-than treating an early temporary503 as ready. The final browser proof passed17.2seconds.
+Verification passed on this exact source: normal pre-push restored formatting
+2460files/0changes/no workspace warnings; .NET10.0.403 Debug/Release0warnings/0errors;
+17backend suites4635passes/20existing skips/0failures; Node24.22.1 typecheck/lint/
+114tests/build; intact native/backup/migration/security/hook/report checks.
+Hosted Linux Tests45400426070, Format, OpenAPI Check and ABI passed. Independently
+downloaded backend logs confirm4635passes/20skips/0failures. All50profile-service
+regressions and a real SQLite HTTP workflow cover reviewed updates, private-key
+preservation, owner bounds, explicit API-key403 denial, stale reviews and recovery.
+A fresh compiled-server Chromium proof passed17.2seconds with actual media/history.
+Six extracted-package browser executions passed, including preset/library changes,
+old-token rejection, excluded-media404, restored access and unchanged history/preferences.
+Initial local compile/assertion/fixture failures were corrected before publication;
+selector matching uses accessible roles/canonical GUIDs and local fresh setup waited
+for complete server startup. No test assertions or production safeguards were weakened.
 
-Full normal pre-push formatting/Debug/Release/all-suite/frontend checks and NEW exact-
-source hosted/package verification remain required. Do not claim these pending
-checks passed. Current scope is implemented; no unrelated feature starts before
-this increment is validated, committed and published. Usage status: Not accessible.
+NEW verified download: https://github.com/dangerousnick/Castlumora/actions/runs/45400425922/artifacts/14924435540
+Archive: `Castlumora-1.0-dev-a158773565dd-linux-x64.tar.gz`.
+SHA256: `6db1003ec6a8159e1f13367ad8e9af823ef3b2e2f27c18a4868daf5c339a157a`.
+Independent download verified ZIP/archive digests, exact source/manifest and access-
+editing flag, compiled controls/server/web/runtime/Node,16castle assets, GPL/dependency
+licenses and source-matching docs. Install/troubleshooting/feature checklists included.
+GitHub sign-in required; artifacts expire after30days. This is a development preview.
 
-Next exact steps: apply repository whitespace formatting, inspect the final diff,
-commit a clean snapshot and use normal `git push origin development/castlumora-web-1.3`.
-Verify hosted Linux/shared checks and the actual extracted package; independently
-download/checksum the NEW archive and updatePR3. The previousd15f49d9 preview below
-remains available and does not include access editing. Preserve all remaining non-
-YouTube1.0 requirements; YouTube expansion stays deferred. No main merge/deployment.
+Usage status: Not accessible; no reliable Codex allowance/reset tool is exposed.
+No automatic background continuation is claimed. No unfinished application edits
+remain at this checkpoint. Production backup reserve and all prior completed work
+are intact. No main merge, official Jellyfin modification or Coon Media deployment.
+The separate main-only OpenAPI Report still awaits reviewed adoption of the existing
+development fix. Physical Mint/NAS/GPU/tuner installation and broader stable readiness
+remain unverified. All remaining non-YouTube1.0 requirements remain in scope.
 
+Next exact development task: persistent followed-series membership. Reuse the existing
+PresentationStore per-viewing-user preferences; watchlist and hidden-resume behavior
+already exist and must not be recreated. Add native permission/type validation for
+following visible series, independent child/owner state, bounded deduplication and
+safe unfollow of formerly accessible titles. Add Detail follow/unfollow controls and
+an accessible followed-series list, verify restart/persistence/authorization/library
+restrictions with actual API/browser fixtures, then publish through the normal hook
+and produce a NEW verified preview. Notifications/recommendations, remaining admin,
+creator/business/resource/cloud/offline and release acceptance remain unfinished;
+further YouTube importing/creator metadata development stays deferred.
+
+Recovery: `git fetch origin`, inspect `git status` and `git log`, then continue the
+existing branch from its latest verified checkpoint. Preservea158773565 and this
+checkpoint; do not reset/rebuild completed functionality. Confirm current remote
+head before editing and finish one tested/published feature before starting another.
 
 ## Verified account-wide session containment checkpoint
 
