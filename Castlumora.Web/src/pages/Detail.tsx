@@ -1,3 +1,4 @@
+import { FollowSeriesButton } from '../components/Following';
 import { useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { Play, Plus, Check, ArrowLeft } from 'lucide-react';
@@ -83,6 +84,7 @@ export default function Detail() {
               </div>
               <Overview text={item.Overview} />
               <div className="actions">
+                {item.Type === 'Series' && <FollowSeriesButton key={id} id={id} />}
                 {item.Type !== 'Series' && (
                   <Link className="button primary" to={'/play/' + id}>
                     <Play size={18} />

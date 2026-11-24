@@ -67,6 +67,82 @@ public sealed class PresentationStoreTests : IDisposable
     }
 
     [Fact]
+    public async Task Following_PersistsDeduplicatesAndClearsWithoutChangingOtherPreferences()
+    {
+        var user = Guid.NewGuid();
+        var other = Guid.NewGuid();
+        var series = Guid.NewGuid();
+        using var store = CreateStore();
+        await store.PreferencesAsync(user, "watchlist", series, true);
+        await store.PreferencesAsync(user, "hiddenResume", series, true);
+        await store.FollowingAsync(user, series, true);
+        await store.FollowingAsync(user, series, true);
+        using var reopened = CreateStore();
+        var state = await reopened.FollowingAsync(user);
+        Assert.Single(state["followedSeries"]!.AsArray());
+        Assert.Single(state["watchlist"]!.AsArray());
+        Assert.Single(state["hiddenResume"]!.AsArray());
+        Assert.Empty((await reopened.FollowingAsync(other))["followedSeries"]!.AsArray());
+        await Assert.ThrowsAsync<ArgumentException>(() => reopened.PreferencesAsync(user, "followedSeries", series, true));
+        var cleared = await reopened.FollowingAsync(user, clear: true);
+        Assert.Empty(cleared["followedSeries"]!.AsArray());
+        Assert.Single(cleared["watchlist"]!.AsArray());
+        Assert.Single(cleared["hiddenResume"]!.AsArray());
+        await reopened.FollowingAsync(user, series, false);
+        Assert.Empty((await reopened.FollowingAsync(user))["followedSeries"]!.AsArray());
+    }
+
+    [Fact]
+    public async Task Following_EnforcesBoundAndPreservesExistingDataOnRejectedAddition()
+    {
+        var user = Guid.NewGuid();
+        using var store = CreateStore();
+        await store.FollowingAsync(user, Guid.NewGuid(), true);
+        var path = Path.Combine(_directory, "castlumora", "user-" + user.ToString("N") + ".json");
+        var state = JsonNode.Parse(await File.ReadAllTextAsync(path, TestContext.Current.CancellationToken))!.AsObject();
+        state["followedSeries"] = new JsonArray(Enumerable.Range(0, 1000).Select(_ => (JsonNode?)JsonValue.Create(Guid.NewGuid().ToString("N"))).ToArray());
+        await File.WriteAllTextAsync(path, state.ToJsonString(), TestContext.Current.CancellationToken);
+        var before = await File.ReadAllBytesAsync(path, TestContext.Current.CancellationToken);
+        await Assert.ThrowsAsync<ArgumentException>(() => store.FollowingAsync(user, Guid.NewGuid(), true));
+        Assert.Equal(before, await File.ReadAllBytesAsync(path, TestContext.Current.CancellationToken));
+        var first = Guid.Parse(state["followedSeries"]![0]!.GetValue<string>());
+        Assert.Equal(1000, (await store.FollowingAsync(user, first, true))["followedSeries"]!.AsArray().Count);
+        await Assert.ThrowsAsync<ArgumentException>(() => store.FollowingAsync(Guid.Empty));
+    }
+
+    [Fact]
+    public async Task Following_CorruptReferencesFailClosedAndExplicitClearPreservesWatchlist()
+    {
+        var user = Guid.NewGuid();
+        var item = Guid.NewGuid();
+        using var store = CreateStore();
+        await store.PreferencesAsync(user, "watchlist", item, true);
+        var path = Path.Combine(_directory, "castlumora", "user-" + user.ToString("N") + ".json");
+        var state = JsonNode.Parse(await File.ReadAllTextAsync(path, TestContext.Current.CancellationToken))!.AsObject();
+        state["followedSeries"] = new JsonArray("not-an-id");
+        await File.WriteAllTextAsync(path, state.ToJsonString(), TestContext.Current.CancellationToken);
+        await Assert.ThrowsAsync<InvalidDataException>(() => store.FollowingAsync(user, item, true));
+        var cleared = await store.FollowingAsync(user, clear: true);
+        Assert.Empty(cleared["followedSeries"]!.AsArray());
+        Assert.Single(cleared["watchlist"]!.AsArray());
+    }
+
+    [Fact]
+    public async Task Following_ConcurrentPreferenceKindsPreserveEveryMembership()
+    {
+        var user = Guid.NewGuid();
+        var first = Guid.NewGuid();
+        var second = Guid.NewGuid();
+        using var store = CreateStore();
+        await Task.WhenAll(store.PreferencesAsync(user, "watchlist", first, true), store.FollowingAsync(user, first, true), store.FollowingAsync(user, second, true));
+        using var reopened = CreateStore();
+        var state = await reopened.FollowingAsync(user);
+        Assert.Single(state["watchlist"]!.AsArray());
+        Assert.Equal(2, state["followedSeries"]!.AsArray().Count);
+        await Assert.ThrowsAsync<ArgumentException>(() => store.FollowingAsync(user, Guid.Empty, true));
+    }
+
+    [Fact]
     public void Visibility_RemovesRestrictedCategoriesAndRows()
     {
         var layout = PresentationStore.Defaults();

@@ -142,6 +142,25 @@ export class Api {
       { UserId: this.session?.user.Id, SeasonId: seasonId, Fields: 'Overview' },
     );
   }
+  followedSeries(startIndex = 0, limit = 48) {
+    return this.request<{ seriesIds: string[]; total: number }>(
+      'Castlumora/Following',
+      {},
+      { startIndex, limit },
+    );
+  }
+  seriesFollowState(id: string) {
+    return this.request<{ followed: boolean }>('Castlumora/Following/' + encodeURIComponent(id));
+  }
+  followSeries(id: string, enabled: boolean) {
+    return this.request<{ followed: boolean }>('Castlumora/Following/' + encodeURIComponent(id), {
+      method: 'PUT',
+      body: JSON.stringify({ enabled }),
+    });
+  }
+  clearFollowing() {
+    return this.request<void>('Castlumora/Following/Clear', { method: 'POST', body: '{}' });
+  }
   preferences() {
     return this.request<Preferences>('Castlumora/Presentation/Preferences');
   }

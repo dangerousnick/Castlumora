@@ -1,5 +1,43 @@
 # Castlumora Web Phase 1.3 development progress
 
+## Current milestone — persistent followed series
+
+Continues checkpoint82a182f979 and verified applicationa158773565; no existing work
+was reset. Implemented locally: following visible TV series, independent viewing-
+identity persistence in PresentationStore, Detail follow/unfollow, a paged My List
+section, and confirmed clear-all including unavailable references. Existing watchlist,
+resume exclusions and playback history are preserved. The generic preference route
+still rejects followedSeries mutations, preventing type/permission-validation bypass.
+
+Native authorization/type checks run on follow and every read. Hidden, removed or
+wrong-type titles are omitted; previously followed unavailable IDs can be unfollowed
+without exposing metadata. Actor IDs come only from authentication; API keys and
+identity overrides are rejected. Lists are bounded1000/paged100maximum; duplicate
+requests are idempotent, corrupt state fails closed and explicit clear preserves
+other preferences. Existing atomic writes and the shared gate prevent lost updates
+between preference kinds. No namespace/database/schema replacement was introduced.
+
+Focused controller/store/presentation tests and real SQLite HTTP tests passed,
+including native library restrictions, managed owner/child separation, reopening
+persistent state, duplicate requests, invalid payloads, API-key denial and unchanged
+watchlist/history. Four UI tests, typecheck/lint/build passed. A fresh compiled-server
+Chromium proof passed23.8seconds including actual follow/unfollow/My List/reload and
+a cold restart of the same server data. The packaged browser suite additionally
+checks membership at both existing cold-restart stages. These NEW package assertions
+have not yet run on GitHub; no new archive or full-suite pass is claimed yet.
+
+Next exact steps: finish focused regressions, format changed C# using repository
+settings, commit a clean snapshot, and push through the unchanged full pre-push gate.
+Verify exact-source hosted Linux/shared checks and six extracted-package executions;
+independently download/hash the NEW preview, updatePR3 and checkpoint results.
+Current branch: development/castlumora-web-1.3. Usage status: Not accessible.
+No automatic main merge or background continuation. Preserve all remaining non-
+YouTube1.0 requirements. Following is implemented; new-episode/season notifications,
+personalized recommendations/interests, remaining administration/creator/business/
+resource/cloud/offline features and release acceptance remain separate unfinished work.
+Older importer next-task entries are historical; further YouTube expansion stays deferred.
+
+
 ## Verified administrator profile-access checkpoint
 
 Last completed milestone: administrator preset/library editing with reviewed policies

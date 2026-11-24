@@ -235,3 +235,16 @@ Ordinary users/API keys must be denied and manually disabled identities remain
 unavailable. Interrupted updates require explicit recovery; never recreate the
 profile or key. Record source/archive SHA and automated/manual status when reporting
 issues. Consult DEVELOPMENT_PROGRESS.md for which exact package has passed.
+
+## Followed series
+
+For previews declaring followedSeriesAvailable, open a visible TV series and follow
+it. My List must show it in Followed series independently of the watchlist. Reload
+and restart the server: membership remains. Unfollow from the list/details; cancel
+clear-all once, then confirm it. Other profile lists and watch history must remain.
+Repeat under a managed profile to verify separation. Restrict the library/rating:
+unavailable titles disappear, follow/status access is denied, and safe unfollow or
+clear-all can remove retained references. Movies cannot be followed; API keys and
+user/account overrides must be rejected. Record exact package SHA, expected/actual
+behavior, redacted logs and whether verification was automated/manual. Notifications
+are separate unfinished work; following alone does not promise notifications.

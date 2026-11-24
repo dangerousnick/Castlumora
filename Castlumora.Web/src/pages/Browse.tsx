@@ -1,3 +1,4 @@
+import { FollowedSeriesPanel } from '../components/Following';
 import { useState } from 'react';
 import { Link, useLocation, useSearchParams } from 'react-router-dom';
 import { Search } from 'lucide-react';
@@ -65,6 +66,7 @@ export default function Browse() {
           Live TV & guide
         </Link>
       </div>
+      {list && <FollowedSeriesPanel />}
       {searching && (
         <form className="search-box" onSubmit={(e) => e.preventDefault()}>
           <Search />
@@ -123,6 +125,7 @@ export default function Browse() {
           </Link>
         </div>
       )}
+      {list && <h2>Watchlist</h2>}
       <Feedback busy={result.busy} error={result.error} />
       {result.value && (
         <>
@@ -133,7 +136,7 @@ export default function Browse() {
           </div>
           {result.value.Items.length === 0 && (
             <div className="empty">
-              <h2>{list ? 'Your list is waiting' : 'No stories found'}</h2>
+              <h2>{list ? 'Your watchlist is waiting' : 'No stories found'}</h2>
               <p>
                 {list
                   ? 'Save a title from its details or options menu.'

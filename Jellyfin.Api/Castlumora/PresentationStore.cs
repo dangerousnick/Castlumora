@@ -358,6 +358,22 @@ public sealed class PresentationStore : IDisposable
     public async Task<JsonObject> PreferencesAsync(Guid userId, string kind, Guid? itemId, bool enabled)
     {
         Require(kind is "watchlist" or "hiddenResume", "Unknown preference.");
+        return await PreferenceCore(userId, kind, itemId, enabled, false).ConfigureAwait(false);
+    }
+
+    /// <summary>Reads or updates independently validated followed-series membership.</summary>
+    /// <param name="userId">Authenticated viewing identity.</param>
+    /// <param name="seriesId">Validated series ID, or null to read.</param>
+    /// <param name="enabled">Whether membership is enabled.</param>
+    /// <param name="clear">Explicitly clear this identity's entire following list.</param>
+    /// <returns>Stored preferences without changing watch history or watchlists.</returns>
+    public Task<JsonObject> FollowingAsync(Guid userId, Guid? seriesId = null, bool enabled = false, bool clear = false)
+        => PreferenceCore(userId, "followedSeries", seriesId, enabled, clear);
+
+    private async Task<JsonObject> PreferenceCore(Guid userId, string kind, Guid? itemId, bool enabled, bool clear)
+    {
+        Require(!userId.Equals(Guid.Empty), "A viewing identity is required.");
+        Require(kind != "followedSeries" || !itemId.HasValue || !itemId.Value.Equals(Guid.Empty), "A valid series ID is required.");
         await _gate.WaitAsync().ConfigureAwait(false);
         try
         {
@@ -365,13 +381,32 @@ public sealed class PresentationStore : IDisposable
             var state = await ReadAsync(filename).ConfigureAwait(false);
             state["watchlist"] ??= new JsonArray();
             state["hiddenResume"] ??= new JsonArray();
+            if (kind == "followedSeries")
+            {
+                state["followedSeries"] ??= new JsonArray();
+                if (!clear)
+                {
+                    var references = state["followedSeries"] as JsonArray ?? throw new InvalidDataException("Invalid following preferences.");
+                    if (references.Count > 1000 || references.Any(row => row is not JsonValue value || !value.TryGetValue<string>(out var text) || !Guid.TryParse(text, out var parsed) || parsed.Equals(Guid.Empty)))
+                    {
+                        throw new InvalidDataException("Invalid following preferences.");
+                    }
+                }
+            }
+
+            if (clear)
+            {
+                state["followedSeries"] = new JsonArray();
+                await WriteAsync(filename, state).ConfigureAwait(false);
+            }
+
             if (itemId.HasValue)
             {
                 var list = state[kind]!.AsArray();
                 var id = itemId.Value.ToString("N");
                 for (var i = list.Count - 1; i >= 0; i--)
                 {
-                    if (list[i]!.GetValue<string>() == id)
+                    if (kind == "followedSeries" ? Guid.Parse(list[i]!.GetValue<string>()).Equals(itemId.Value) : list[i]!.GetValue<string>() == id)
                     {
                         list.RemoveAt(i);
                     }

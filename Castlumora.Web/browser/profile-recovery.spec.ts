@@ -1,3 +1,4 @@
+import { verifyFollowingRestart } from './following-proof';
 // Real, extracted-package restart/recovery workflow; no production fault endpoint.
 import { readFileSync } from 'node:fs';
 import { createHash } from 'node:crypto';
@@ -96,6 +97,7 @@ test('packaged profile recovery retains identity and viewing data across restart
     { headers, data: {} },
   );
   expect(blocked.status()).toBe(409);
+  await verifyFollowingRestart(page, request, preview!);
   await page.locator('.profile-menu > summary').click();
   await page.getByRole('link', { name: 'Viewing profiles', exact: true }).click();
   await page

@@ -1,3 +1,4 @@
+import { verifyFollowing } from './following-proof';
 // Opt-in only: actual extracted archive running on the dedicated fresh-install loopback port.
 import { test, expect } from '@playwright/test';
 import type { MediaSource } from '../src/api/types';
@@ -26,6 +27,7 @@ test('packaged preview: fresh setup, login, administration and logout', async ({
   const buildInfo = await manifest.json();
   expect(buildInfo.selfContainedDotnet).toBe(true);
   expect(buildInfo.profileAccessEditingAvailable).toBe(true);
+  expect(buildInfo.followedSeriesAvailable).toBe(true);
   await page.goto(preview!);
   await expect(page.getByRole('heading', { name: 'Set up Castlumora' })).toBeVisible();
   await page.getByLabel('Server name', { exact: true }).fill('Castlumora Packaged Preview');
@@ -652,4 +654,5 @@ test('packaged preview: restart managed profiles isolate preferences and revoke 
   await page.getByRole('link', { name: 'Back', exact: true }).click();
   await verifyAccountPasswordChange(page, request, preview!, password!);
   await verifyAccountSessions(page, request, preview!, password!);
+  await verifyFollowing(page, request, preview!);
 });
