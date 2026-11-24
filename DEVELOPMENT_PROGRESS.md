@@ -1,45 +1,71 @@
 # Castlumora Web Phase 1.3 development progress
 
-## Current milestone — persistent followed series
+## Verified followed-series checkpoint
 
-Continues checkpoint82a182f979 and verified applicationa158773565; no existing work
-was reset. Implemented locally: following visible TV series, independent viewing-
-identity persistence in PresentationStore, Detail follow/unfollow, a paged My List
-section, and confirmed clear-all including unavailable references. Existing watchlist,
-resume exclusions and playback history are preserved. The generic preference route
-still rejects followedSeries mutations, preventing type/permission-validation bypass.
+Last completed milestone: persistent followed-series membership and My List controls.
+Latest published application: `f8e15abd2fc59352cc0e2184df61a58c4efb5fe9`
+(implementation `72332cde2067dac5193f996991dfd4ecf040e85d`).
+Current branch: `development/castlumora-web-1.3`; PR3 remains open. No work was reset.
 
-Native authorization/type checks run on follow and every read. Hidden, removed or
-wrong-type titles are omitted; previously followed unavailable IDs can be unfollowed
-without exposing metadata. Actor IDs come only from authentication; API keys and
-identity overrides are rejected. Lists are bounded1000/paged100maximum; duplicate
-requests are idempotent, corrupt state fails closed and explicit clear preserves
-other preferences. Existing atomic writes and the shared gate prevent lost updates
-between preference kinds. No namespace/database/schema replacement was introduced.
+Follow/unfollow visible TV series on details, browse the paged My List section, or
+confirm clearing all references, including unavailable shows. Each viewing identity
+has independent durable membership. Native type/library/rating visibility applies
+to following and every read. API keys and identity overrides are denied. Existing
+watchlist, resume exclusions and history are preserved. The generic Preferences
+route cannot bypass follow validation. Atomic writes/shared serialization, bounded
+lists, idempotency, corrupt-state rejection and explicit repair were tested.
+Following does not yet generate new-episode/season notifications.
 
-Focused controller/store/presentation tests and real SQLite HTTP tests passed,
-including native library restrictions, managed owner/child separation, reopening
-persistent state, duplicate requests, invalid payloads, API-key denial and unchanged
-watchlist/history. Four UI tests, typecheck/lint/build passed. A fresh compiled-server
-Chromium proof passed23.8seconds including actual follow/unfollow/My List/reload and
-a cold restart of the same server data. The packaged browser suite additionally
-checks membership at both existing cold-restart stages. These NEW package assertions
-have not yet run on GitHub; no new archive or full-suite pass is claimed yet.
+The unchanged normal pre-push gate passed on this exact source: restored formatting
+2463files/0changes/no workspace warnings; .NET10.0.403 Debug/Release0warnings/0errors;
+17backend suites4644passes/20existing skips/0failures; Node24.22.1 typecheck/lint/
+118tests in29files/build; intact backup/security/migration/native/hook/report checks.
+Focused controller/store tests18passes; actual SQLite HTTP permissions/profile/
+persistence workflow passed. A fresh compiled-server Chromium proof passed23.8seconds,
+including actual follow/unfollow/My List/reload and a cold restart of the same data.
 
-An initial local gate was deliberately stopped before publication to include the new
-guide in both preview documentation locations. The final snapshot must pass the
-normal gate again; no validation bypass or failing application push occurred.
+Exact-source Linux Tests45420496052 passed; independently retrieved job logs confirm
+17suites/4644passes/20existing skips/0failures.
+Hosted Format, OpenAPI Check and ABI passed. Preview45420495652 passed all six
+actual extracted-package browser executions (8.4s; three cases38.5s;5.4s;3.9s),
+including the new following workflow and membership at both cold-restart stages.
+No assertions were disabled. The separate main-only OpenAPI Report still awaits
+reviewed adoption of this branch's token/artifact fix; it is distinct from OpenAPI Check.
 
-Next exact steps: finish focused regressions, format changed C# using repository
-settings, commit a clean snapshot, and push through the unchanged full pre-push gate.
-Verify exact-source hosted Linux/shared checks and six extracted-package executions;
-independently download/hash the NEW preview, updatePR3 and checkpoint results.
-Current branch: development/castlumora-web-1.3. Usage status: Not accessible.
-No automatic main merge or background continuation. Preserve all remaining non-
-YouTube1.0 requirements. Following is implemented; new-episode/season notifications,
-personalized recommendations/interests, remaining administration/creator/business/
-resource/cloud/offline features and release acceptance remain separate unfinished work.
-Older importer next-task entries are historical; further YouTube expansion stays deferred.
+Download: https://github.com/dangerousnick/Castlumora/actions/runs/45420495652/artifacts/14933973231
+Archive: `Castlumora-1.0-dev-f8e15abd2fc5-linux-x64.tar.gz`.
+SHA256: `4c26c60679a56aaa0b8ccdc7bc90afb0838e8740c649e208541b74a2b48a520e`.
+Independent download verified the uploaded ZIP digest, archive checksum, exact source
+and manifest (followedSeriesAvailable), compiled following/profile/device controls,
+integrated server/web/bundled runtimes,16castle assets, GPL/dependency licenses,
+source-matching documentation and the following guide in both package locations.
+GitHub sign-in is required; artifact expires2026-12-24. Installation instructions,
+troubleshooting and the feature-testing checklist are included. This is a development
+preview. Linux CI and local Debian13 SDK/runtime tests do not certify physical Mint,
+NAS, GPU, tuner or production-scale installations. Earlier documented actual-package
+Debian13/stableFFmpeg7.1.5 DVR/HLS results remain separate unchanged evidence.
+
+Unfinished work: no uncommitted application changes at this checkpoint. New-episode/
+season notifications, personalized recommendations/interests, remaining administration,
+creator/business/resource/cloud/offline features and stable-release acceptance remain.
+Further YouTube/creator metadata expansion stays deferred by owner request.
+
+Next development task: implement a private persistent new-episode notification center
+for followed series. Inspect existing library events/query infrastructure and reuse
+following/presentation persistence; define the new-arrival baseline to avoid notifying
+historical episodes. Recheck native visibility on every read, isolate viewing profiles,
+deduplicate repeated scans and persist read/dismiss settings. Add focused store/API/UI
+and real SQLite/browser restart/permission tests. Complete and validate that coherent
+scope before taking on recommendation or recording notifications. Do not recreate
+existing watchlist/profile/following code or claim unfinished notifications exist.
+
+Usage status: Not accessible. No quota/reset percentage or automatic background resume
+is claimed. Recovery: fetch origin, inspect status/log and read the permanent specs;
+continue the existing development branch from its latest published checkpoint, preserving
+any newer work. Install hooks with scripts/install-git-hooks.sh. Use focused tests while
+coding, then commit a clean snapshot and normal git push origin development/castlumora-web-1.3.
+The mandatory hook must pass before publication; inspect exact-source hosted checks
+and independently verify the next preview. Never merge main automatically.
 
 
 ## Verified administrator profile-access checkpoint
