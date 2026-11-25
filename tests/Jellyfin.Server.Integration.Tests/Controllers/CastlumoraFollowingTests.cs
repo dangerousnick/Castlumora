@@ -54,8 +54,16 @@ public sealed class CastlumoraFollowingTests : IClassFixture<JellyfinApplication
             }
 
             var library = _factory.Services.GetRequiredService<ILibraryManager>();
-            await library.ValidateMediaLibrary(new Progress<double>(), ct);
-            var parent = library.GetItemById<Folder>(Guid.Parse(folders[0]));
+            await library.ValidateTopLibraryFolders(ct);
+            var collection = library.GetItemById<CollectionFolder>(Guid.Parse(folders[0]));
+            Assert.NotNull(collection);
+            // Register a real indexed physical root through native persistence; the empty-directory
+            // test server does not run a media scan. Browser tests exercise actual scanning.
+            var parent = new Folder { Id = Guid.NewGuid(), Name = "Notification physical fixture", Path = Path.Combine(root, "0") };
+            parent.SetParent(library.RootFolder);
+            library.CreateItem(parent, library.RootFolder);
+            collection.PhysicalFolderIds = [parent.Id];
+            await library.UpdateItemAsync(collection, library.GetUserRootFolder(), ItemUpdateType.MetadataEdit, ct);
             Assert.NotNull(parent);
             var series = new Series { Id = Guid.NewGuid(), Name = "Owned following series", Path = Path.Combine(root, "0", "Owned show"), OfficialRating = "G" };
             Directory.CreateDirectory(series.Path);
@@ -121,6 +129,34 @@ public sealed class CastlumoraFollowingTests : IClassFixture<JellyfinApplication
             using var reopened = new PresentationStore(_factory.Services.GetRequiredService<IApplicationPaths>());
             Assert.Single((await reopened.FollowingAsync(Guid.Parse(ownerId)))["followedSeries"]!.AsArray());
             Assert.Single((await reopened.FollowingAsync(Guid.Parse(childId)))["followedSeries"]!.AsArray());
+            Episode AddEpisode(string title, int number)
+            {
+                var episode = new Episode { Id = Guid.NewGuid(), Name = title, Path = Path.Combine(series.Path, title + ".mp4"), SeriesId = series.Id, SeriesName = series.Name, ParentIndexNumber = 1, IndexNumber = number, OfficialRating = "G" };
+                episode.SetParent(series);
+                library.CreateItem(episode, series);
+                return episode;
+            }
+
+            _ = AddEpisode("Historic notification fixture", 1);
+            const string notices = "Castlumora/Notifications";
+            Assert.Equal(HttpStatusCode.Unauthorized, (await anonymous.GetAsync(notices, ct)).StatusCode);
+            Assert.False((await owner.GetFromJsonAsync<JsonObject>(notices, ct))!["enabled"]!.GetValue<bool>());
+            Assert.Equal(HttpStatusCode.BadRequest, (await owner.PutAsJsonAsync(notices + "/Settings", new { enabled = true, userId = childId }, ct)).StatusCode);
+            (await owner.PutAsJsonAsync(notices + "/Settings", new { enabled = true }, ct)).EnsureSuccessStatusCode();
+            Assert.Empty((await owner.GetFromJsonAsync<JsonObject>(notices, ct))!["items"]!.AsArray());
+            var arrival = AddEpisode("New notification fixture", 2);
+            var notificationPath = notices + "/" + arrival.Id.ToString("N");
+            var notifications = await owner.GetFromJsonAsync<JsonObject>(notices, ct);
+            Assert.Single(notifications!["items"]!.AsArray());
+            Assert.Equal(arrival.Id.ToString("N"), notifications["items"]![0]!["id"]!.GetValue<string>());
+            Assert.Equal(1, notifications["unread"]!.GetValue<int>());
+            Assert.Single((await owner.GetFromJsonAsync<JsonObject>(notices, ct))!["items"]!.AsArray());
+            Assert.Empty((await child.GetFromJsonAsync<JsonObject>(notices, ct))!["items"]!.AsArray());
+            Assert.Equal(HttpStatusCode.NotFound, (await child.PutAsJsonAsync(notificationPath, new { read = true }, ct)).StatusCode);
+            Assert.Equal(HttpStatusCode.BadRequest, (await owner.PutAsJsonAsync(notificationPath, new { read = true, accountId = childId }, ct)).StatusCode);
+            (await owner.PutAsJsonAsync(notificationPath, new { read = true }, ct)).EnsureSuccessStatusCode();
+            Assert.Equal(0, (await owner.GetFromJsonAsync<JsonObject>(notices, ct))!["unread"]!.GetValue<int>());
+            Assert.True((await reopened.NotificationsAsync(Guid.Parse(ownerId), []))["rows"]![0]!["read"]!.GetValue<bool>());
             var nativeOwner = await admin.GetFromJsonAsync<JsonObject>("Users/" + ownerId, ct);
             var policy = nativeOwner!["Policy"]!.AsObject();
             policy["EnableAllFolders"] = false;
@@ -128,10 +164,19 @@ public sealed class CastlumoraFollowingTests : IClassFixture<JellyfinApplication
             (await admin.PostAsJsonAsync("Users/" + ownerId + "/Policy", policy, ct)).EnsureSuccessStatusCode();
             Assert.Equal(0, (await owner.GetFromJsonAsync<JsonObject>("Castlumora/Following", ct))!["total"]!.GetValue<int>());
             Assert.Equal(HttpStatusCode.NotFound, (await owner.GetAsync(target, ct)).StatusCode);
+            Assert.Empty((await owner.GetFromJsonAsync<JsonObject>(notices, ct))!["items"]!.AsArray());
+            Assert.Equal(0, (await owner.GetFromJsonAsync<JsonObject>(notices, ct))!["unread"]!.GetValue<int>());
+            Assert.Equal(HttpStatusCode.NotFound, (await owner.PutAsJsonAsync(notificationPath, new { read = false }, ct)).StatusCode);
             Assert.Equal(HttpStatusCode.NotFound, (await owner.PutAsJsonAsync(target, new { enabled = true }, ct)).StatusCode);
             Assert.False((await (await owner.PutAsJsonAsync(target, new { enabled = false }, ct)).Content.ReadFromJsonAsync<JsonObject>(ct))!["followed"]!.GetValue<bool>());
             policy["EnableAllFolders"] = true;
             (await admin.PostAsJsonAsync("Users/" + ownerId + "/Policy", policy, ct)).EnsureSuccessStatusCode();
+            (await owner.PutAsJsonAsync(target, new { enabled = true }, ct)).EnsureSuccessStatusCode();
+            Assert.Single((await owner.GetFromJsonAsync<JsonObject>(notices, ct))!["items"]!.AsArray());
+            (await owner.PutAsJsonAsync(notificationPath, new { dismissed = true }, ct)).EnsureSuccessStatusCode();
+            Assert.Empty((await owner.GetFromJsonAsync<JsonObject>(notices, ct))!["items"]!.AsArray());
+            Assert.Equal(HttpStatusCode.NotFound, (await owner.PutAsJsonAsync(notificationPath, new { read = false }, ct)).StatusCode);
+            (await owner.PutAsJsonAsync(target, new { enabled = false }, ct)).EnsureSuccessStatusCode();
             Assert.True((await child.GetFromJsonAsync<JsonObject>(target, ct))!["followed"]!.GetValue<bool>());
             Assert.False((await owner.GetFromJsonAsync<JsonObject>(target, ct))!["followed"]!.GetValue<bool>());
             (await owner.PutAsJsonAsync(target, new { enabled = true }, ct)).EnsureSuccessStatusCode();
@@ -147,6 +192,9 @@ public sealed class CastlumoraFollowingTests : IClassFixture<JellyfinApplication
             using var machine = _factory.CreateClient();
             machine.DefaultRequestHeaders.AddAuthHeader(apiKey);
             Assert.Equal(HttpStatusCode.Forbidden, (await machine.GetAsync("Castlumora/Following", ct)).StatusCode);
+            Assert.Equal(HttpStatusCode.Forbidden, (await machine.GetAsync(notices, ct)).StatusCode);
+            Assert.Equal(HttpStatusCode.Forbidden, (await machine.PutAsJsonAsync(notices + "/Settings", new { enabled = true }, ct)).StatusCode);
+            Assert.Equal(HttpStatusCode.Forbidden, (await machine.PutAsJsonAsync(notificationPath, new { read = true }, ct)).StatusCode);
             Assert.Equal(HttpStatusCode.Forbidden, (await machine.PutAsJsonAsync(target, new { enabled = true }, ct)).StatusCode);
             Assert.Equal(HttpStatusCode.Forbidden, (await machine.PostAsJsonAsync("Castlumora/Following/Clear", new { }, ct)).StatusCode);
         }

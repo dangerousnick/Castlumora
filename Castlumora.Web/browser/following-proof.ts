@@ -116,6 +116,52 @@ export async function verifyFollowing(page: Page, request: APIRequestContext, pr
   await expect(page.getByRole('button', { name: 'Follow series', exact: true })).toBeEnabled();
   await page.getByRole('button', { name: 'Follow series', exact: true }).click();
   await expect(page.getByRole('button', { name: 'Unfollow series', exact: true })).toBeEnabled();
+  await page.goto(preview + '#/notifications');
+  await page.getByRole('button', { name: 'Enable episode notifications', exact: true }).click();
+  await expect(
+    page.getByRole('button', { name: 'Pause episode notifications', exact: true }),
+  ).toBeEnabled();
+  await expect(page.getByText('0 unread notifications', { exact: true })).toBeVisible();
+  copyFileSync(source, join(show, 'Season 01', 'Castlumora Following Fixture - S01E02.mp4'));
+  writeFileSync(
+    join(show, 'Season 01', 'Castlumora Following Fixture - S01E02.nfo'),
+    '<episodedetails><title>Owned new episode notification</title><season>1</season><episode>2</episode><mpaa>G</mpaa><lockdata>true</lockdata></episodedetails>',
+  );
+  expect((await request.post(endpoint('Library/Refresh'), { headers })).ok()).toBe(true);
+  let notificationId = '';
+  await expect
+    .poll(
+      async () => {
+        const data = await (
+          await readPreview(request, endpoint('Castlumora/Notifications'), { headers })
+        ).json();
+        const arrival = data.items.find(
+          (item: { seriesId: string }) => canonical(item.seriesId) === canonical(id),
+        );
+        notificationId = arrival?.id || '';
+        return Boolean(notificationId);
+      },
+      { timeout: 25000 },
+    )
+    .toBe(true);
+  const nativeArrival = await (
+    await readPreview(
+      request,
+      endpoint('Items?Ids=' + notificationId + '&Fields=Path&IncludeItemTypes=Episode'),
+      { headers },
+    )
+  ).json();
+  expect(nativeArrival.Items).toHaveLength(1);
+  expect(nativeArrival.Items[0].Path).toBe(
+    join(show, 'Season 01', 'Castlumora Following Fixture - S01E02.mp4'),
+  );
+  await page.getByRole('button', { name: 'Refresh notifications', exact: true }).click();
+  await expect(page.locator('a[href="#/item/' + notificationId + '"]')).toBeVisible();
+  await expect(page.getByText('1 unread notifications', { exact: true })).toBeVisible();
+  await page.getByRole('button', { name: 'Mark read', exact: true }).click();
+  await expect(page.getByRole('button', { name: 'Mark unread', exact: true })).toBeEnabled();
+  await page.reload();
+  await expect(page.getByText('0 unread notifications', { exact: true })).toBeVisible();
   const after = await (
     await readPreview(request, endpoint('Castlumora/Presentation/Preferences'), { headers })
   ).json();
@@ -123,7 +169,7 @@ export async function verifyFollowing(page: Page, request: APIRequestContext, pr
   expect(after.hiddenResume).toEqual(before.hiddenResume);
   writeFileSync(
     join(root, 'following-proof.json'),
-    JSON.stringify({ id, ownerId: owner.user.Id, directory, libraryName: name }),
+    JSON.stringify({ id, ownerId: owner.user.Id, directory, libraryName: name, notificationId }),
     { mode: 0o600 },
   );
 }
@@ -132,6 +178,7 @@ export async function verifyFollowingRestart(
   page: Page,
   request: APIRequestContext,
   preview: string,
+  finishNotifications = false,
 ) {
   const { owner, headers, endpoint, root } = await context(page, request, preview);
   const witness = JSON.parse(readFileSync(join(root, 'following-proof.json'), 'utf8'));
@@ -140,6 +187,29 @@ export async function verifyFollowingRestart(
     await readPreview(request, endpoint('Castlumora/Following'), { headers })
   ).json();
   expect(current.seriesIds.map(canonical)).toContain(canonical(witness.id));
+  const notices = await (
+    await readPreview(request, endpoint('Castlumora/Notifications'), { headers })
+  ).json();
+  expect(notices.enabled).toBe(true);
+  expect(
+    notices.items.find(
+      (item: { id: string }) => canonical(item.id) === canonical(witness.notificationId),
+    ).read,
+  ).toBe(true);
+  await page.goto(preview + '#/notifications');
+  await expect(page.getByRole('button', { name: 'Mark unread', exact: true })).toBeEnabled();
+  if (finishNotifications) {
+    await page.getByRole('button', { name: 'Dismiss notification', exact: true }).click();
+    await expect(
+      page.getByText('No episode notifications are currently available.', { exact: true }),
+    ).toBeVisible();
+    await page.reload();
+    await expect(page.getByText('0 unread notifications', { exact: true })).toBeVisible();
+    await expect(
+      page.getByText('No episode notifications are currently available.', { exact: true }),
+    ).toBeVisible();
+  }
+
   await page.getByRole('link', { name: 'My List', exact: true }).click();
   await expect(
     page

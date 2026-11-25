@@ -8,8 +8,9 @@ references to currently unavailable shows. It never deletes media or watch histo
 Following belongs to the current viewing identity, including managed profiles. A
 parent's list is not inherited by children. Current native library/rating visibility
 is checked on follow and every list/status read. Unavailable titles are omitted;
-retained private references can be removed safely without granting access. Following
-does not yet generate episode/season notifications or personalized recommendations.
+retained private references can be removed safely without granting access. For opt-in on-refresh episode notifications, open the profile menu → Notifications;
+see CASTLUMORA_NOTIFICATIONS.md. Separate season/recording alerts and personalized
+recommendations remain unfinished.
 
 API: GET Castlumora/Following (startIndex>=0, limit1–100) returns visible seriesIds
 and total. GET /{seriesId} returns followed only for a visible series. PUT /{seriesId}

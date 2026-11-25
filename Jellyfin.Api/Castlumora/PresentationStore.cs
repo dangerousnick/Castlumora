@@ -11,7 +11,7 @@ using MediaBrowser.Common.Configuration;
 namespace Jellyfin.Api.Castlumora;
 
 /// <summary>Versioned, server-owned Castlumora presentation and user preferences.</summary>
-public sealed class PresentationStore : IDisposable
+public sealed partial class PresentationStore : IDisposable
 {
     private readonly string _directory;
     private readonly SemaphoreSlim _gate = new(1, 1);
@@ -471,7 +471,7 @@ public sealed class PresentationStore : IDisposable
         }
 
         var json = await File.ReadAllTextAsync(path).ConfigureAwait(false);
-        return JsonNode.Parse(json)!.AsObject();
+        return JsonNode.Parse(json) as JsonObject ?? throw new InvalidDataException("Expected a configuration object.");
     }
 
     private async Task WriteAsync(string filename, JsonObject value)

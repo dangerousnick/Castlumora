@@ -248,3 +248,14 @@ clear-all can remove retained references. Movies cannot be followed; API keys an
 user/account overrides must be rejected. Record exact package SHA, expected/actual
 behavior, redacted logs and whether verification was automated/manual. Notifications
 are separate unfinished work; following alone does not promise notifications.
+
+## Episode notification center
+
+Profile menu → Notifications. Follow a visible TV show, enable notifications and
+confirm existing episodes do not alert. Add/scan an authorized new episode, refresh
+and open its notification. Mark read/unread, restart, then dismiss and refresh.
+Expect no duplicate alerts and unchanged playback/watchlist state. A second viewing
+profile must have independent settings/state; revoke library access and confirm
+entries and unread counts disappear. Pause/resume baselines missed additions.
+Detection is on-refresh; background/email/push/recording/separate season alerts
+remain unavailable. See CASTLUMORA_NOTIFICATIONS.md for bounds and test evidence.

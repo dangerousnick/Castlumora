@@ -28,6 +28,7 @@ test('packaged preview: fresh setup, login, administration and logout', async ({
   expect(buildInfo.selfContainedDotnet).toBe(true);
   expect(buildInfo.profileAccessEditingAvailable).toBe(true);
   expect(buildInfo.followedSeriesAvailable).toBe(true);
+  expect(buildInfo.episodeNotificationCenterAvailable).toBe(true);
   await page.goto(preview!);
   await expect(page.getByRole('heading', { name: 'Set up Castlumora' })).toBeVisible();
   await page.getByLabel('Server name', { exact: true }).fill('Castlumora Packaged Preview');

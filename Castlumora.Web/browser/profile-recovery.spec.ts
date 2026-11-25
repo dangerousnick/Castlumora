@@ -97,7 +97,7 @@ test('packaged profile recovery retains identity and viewing data across restart
     { headers, data: {} },
   );
   expect(blocked.status()).toBe(409);
-  await verifyFollowingRestart(page, request, preview!);
+  await verifyFollowingRestart(page, request, preview!, stage === 'persisted');
   await page.locator('.profile-menu > summary').click();
   await page.getByRole('link', { name: 'Viewing profiles', exact: true }).click();
   await page

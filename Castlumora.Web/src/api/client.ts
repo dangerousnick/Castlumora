@@ -1,3 +1,17 @@
+export interface NotificationCenter {
+  enabled: boolean;
+  unread: number;
+  items: {
+    id: string;
+    seriesId: string;
+    title: string;
+    seriesName: string;
+    season?: number;
+    episode?: number;
+    read: boolean;
+    detectedAt: string;
+  }[];
+}
 import type { Category, Layout, RowDefinition } from '../config/schema';
 import { parsePublished } from '../config/schema';
 import type { Item, PlaybackInfo, Preferences, QueryResult, Session, User } from './types';
@@ -141,6 +155,21 @@ export class Api {
       {},
       { UserId: this.session?.user.Id, SeasonId: seasonId, Fields: 'Overview' },
     );
+  }
+  notifications() {
+    return this.request<NotificationCenter>('Castlumora/Notifications');
+  }
+  notificationSettings(enabled: boolean) {
+    return this.request<NotificationCenter>('Castlumora/Notifications/Settings', {
+      method: 'PUT',
+      body: JSON.stringify({ enabled }),
+    });
+  }
+  updateNotification(id: string, value: { read: boolean } | { dismissed: true }) {
+    return this.request<NotificationCenter>('Castlumora/Notifications/' + encodeURIComponent(id), {
+      method: 'PUT',
+      body: JSON.stringify(value),
+    });
   }
   followedSeries(startIndex = 0, limit = 48) {
     return this.request<{ seriesIds: string[]; total: number }>(

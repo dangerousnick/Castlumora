@@ -18,6 +18,7 @@ import Live from './pages/Live';
 import Profiles from './pages/Profiles';
 import Administration from './admin/Administration';
 import { Feedback } from './components/Media';
+const Notifications = lazy(() => import('./pages/Notifications'));
 const Shelf = lazy(() => import('./shelf/Shelf'));
 const PhotoViewer = lazy(() => import('./shelf/PhotoViewer'));
 const Reader = lazy(() => import('./reader/Reader'));
@@ -180,6 +181,7 @@ function Shell({
                   }}
                 >
                   <Link to="/profiles">Viewing profiles</Link>
+                  <Link to="/notifications">Notifications</Link>
                   <Link to="/music">Music & playlists</Link>
                   <Link to="/shelf/photos">Photos</Link>
                   <Link to="/shelf/books">Books</Link>
@@ -211,6 +213,7 @@ function Shell({
                 <Routes>
                   <Route path="/" element={<Home />} />
                   <Route path="/profiles" element={<Profiles />} />
+                  <Route path="/notifications" element={<Notifications />} />
                   <Route path="/browse" element={<Browse />} />
                   <Route path="/search" element={<Browse />} />
                   <Route path="/list" element={<Browse />} />
