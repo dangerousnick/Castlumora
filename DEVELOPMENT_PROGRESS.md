@@ -1,46 +1,83 @@
 # Castlumora Web Phase 1.3 development progress
 
-## Current milestone — private episode notification center
+## Verified private episode notification center
 
-Continuing published checkpoint546eb4e03c and applicationf8e15abd2f; no completed
-work was reset. Added an opt-in profile-private notification center, native scoped
-episode snapshots for followed shows, historical/new-show baselines, duplicate
-prevention, durable read/unread/dismissal, pause/resume baselines and current native
-series/episode permission checks. Titles and unread counts are resolved only for
-currently visible followed episodes; API keys/body identity overrides are denied.
-Existing watchlist, following, resume preferences and playback history are unchanged.
+Last completed milestone: opt-in, profile-private episode notifications for followed
+series. Latest published application: `b36e52cd1b1dc3003fe93401d877c4efcc4673cf`.
+Current branch: `development/castlumora-web-1.3`; PR3 remains open. Continues the
+verified following/profile checkpoints; no existing work was reset.
 
-Detection runs when the center opens or is refreshed. It does not depend on file
-creation dates or title matching. Email/push/background delivery, separate season
-and recording alerts remain unfinished. Bounds are500 retained records,20000 observed
-episode IDs and1000 series; malformed/oversized state fails explicitly and atomically.
-See docs/CASTLUMORA_NOTIFICATIONS.md for behavior, persistence and limitations.
+Profile menu → Notifications: enable, refresh, mark read/unread, dismiss, or pause.
+Existing episodes and newly observed shows establish a baseline without historical
+alerts. New native episode IDs are detected on refresh, independent of source file
+dates/title matching. Read/dismissal and observations survive restart; repeated
+refreshes do not duplicate alerts. Pause retains alerts; resuming baselines additions.
+Current native series/episode permissions filter every title and unread count. API
+keys and body identity overrides are denied. Watchlist, following, resume preferences
+and playback history remain independent. Paused reads do not scan the catalog.
 
-Focused verification passed:24controller/store/following regressions, the actual
-HTTP/SQLite permissions/profile/read-dismissal/API-key workflow, and3frontend tests
-with typecheck/lint/build. A fresh integrated compiled-server Chromium proof passed
-27seconds (25.3s case): real scan of the exact owned synthetic file, opt-in baseline,
-new notification, read/reload, cold restart, retained read state and dismissal/reload.
-Fixture assumptions about delayed title/episode metadata were diagnosed and replaced
-with native item/file identity assertions; no application assertion was disabled.
-Restoring the complete formatter workspace exposed and corrected repository analyzer
-rules; no suppression was added. A lost MSBuild worker was addressed with a single-
-node build and disabled server reuse; final SDK build0warnings/0errors. Container
-memory counters showed no OOM event. Safe removal of older untracked coverage freed
-309233887bytes while retaining the newest two per suite; source/history/docs remain.
+The unchanged full pre-push gate passed on this exact source: restored formatting
+2468files/0changes/no workspace warnings; .NET10.0.403 Debug/Release0warnings/0errors;
+17backend suites4650passes/20existing skips/0failures; Node24.22.1 typecheck/lint/
+121tests in30files/build; intact native/backup/security/migration/hook/report checks.
+Focused24controller/store/following regressions and3UI tests passed. Actual HTTP/
+SQLite tests exercise native identities, physical-root persistence, episode changes,
+policy restrictions, private child state, read/dismissal and API-key403 denials.
+A fresh integrated compiled-server Chromium proof passed27seconds: actual scan of
+the exact owned synthetic file, baseline/arrival, read/reload, cold restart and
+retained read state/dismissal. Metadata-dependent fixture selectors were replaced
+with native item/file identity checks; no assertions were disabled. Restored analyzer
+violations were corrected without suppressions. An SDK worker exit was resolved by
+single-node building; no container OOM event was reported. Production backup safety
+is unchanged. Cleanup removed only older untracked coverage, retaining two per suite.
 
-The full normal pre-push gate, exact-source hosted checks and NEW extracted-package
-preview verification remain required before this milestone is considered complete.
-The previously verified download below does NOT contain notifications.
+Exact-source Linux Tests45640064682 passed; independently retrieved logs confirm
+17suites/4650passes/20existing skips/0failures. Hosted Format, OpenAPI Check and ABI
+also passed.
+Preview45640064440 passed all six actual extracted-package browser executions
+(7.9s; three cases39.6s;6.1s;5.6s), including read state at both cold restarts
+and dismissal/reload after the final restart.
+Download: https://github.com/dangerousnick/Castlumora/actions/runs/45640064440/artifacts/15033533737
+Archive: `Castlumora-1.0-dev-b36e52cd1b1d-linux-x64.tar.gz`.
+SHA256: `590296b1b926e7716552da4891f6941f11d9bf0b6a42054a087302882b719dc2`.
+Independent download verified ZIP/archive digests, exact source/manifest, compiled
+notification/profile/device controls, integrated server/web/bundled runtimes,16castle
+assets, GPL/dependency licenses and source-matching guides in both package locations.
+GitHub sign-in is required; artifact expires2026-12-25. Installation/troubleshooting
+instructions and the feature-testing checklist are included.
 
-Current branch: development/castlumora-web-1.3; PR3 remains open. Latest published
-checkpoint:546eb4e03cc2de2563ba3618e5fbcba4592bba73. Usage status: Not accessible.
-No account quota/reset data or automatic background continuation is claimed.
-Next exact steps: normal git push of the committed clean snapshot through the
-unchanged mandatory gate; inspect required exact-source Linux/shared CI; independently download/hash the
-new preview and updatePR3/checkpoint. Do not merge main. Then continue remaining
-notifications/personalization and other non-YouTube1.0 requirements. Further YouTube
-expansion remains deferred. Prior verified checkpoints and licensing are retained.
+Limitations: detection is on-refresh, not background delivery. Episodes added and
+removed between observations cannot be detected. Email/push, separate season and
+recording alerts remain unfinished. Retains newest500notification records and up to
+20000observed episode IDs/1000shows per identity; corruption/capacity errors fail
+explicitly and atomically with503. See docs/CASTLUMORA_NOTIFICATIONS.md. This is a
+development preview, not stable1.0 or Phase1.4 completion. Physical Mint/NAS/GPU/tuner
+and production-scale installations are unverified. Earlier unchanged actual-package
+Debian13/stableFFmpeg7.1.5 DVR/HLS evidence remains recorded separately. The separate
+main-only OpenAPI Report awaits reviewed adoption of the existing token/artifact fix;
+OpenAPI Check is distinct. No automatic main merge.
+
+Unfinished work: no uncommitted source at this checkpoint. All remaining non-YouTube
+1.0 requirements remain: broader notifications, recommendations/interests, remaining
+administration/skipping/layout/category refinements, creator/business/resource/cloud/
+offline features and stable-release acceptance. Further YouTube expansion stays deferred.
+
+Next development task: finish filtered Surprise Me selection and rerolling through
+real native APIs. Scope: Movie/Episode choice, allowed library and watched-state
+filters, recent-pick exclusions, safe empty/error behavior, accessible controls,
+unchanged viewing history, and profile isolation. Add focused UI tests and actual
+compiled/package browser workflows; publish through the normal applicable gate,
+verify exact-source hosted checks and independently download/hash the new preview.
+Do not recreate existing profiles, following, watchlist or native querying.
+
+Usage status: Not accessible; no quota/reset percentage or automatic resume is claimed.
+Recovery: fetch origin; inspect status/log; read permanent specs and this checkpoint.
+Continue the existing branch from its latest published state, preserving newer work.
+Install hooks with scripts/install-git-hooks.sh. Use focused checks while coding,
+commit a clean snapshot, then normal git push origin development/castlumora-web-1.3.
+Never bypass the mandatory gate, claim unrun tests, merge main automatically or label
+unverified devices/platforms supported.
+
 
 ## Verified followed-series checkpoint
 

@@ -1,46 +1,23 @@
 # Feature parity inventory — Phase 1.3
 
-## Current milestone — private episode notification center
+## Verified episode notification center — b36e52cd1b
 
-Continuing published checkpoint546eb4e03c and applicationf8e15abd2f; no completed
-work was reset. Added an opt-in profile-private notification center, native scoped
-episode snapshots for followed shows, historical/new-show baselines, duplicate
-prevention, durable read/unread/dismissal, pause/resume baselines and current native
-series/episode permission checks. Titles and unread counts are resolved only for
-currently visible followed episodes; API keys/body identity overrides are denied.
-Existing watchlist, following, resume preferences and playback history are unchanged.
+Profile-private opt-in/on-refresh episode alerts, historical/new-show baselines,
+durable read/unread/dismissal, pause/resume, deduplication and native visibility
+filtering are implemented and published. API keys/body identity overrides are denied;
+playback/watchlist/following/history remain independent. Full local and exact-source
+Linux/shared CI passed:4650backend passes/20existing skips,121UI tests, formatting
+and Debug/Release. The independently downloaded preview passed all six extracted-
+package workflows, including notification state across both cold restarts and final
+dismissal. Download/checksum/source evidence and recovery are in DEVELOPMENT_PROGRESS.md.
 
-Detection runs when the center opens or is refreshed. It does not depend on file
-creation dates or title matching. Email/push/background delivery, separate season
-and recording alerts remain unfinished. Bounds are500 retained records,20000 observed
-episode IDs and1000 series; malformed/oversized state fails explicitly and atomically.
-See docs/CASTLUMORA_NOTIFICATIONS.md for behavior, persistence and limitations.
-
-Focused verification passed:24controller/store/following regressions, the actual
-HTTP/SQLite permissions/profile/read-dismissal/API-key workflow, and3frontend tests
-with typecheck/lint/build. A fresh integrated compiled-server Chromium proof passed
-27seconds (25.3s case): real scan of the exact owned synthetic file, opt-in baseline,
-new notification, read/reload, cold restart, retained read state and dismissal/reload.
-Fixture assumptions about delayed title/episode metadata were diagnosed and replaced
-with native item/file identity assertions; no application assertion was disabled.
-Restoring the complete formatter workspace exposed and corrected repository analyzer
-rules; no suppression was added. A lost MSBuild worker was addressed with a single-
-node build and disabled server reuse; final SDK build0warnings/0errors. Container
-memory counters showed no OOM event. Safe removal of older untracked coverage freed
-309233887bytes while retaining the newest two per suite; source/history/docs remain.
-
-The full normal pre-push gate, exact-source hosted checks and NEW extracted-package
-preview verification remain required before this milestone is considered complete.
-The previously verified download below does NOT contain notifications.
-
-Current branch: development/castlumora-web-1.3; PR3 remains open. Latest published
-checkpoint:546eb4e03cc2de2563ba3618e5fbcba4592bba73. Usage status: Not accessible.
-No account quota/reset data or automatic background continuation is claimed.
-Next exact steps: normal git push of the committed clean snapshot through the
-unchanged mandatory gate; inspect required exact-source Linux/shared CI; independently download/hash the
-new preview and updatePR3/checkpoint. Do not merge main. Then continue remaining
-notifications/personalization and other non-YouTube1.0 requirements. Further YouTube
-expansion remains deferred. Prior verified checkpoints and licensing are retained.
+This is a bounded on-refresh center, not complete notification delivery: email/push,
+background detection, separate season/recording alerts and scalable retention remain.
+Newest500records/20000observed IDs/1000shows; corrupt/oversized state fails atomically.
+See docs/CASTLUMORA_NOTIFICATIONS.md. All other non-YouTube1.0 requirements remain.
+Next coherent task: filtered Surprise Me through native Movie/Episode, allowed-library
+and watched-state filters, recent-pick exclusions and real browser verification.
+Further YouTube expansion remains deferred; no automatic main merge.
 
 ## Verified followed-series checkpoint
 
