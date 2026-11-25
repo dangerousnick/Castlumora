@@ -1,0 +1,13 @@
+# Managed yt-dlp runtime verification
+
+Tested application source: 584e58c4edced3c5addcb92bd060748ab6591dd6, development/castlumora-web-1.3, open PR #3.
+
+Download: https://github.com/dangerousnick/Castlumora/actions/runs/42749466169/artifacts/13732643307 . GitHub sign-in required; expires 2026-12-10T03:29:22Z. Archive Castlumora-1.0-dev-584e58c4edce-linux-x64.tar.gz; SHA-256 a229ad90f93de09276cbb77d6f1e1d54257a5ff0725dbcadf4f01664b9b14e9e.
+
+Local API/server Release builds passed; API205 passed/3 existing skips, full HTTP integration132 passed/3 existing skips, frontend58/typecheck/lint/build and five dependency-bundler tests passed. Excess-output cleanup regression was found and fixed before publication. Targeted formatter passed with workspace-load warnings; clean GitHub Format/ABI/OpenAPI Check subsequently passed.
+
+Full GitHub server test jobs passed on Linux, Windows and macOS. Downloaded logs show Linux17 projects/4,266 passed/19 skipped; Windows17 projects/4,257 passed/28 skipped, zero failures. Both jobs prepared their separate actual pinned executable and exercised installation/reopen health; the actual-bundle test was not skipped. Mac correctly reports managed platform unsupported; existing server capabilities still pass. This does not certify a Windows installation package, service integration or physical devices.
+
+GitHub run42749466169 built the complete clean-source Linux package and passed actual extracted-package fresh setup/authentication/restart/library/scan/movie playback plus native bundled-runtime install and version/integrity check before upload. Independently downloaded through the connected app; safe ZIP/tar paths, exact archive/source manifest, executable hash, GPL/branding/compiled web and complete tool notices/source archive verified. Then ran the exact downloaded server and compiled frontend (no Vite) against marked disposable data: completed install/reinstall, reload/recheck, viewer GET/POST denials and existing movie authentication/browse/play/progress passed (two workflows). Synthetic viewer removed; installed verified runtime retained for inspection. No production/Coon or official Jellyfin changes, deploy or main merge.
+
+This completes managed runtime installation/health only. Manifest importerImplemented remains false and API downloadJobsAvailable=false. Queue/authorized URLs/egress protections/history/recovery/schedules and other 1.0 requirements remain mandatory unfinished work. See CASTLUMORA_IMPORTER_RUNTIME.md and DEVELOPMENT_PROGRESS.md for next exact milestone and boundaries. No usage/reset meter or automatic continuation is available.

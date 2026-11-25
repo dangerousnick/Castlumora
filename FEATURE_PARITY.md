@@ -1,0 +1,923 @@
+# Feature parity inventory — Phase 1.3
+
+## Current milestone — private interests and native movie recommendations
+
+Continues verified discovery checkpointa04255d8bd; backend code remains unchanged
+fromb36e52cd1b. Browse → Discover recommendations now provides native favorite-genre
+interests, paged visible movie genres, up to four diverse unplayed interest rows and
+four native history/favorite recommendation groups with real explanations. Native
+per-user SQLite favorites persist interests across clients/restarts without a new
+schema/service. Current viewing identity is explicit on every request; hidden genres
+are omitted by native visibility, duplicate item IDs are suppressed across rows, and
+unknown reasons/cold-start/denied/malformed/over-capacity responses are handled honestly.
+No random fallback is mislabeled personalized; no external AI service is called.
+
+Nine focused API/UI tests, typecheck/lint/build passed. A fresh integrated Release-
+server Chromium proof passed49.3seconds (47.9s case): real native genre matching and
+recommendations, confirmed interest writes/reload, R-rated genre visibility denied
+to a restricted managed child, parent/child favorite isolation, password-verified
+return to owner, unchanged movie progress and persistence through a cold restart.
+The existing notification and Surprise Me proofs also passed. The first checkbox
+fixture action assumed immediate local state; it now clicks and waits for server
+confirmation without making the application optimistic or weakening denial tests.
+
+Current branch: development/castlumora-web-1.3; PR3 remains open. Latest published
+checkpoint:a04255d8bdb5c55c45fe878dabdfc933a26c9e76. Usage status: Not accessible.
+Next exact steps: commit the clean snapshot; normal git push through the applicable
+unchanged gate; verify exact-source Linux/shared checks and all six NEW extracted-
+package workflows; independently download/hash the new preview and checkpoint it.
+Backend formatting/Debug/Release/4650tests remain verified at unchangedb36e52cd1b;
+no new local backend pass is claimed. The earlier preview lacks this personalized
+Discovery page. Then resume remaining non-YouTube1.0 work. No automatic main merge.
+
+## Verified filtered Surprise Me — 97b1051cfa
+
+Movie/Episode, allowed-library and watched-state selection, recent50pick exclusions,
+explicit reset, details/play links, safe empty/errors and stale-identity rejection
+are implemented and published. Selection/rerolls preserve real progress/preferences.
+Picks remain per-visit; this is distinct from personalized recommendations/interests.
+Local129UI tests/typecheck/lint/build/hook checks passed. Exact-source hosted Linux
+17suites/4650passes/20existing skips, Format, OpenAPI Check and ABI passed. All six
+NEW extracted-package browser executions and an independent download/content/hash
+verification passed. Download/checksum/recovery details are in DEVELOPMENT_PROGRESS.md.
+
+Next coherent milestone: favorite-genre interests and native movie recommendations,
+reusing mature native APIs and private per-user SQLite data with real profile/restart
+verification. All remaining non-YouTube1.0 features stay in scope; further YouTube
+expansion is deferred. This remains a development preview; no automatic main merge.
+
+
+## Verified episode notification center — b36e52cd1b
+
+Profile-private opt-in/on-refresh episode alerts, historical/new-show baselines,
+durable read/unread/dismissal, pause/resume, deduplication and native visibility
+filtering are implemented and published. API keys/body identity overrides are denied;
+playback/watchlist/following/history remain independent. Full local and exact-source
+Linux/shared CI passed:4650backend passes/20existing skips,121UI tests, formatting
+and Debug/Release. The independently downloaded preview passed all six extracted-
+package workflows, including notification state across both cold restarts and final
+dismissal. Download/checksum/source evidence and recovery are in DEVELOPMENT_PROGRESS.md.
+
+This is a bounded on-refresh center, not complete notification delivery: email/push,
+background detection, separate season/recording alerts and scalable retention remain.
+Newest500records/20000observed IDs/1000shows; corrupt/oversized state fails atomically.
+See docs/CASTLUMORA_NOTIFICATIONS.md. All other non-YouTube1.0 requirements remain.
+Next coherent task: filtered Surprise Me through native Movie/Episode, allowed-library
+and watched-state filters, recent-pick exclusions and real browser verification.
+Further YouTube expansion remains deferred; no automatic main merge.
+
+## Verified followed-series checkpoint
+
+Last completed milestone: persistent followed-series membership and My List controls.
+Latest published application: `f8e15abd2fc59352cc0e2184df61a58c4efb5fe9`
+(implementation `72332cde2067dac5193f996991dfd4ecf040e85d`).
+Current branch: `development/castlumora-web-1.3`; PR3 remains open. No work was reset.
+
+Follow/unfollow visible TV series on details, browse the paged My List section, or
+confirm clearing all references, including unavailable shows. Each viewing identity
+has independent durable membership. Native type/library/rating visibility applies
+to following and every read. API keys and identity overrides are denied. Existing
+watchlist, resume exclusions and history are preserved. The generic Preferences
+route cannot bypass follow validation. Atomic writes/shared serialization, bounded
+lists, idempotency, corrupt-state rejection and explicit repair were tested.
+Following does not yet generate new-episode/season notifications.
+
+The unchanged normal pre-push gate passed on this exact source: restored formatting
+2463files/0changes/no workspace warnings; .NET10.0.403 Debug/Release0warnings/0errors;
+17backend suites4644passes/20existing skips/0failures; Node24.22.1 typecheck/lint/
+118tests in29files/build; intact backup/security/migration/native/hook/report checks.
+Focused controller/store tests18passes; actual SQLite HTTP permissions/profile/
+persistence workflow passed. A fresh compiled-server Chromium proof passed23.8seconds,
+including actual follow/unfollow/My List/reload and a cold restart of the same data.
+
+Exact-source Linux Tests45420496052 passed; independently retrieved job logs confirm
+17suites/4644passes/20existing skips/0failures.
+Hosted Format, OpenAPI Check and ABI passed. Preview45420495652 passed all six
+actual extracted-package browser executions (8.4s; three cases38.5s;5.4s;3.9s),
+including the new following workflow and membership at both cold-restart stages.
+No assertions were disabled. The separate main-only OpenAPI Report still awaits
+reviewed adoption of this branch's token/artifact fix; it is distinct from OpenAPI Check.
+
+Download: https://github.com/dangerousnick/Castlumora/actions/runs/45420495652/artifacts/14933973231
+Archive: `Castlumora-1.0-dev-f8e15abd2fc5-linux-x64.tar.gz`.
+SHA256: `4c26c60679a56aaa0b8ccdc7bc90afb0838e8740c649e208541b74a2b48a520e`.
+Independent download verified the uploaded ZIP digest, archive checksum, exact source
+and manifest (followedSeriesAvailable), compiled following/profile/device controls,
+integrated server/web/bundled runtimes,16castle assets, GPL/dependency licenses,
+source-matching documentation and the following guide in both package locations.
+GitHub sign-in is required; artifact expires2026-12-24. Installation instructions,
+troubleshooting and the feature-testing checklist are included. This is a development
+preview. Linux CI and local Debian13 SDK/runtime tests do not certify physical Mint,
+NAS, GPU, tuner or production-scale installations. Earlier documented actual-package
+Debian13/stableFFmpeg7.1.5 DVR/HLS results remain separate unchanged evidence.
+
+Unfinished work: no uncommitted application changes at this checkpoint. New-episode/
+season notifications, personalized recommendations/interests, remaining administration,
+creator/business/resource/cloud/offline features and stable-release acceptance remain.
+Further YouTube/creator metadata expansion stays deferred by owner request.
+
+Next development task: implement a private persistent new-episode notification center
+for followed series. Inspect existing library events/query infrastructure and reuse
+following/presentation persistence; define the new-arrival baseline to avoid notifying
+historical episodes. Recheck native visibility on every read, isolate viewing profiles,
+deduplicate repeated scans and persist read/dismiss settings. Add focused store/API/UI
+and real SQLite/browser restart/permission tests. Complete and validate that coherent
+scope before taking on recommendation or recording notifications. Do not recreate
+existing watchlist/profile/following code or claim unfinished notifications exist.
+
+Usage status: Not accessible. No quota/reset percentage or automatic background resume
+is claimed. Recovery: fetch origin, inspect status/log and read the permanent specs;
+continue the existing development branch from its latest published checkpoint, preserving
+any newer work. Install hooks with scripts/install-git-hooks.sh. Use focused tests while
+coding, then commit a clean snapshot and normal git push origin development/castlumora-web-1.3.
+The mandatory hook must pass before publication; inspect exact-source hosted checks
+and independently verify the next preview. Never merge main automatically.
+
+
+## Verified administrator profile-access checkpoint
+
+Last completed milestone: administrator preset/library editing with reviewed policies
+and durable interrupted-update recovery. Latest published application:
+`a158773565dd7c7c1c041f2f5a87c6bfeb1de744`.
+Current branch: `development/castlumora-web-1.3`; PR3 remains open. No work was reset.
+
+Admins can reapply Kids/Adult and explicit libraries to an existing managed identity.
+Identity-bound profile/owner-policy revisions reject stale and cross-profile reviews.
+Only the edited child's tokens are revoked; owner/sibling sessions, identity, key,
+watch history and preferences remain. Invalid/owner-forbidden libraries, non-admins,
+API keys and unavailable/elevated/manually disabled profiles are denied. A durable
+unavailable provisioning intent precedes native changes; explicit recovery rechecks
+the saved plan/current owner bounds and retains the original identity/key. Reapplying
+a preset replaces custom child permissions within owner limits; legacy tools remain.
+
+Verification passed on this exact source: normal pre-push restored formatting
+2460files/0changes/no workspace warnings; .NET10.0.403 Debug/Release0warnings/0errors;
+17backend suites4635passes/20existing skips/0failures; Node24.22.1 typecheck/lint/
+114tests/build; intact native/backup/migration/security/hook/report checks.
+Hosted Linux Tests45400426070, Format, OpenAPI Check and ABI passed. Independently
+downloaded backend logs confirm4635passes/20skips/0failures. All50profile-service
+regressions and a real SQLite HTTP workflow cover reviewed updates, private-key
+preservation, owner bounds, explicit API-key403 denial, stale reviews and recovery.
+A fresh compiled-server Chromium proof passed17.2seconds with actual media/history.
+Six extracted-package browser executions passed, including preset/library changes,
+old-token rejection, excluded-media404, restored access and unchanged history/preferences.
+Initial local compile/assertion/fixture failures were corrected before publication;
+selector matching uses accessible roles/canonical GUIDs and local fresh setup waited
+for complete server startup. No test assertions or production safeguards were weakened.
+
+NEW verified download: https://github.com/dangerousnick/Castlumora/actions/runs/45400425922/artifacts/14924435540
+Archive: `Castlumora-1.0-dev-a158773565dd-linux-x64.tar.gz`.
+SHA256: `6db1003ec6a8159e1f13367ad8e9af823ef3b2e2f27c18a4868daf5c339a157a`.
+Independent download verified ZIP/archive digests, exact source/manifest and access-
+editing flag, compiled controls/server/web/runtime/Node,16castle assets, GPL/dependency
+licenses and source-matching docs. Install/troubleshooting/feature checklists included.
+GitHub sign-in required; artifacts expire after30days. This is a development preview.
+
+Usage status: Not accessible; no reliable Codex allowance/reset tool is exposed.
+No automatic background continuation is claimed. No unfinished application edits
+remain at this checkpoint. Production backup reserve and all prior completed work
+are intact. No main merge, official Jellyfin modification or Coon Media deployment.
+The separate main-only OpenAPI Report still awaits reviewed adoption of the existing
+development fix. Physical Mint/NAS/GPU/tuner installation and broader stable readiness
+remain unverified. All remaining non-YouTube1.0 requirements remain in scope.
+
+Next exact development task: persistent followed-series membership. Reuse the existing
+PresentationStore per-viewing-user preferences; watchlist and hidden-resume behavior
+already exist and must not be recreated. Add native permission/type validation for
+following visible series, independent child/owner state, bounded deduplication and
+safe unfollow of formerly accessible titles. Add Detail follow/unfollow controls and
+an accessible followed-series list, verify restart/persistence/authorization/library
+restrictions with actual API/browser fixtures, then publish through the normal hook
+and produce a NEW verified preview. Notifications/recommendations, remaining admin,
+creator/business/resource/cloud/offline and release acceptance remain unfinished;
+further YouTube importing/creator metadata development stays deferred.
+
+Recovery: `git fetch origin`, inspect `git status` and `git log`, then continue the
+existing branch from its latest verified checkpoint. Preservea158773565 and this
+checkpoint; do not reset/rebuild completed functionality. Confirm current remote
+head before editing and finish one tested/published feature before starting another.
+
+## Verified account-wide session containment checkpoint
+
+Latest published application: `d15f49d99554961343a82bd2e4cfe29853b5044b`.
+Implementation commit: `974cc7961e337f99fa37403eb156490deeec0ba2`.
+Current branch: `development/castlumora-web-1.3`; PR3 stays open. No work was reset.
+Owners can inspect/revoke individual or all devices for one registered child, and
+confirm sign-out of other account devices plus every owned child while retaining
+the current owner session. Server-derived ownership/lifecycle serialization rejects
+child, API-key, disabled-owner and identity-override requests. Unrelated accounts,
+profile identities, keys, history and production backup safeguards remain intact.
+
+Normal pre-push validation passed on the published snapshot: restored formatting
+2459files/0changes/no workspace warnings; .NET10.0.403 Debug/Release0warnings/0errors;
+17backend suites4629passes/20existing skips/0failures; Node24.22.1 typecheck/lint/
+112tests/build; native/backup/migration/security/hook/report checks unchanged.
+Exact-source hosted Format, ABI, OpenAPI Check and Linux Tests45332888121 passed;
+downloaded hosted logs independently confirm4629passes/20skips/0failures. Six
+actual extracted-package browser executions passed, including account-wide token
+revocation, retained current owner, unchanged child viewing history, setup, playback,
+media preferences and cold-restart recovery. A separate fresh compiled-server
+Chromium proof and real SQLite HTTP/service boundary tests also passed.
+
+NEW verified download: https://github.com/dangerousnick/Castlumora/actions/runs/45332888164/artifacts/14893105464
+Archive: `Castlumora-1.0-dev-d15f49d99554-linux-x64.tar.gz`.
+SHA256: `12e5b3eb955963c33cfd07fc05949d9724a103680edddb473736e7226917f325`.
+Independent download verified ZIP/archive digests, exact manifest/source, compiled
+server/web/runtime/Node,16castle assets, GPL/dependency licenses and source-matching
+docs. Includes install/troubleshooting/feature-test instructions; GitHub sign-in is
+required and the artifact expires after30days. This remains a development preview.
+
+Safe cleanup removed589.5MiB of old untracked generated coverage output, retaining
+the newest two UUID result directories per suite and all validation logs/source/
+history/commits/docs. Free space then2.46GiB; validation completed without additional
+capacity. Production backup reserve is unchanged; actual backup tests passed.
+Usage status: Not accessible. No automatic background continuation is available.
+Separate main-only OpenAPI Report still awaits reviewed adoption of the development
+fix. Do not merge/change main or deploy to Coon Media automatically. Physical Mint,
+NAS, GPU/tuner acceptance and broader stable readiness are unverified.
+
+Next exact milestone: administrator editing of an existing managed profile's
+kids/adult preset and explicit libraries. Reuse bounded policies and durable
+provisioning/recovery; preserve identity/key/history; reject non-admins, invalid or
+owner-forbidden libraries and stale edits; revoke child tokens before applying
+settings; test interrupted recovery, real API permissions and native UI behavior.
+Recovery: inspect `git status`/`git log`, fetch the existing development branch and
+continue this milestone from the latest verified state. Do not recreate completed
+session features. Publish through the normal hook and verify a NEW preview after
+application changes. All remaining non-YouTube1.0 requirements remain; further
+YouTube expansion is deferred, not removed. Older entries below are historical.
+
+
+
+## Account-owner profile sign-ins — implementation in validation
+
+Current local milestone extends completed personal-device controls to one registered
+child profile owned by the signed-in account. Real ownership/lifecycle serialization,
+no administrator bypass, no API keys/child/foreign access, bounded token-free inventory,
+selected/all-child revocation, and preserved owner/sibling identity/history are required.
+Thirteen focused UI tests passed; focused real HTTP/service tests, full mandatory
+gate and actual packaged browser verification remain pending. No full Phase1.4 or
+stable readiness claim. All non-YouTube requirements remain; YouTube expansion deferred.
+
+
+## Latest published application: 82e78af32455
+
+Personal saved-sign-in controls and automatic first-recording indexing are
+implemented and published. Full local/hosted Linux/shared verification passed:
+4622backend tests/20existing skips,108frontend tests plus four Python guard cases,
+formatting and Debug/Release. The NEW extracted-package preview passed all six CI
+browser executions and was independently downloaded/checksummed. Actual Debian13 verification of that downloaded archive passed fresh setup/movie
+playback, automatic first-recording indexing, completed/retained-partial playback,
+permission/deletion checks, HLS/quality/audio/subtitles/encoding cleanup, cold-restart
+media retention and clean administrator shutdown. Tests used stable FFmpeg7.1.5,
+the bundled runtime and only marked synthetic fixtures. Harness preconditions and
+liveness/readiness corrections are documented; no assertions were weakened.
+Source: `82e78af324554110ec2709de607261ae23e947d3`.
+Download: https://github.com/dangerousnick/Castlumora/actions/runs/45000102921/artifacts/14745438125
+Next coherent feature: secure account-owner management of managed-profile sign-ins,
+with real ownership/authorization, retained owner sessions, no token exposure and
+full validation. Broader account policy/personalization/presentation/admin parity,
+creator/business/resource/cloud/offline and release acceptance remain. YouTube
+expansion stays deferred. No stable, physical Mint/NAS/GPU/tuner support is claimed.
+
+
+## Historical DVR regression verification
+
+Independent self-contained ebab7567 package setup/login/library/movie playback
+passed on fresh Debian13 with stable FFmpeg7.1.5 and bundled .NET runtime. Real
+DVR exposed an unindexed-first-recording defect: successful nonempty recording,
+empty recordings inventory. This is not disk pressure. No passing DVR lifecycle
+is claimed for that preview. A refresh fallback preserving indexed-parent behavior
+and filtered metadata has passed3focused regressions (the new case failed before
+the fix). Unchanged actual fresh fixed-server DVR lifecycle and active-stop/
+retained-partial playback workflows both passed with stable FFmpeg7.1.5; the
+complete gate and NEW self-contained fixed-package verification remain pending. Guarded
+fixture-root/integrated browser support and four Live TV setup safety cases are
+included. Preserve all non-YouTube scope; see progress for exact recovery steps.
+
+
+## Personal saved sign-ins — implemented and published
+
+Source `ebab7567cfa7c42cbdac3ac438a236372c79427f` adds current-identity saved-device
+listing, pagination/current marker and confirmed single/bulk revocation with
+API-key/foreign/current-token protections and token-free/no-store responses.
+Full local formatting/Debug/Release4619backend passes/20existing skips and107
+frontend tests passed. Actual compiled-browser and cold-restart proof passed.
+The six-workflow extracted Linux package passed and was independently downloaded
+and checksummed (run44996487177/artifact14743888286). Hosted backend Tests44996487239 passed; its downloaded log independently
+confirms4619passes/20existing skips/0failures across17suites.
+Parent-wide profile sessions, broader account policies and all other non-YouTube
+requirements remain incomplete. Next: real self-contained stable-FFmpeg DVR
+lifecycle/active-stop verification on a separate marked fixture, then remaining
+product features. No stable readiness, physical Mint/NAS/GPU or real tuner
+certification is claimed. YouTube expansion remains deferred.
+
+## Latest account-security increment
+
+Password self-service now has a successful actual packaged preview at commit
+`bd54092a7748e508ac9132fdd9e1400c4f2534c1` (run44994042011,
+artifact14742977997, independently downloaded/checksummed).
+Personal saved sign-in inventory and selected/bulk revocation are the next
+coherent milestone, currently in validation. This is current-identity scope:
+parent-wide managed-profile device management remains incomplete. Real HTTP
+security/persistence-backed revocation and UI component tests passed; full gate
+and the extended packaged browser workflow must pass before publication claims.
+All remaining non-YouTube1.0 requirements remain, including broader profile policy,
+DVR/media runtime coverage, creator/business/storage/resource features and release
+acceptance. YouTube expansion remains deferred at the owner's request.
+
+
+## Owner priority update — accounts through release readiness (2026-11-14)
+
+Defer further YouTube importing and creator-metadata development at the owner's
+request. Preserve its completed code, tests and known limitations; do not restart
+or remove it. Older "next task" importer entries below are historical checkpoints.
+Continue from the existing development branch and PR3, beginning with accounts,
+managed viewing profiles, permissions, invitations and session security. Then work
+through the remaining permanent roadmap toward release readiness in tested,
+committed and published increments. Retain all remaining requirements and honest
+feature status; a development preview does not establish stable-release readiness.
+Linux-only server policy and mandatory validation remain in effect. Never merge
+main or deploy to Coon Media automatically.
+
+## Password rejection-message correction in validation
+
+The packaged wrong-password check received403as required; its UI locator incorrectly
+expected the number rather than the client's friendly message. The editor now shows
+a relevant fixed rejection message, tested with actualApiError403, and the browser
+retains its independent HTTP403assertion. No production authentication/parser/check
+was weakened. A fresh packaged pass remains required before the password preview
+is delivered. Full non-YouTube scope remains active and unfinished.
+
+## Account password self-service in validation
+
+Owning accounts now have a native password form using the inherited authenticated
+self-password API. It preserves server permissions, explicit current-password checks,
+identity/current token and private managed-profile credentials; other sign-ins for
+this identity are revoked. Managed-profile-wide reset/device management is not yet
+claimed. Seven form/two switch tests passed; full frontend and actual packaged proof
+remain required. The existing six-workflow preview now includes wrong-current-password
+denial, real change/sign-in/revocation/storage checks and safe fixture restoration.
+Logout-isolation sourcee3070d5798 passed full local4618backend/92frontend validation;
+its six-workflow preview and exact-SHA backend/API/ABI/format checks passed.
+All non-YouTube requirements and the existing development/review workflow remain.
+
+## Provisioning recovery verified; logout isolation next
+
+The af8329eb9d intermediate recovery package passed all six real extracted-package
+browser executions, including another cold restart; it was independently downloaded
+and checked. Unchanged backend81d5399f35 passed4615tests/20existing skips, formatting,
+Debug/Release and hosted Linux/API/ABI; af8329's fixture-only gate passed92frontend
+tests/typecheck/lint/build. Exact download/checksum/evidence are in progress notes.
+Next hardening reproduced cross-account/application logout on shared device IDs;
+matching the stored user/app/device fixes both cases and22focused tests pass. Real
+SQLite HTTP isolation also passed; full gate/updated package remain pending. No self-service session UI is claimed
+yet; broader accounts-to-release scope and YouTube deferral remain unchanged.
+
+## Package recovery fixture correction pending delivery
+
+The new recovery package correctly failed on malformed CI-written private intent;
+server health stayed200 and damaged state was denied503. The fixture now normalizes
+compact API IDs to canonical registry UUIDs; production validation and assertions
+remain unchanged. Existing workflows and local4615backend/92frontend tests passed.
+Another actual package/cold-restart run is required before the new download exists.
+
+## Recovery validation hardening before publication
+
+The gate found a genuine DVR early-exit disposal race and blocked the push. Exit
+callbacks now signal without prematurely disposing; final stderr is drained before
+recorder disposal. Five real-process focused cases passed, preserving cancellation
+and genuine failures. Recovery-triggered logout no longer writes access tokens;
+all three real logout/revocation secrecy tests passed. No failing commit has been
+published and required checks remain intact. Old generated coverage cleanup safely
+recovered about2.2GB; source/history/docs and production reserves remain unchanged.
+
+## Profile provisioning recovery in validation
+
+Administrator-confirmed recovery now resumes only saved explicit provisioning with
+the original restricted identity/key and current owner/library bounds. Durable denial
+persists until repair completes; deletion/legacy review/active/orphan records never
+reactivate. Identity/configuration/history are retained, with no override or missing-
+key recreation. Focused service39/UI12 and real SQLite HTTP tests passed; full gate
+and the new extracted-package/cold-restart workflow remain required before delivery.
+Preset/library editing, account-wide session/invitation gaps and remaining non-YouTube
+product/release scope continue afterward. Existing implementations are preserved.
+
+## Notifier repair published; package verified
+
+82057fa6d8 passed the full mandatory local gate:4595backend passes/20existing
+skips,86frontend tests, restored formatting and .NET10 Debug/Release. Exact-SHA
+format/API/ABI, backend Tests44001512839 and extracted-package preview44001512904
+passed; the downloaded hosted backend log also totals4595passes/20existing skips. All four browser workflows passed, including
+delete/continued playback/final server health and parent identity. Download and
+checksum are recorded in DEVELOPMENT_PROGRESS.md. Independent download verified
+compiled fixes, registry2, assets/licensing and absence of private profile state.
+This supersedes older passing previews affected by the intermittent crash.
+Next: controlled administrator-only provisioning recovery, preserving identity
+and owner bounds, with failure/restart/HTTP/UI/package verification. Recovery is
+still unavailable; deletion and ambiguous legacy states must never be reactivated.
+
+## Confirmed notifier crash fix in verification
+
+Retained diagnostics proved that a queued playback notification for a deleted user
+could throw from an async-void timer and terminate the server. Missing recipients
+are now skipped; captured identities and logged failure boundaries preserve healthy
+and future notifications. Constructor compatibility,500ms batching and user scoping
+remain. Focused regressions passed; full gate and an actual packaged run are required
+before another preview is delivered. Profile reactivation remains unimplemented.
+
+## Lifecycle validation and preview transport
+
+3d37a8348f passed full local and exact-SHA backend/format/API/ABI checks:4590backend
+passes/20existing skips and81frontend passes. Its package run failed on a GET TCP
+reset after profile deletion, so it is not a downloadable deliverable. The harness
+now retries only one GET ECONNRESET, preserving every HTTP/mutation/playback check;
+five real socket/HTTP tests passed. Bounded sanitized server/health diagnostics make
+any recurring server fault visible. A new full package run is required. No new
+recovery action is exposed, and the earlier0d59a68a39 verified preview remains.
+
+## Profile lifecycle foundation in validation
+
+Registry2 distinguishes interrupted provisioning, deletion and ambiguous legacy
+review, retains a private original snapshot, and preserves keys/identities/policies.
+Administrator labels explain unavailable states. Reactivation remains unavailable;
+complete isolated recovery only after this migration/intent increment is verified
+and published. Focused service/UI tests passed; full gate/hosted/package results
+remain pending. Production backup/storage safeguards and all previous scope remain.
+
+## Verified profile and CI stabilization — 0d59a68a39
+
+Full local and exact-SHA Linux/shared CI passed4578backend tests/20existing skips,
+78frontend tests and all four extracted-package browser workflows. Download and
+checksum are in DEVELOPMENT_PROGRESS.md; branding/licenses/compiled fixes and
+private-state exclusion were independently verified. The prior2156preview failed
+and is not a deliverable. Next: persist and migrate profile lifecycle intent safely,
+then non-destructive recovery/preset editing. Further importer/creator metadata
+work remains deferred; no original1.0 scope is removed. Main reporter adoption is
+still reviewed work, never an automatic merge of unfinished application features.
+
+## CI investigation after the profile milestone
+
+A later preview run exposed a hardcoded-title Browse assertion and a native
+atomic-JSON-write monitoring race. Verification now targets the same immutable
+movie through its actual Browse poster; all playback/security checks remain.
+Existing downloader guards recognize only bounded, expected temporary JSON writes
+while running and reject leftovers after exit. No new importing feature is started.
+Focused native/security tests passed; full gate and new hosted package proof are
+required before declaring the corrected preview available.
+
+## Published profile-name milestone — bd82a04d3c
+
+Normal gate passed4,569backend tests/20existing skips and78frontend tests, full
+restored formatting and .NET10 Debug/Release. Exact-SHA Linux/shared CI and all four extracted-package browser workflows passed.
+The preview status report is being refined to distinguish partial from absent work. Display-name editing preserves identity/credentials/policy and unavailable
+state. Recovery must distinguish interrupted provisioning from interrupted deletion
+before re-enabling anything; ambiguous legacy pending records stay denied. Preserve
+all other permanent scope; do not mark Phase1.4 or stable1.0 complete.
+
+## Managed profile display-name editing
+
+Administrator-only native editing changes the private label while preserving core
+identity/credentials/policy/history. Server labels refresh after browser reload;
+unavailable records are never reactivated. Focused HTTP/UI checks passed; complete
+normal-gate and packaged-browser results remain to be recorded after publication.
+Next: preset/library policy editing and non-destructive pending recovery, then the
+remaining accounts-to-release roadmap. Existing requirements remain intact.
+
+## OpenAPI reporting correction
+
+The report consumer distinguishes explicitly skipped generation from a missing
+required artifact; producer upload fails for missing files. Regression checks and
+v4 artifact pairing preserve real failures. Default-branch workflow adoption still
+requires review; no automatic main merge. Resume profile editing/recovery next.
+
+## Verified media-default preview — sourceda1f2829ec
+
+Self-scoped audio/subtitle/source-audio/mode editing updates four existing user
+columns, preserves identity/policy restrictions and respects administrator controls.
+Player negotiation honors server subtitles and preferred alternate tracks. The
+normal full gate and exact Linux/shared CI passed4,566backend tests/20skips,
+77frontend tests, full formatting and zero-warning Debug/Release. All four actual
+package browser workflows passed, including saved/reloaded preferences, measured
+Spanish880Hz audio, a real preferred VTT cue and retained profile lifecycle checks.
+The uploaded archive was independently source/hash/manifest/GPL/branding/guide
+verified with no private profile state. See DEVELOPMENT_PROGRESS.md for download,
+checksum, proof limits and exact recovery steps.
+
+Next: administrator profile editing/non-destructive pending recovery, broader
+invitation/session/device coverage, then the remaining permanent release roadmap.
+Full installed restore, physical platform/hardware certification and complete
+Phase1.4/stable1.0 readiness remain unfinished. YouTube/creator metadata development
+is deferred; existing code is preserved. This preview does not reduce1.0 scope.
+
+## Verified lifecycle preview — sourcec1a2d85d1f
+
+Administrator inventory and confirmed profile deletion now include disabled-first
+revocation, durable mapping cleanup, failed-delete retry and orphan handling.
+Real API tests preserve owning accounts/files and reject ordinary-user management;
+actual package/browser tests delete the profile and prove continued movie playback.
+The normal full gate and exact Linux/shared CI passed4,566backend tests/20skips,
+71frontend tests, formatting and zero-warning Debug/Release builds. The uploaded
+archive was independently source/hash/GPL/castle/guide/manifest verified and contains
+no private profile state. See DEVELOPMENT_PROGRESS.md for download and recovery.
+
+Next: safe self-service audio/subtitle preferences, profile editing/non-destructive
+pending recovery and broader invitation/session/device security; then the retained
+release roadmap. Full installed restore and physical platform/hardware certification
+remain unverified. Further YouTube/creator metadata work stays deferred. This is
+an intermediate development preview, not complete Phase1.4 or stable1.0.
+
+## Verified accounts preview — source503434e4a2
+
+Managed administrator creation and password-verified switching passed the normal
+full backend gate (c2:4,564passes/20skips),70frontend tests, exact Linux/shared CI
+and all four actual-package browser workflows. The uploaded Linux archive was
+independently source/hash/GPL/castle/compiled-profile verified. See
+DEVELOPMENT_PROGRESS.md for download/checksum and exact recovery evidence.
+Dedicated profile edit/delete/recovery, safe self-service media preferences and
+account-wide device/session controls remain; initial managed profiles exclude
+Live TV/DVR. Ordinary inherited accounts retain their existing functionality.
+This is a development preview, not stable1.0 or complete Phase1.4.
+
+## Accounts-first milestone — managed viewing profiles
+
+Initial account-linked profile creation/switching is implemented using separate
+inherited user identities, private persistent ownership/credentials, explicit
+kids/adult policies, full account-password authentication and prior-token revocation.
+Owner restrictions bound profiles; disabled/missing owners and unsafe managed
+configuration fail closed without replacing ordinary user/API-key authentication.
+Native admin creation and client profile switching preserve separate progress,
+lists and preferences. See docs/CASTLUMORA_ACCOUNTS_AND_PROFILES.md for restrictions,
+recovery and tests; exact published verification belongs in DEVELOPMENT_PROGRESS.md.
+
+Remaining: dedicated edit/delete/pending recovery, safe self-service media settings,
+invitation/registration security edge cases, account-wide sessions/devices and
+multi-device/history verification. Then resume discovery/notifications, playback/
+Live TV/skipper/UI/category/admin parity, resource/creator/business/storage/offline
+work and Linux packaging/release readiness. Retain completed importer code; further
+YouTube/creator-metadata work is deferred by owner instruction. No stable-release
+or complete Phase1.4 claim is made.
+
+## Verified persistent YouTube workflow — development preview
+
+Latest applicatione3298e68ceec41d5df197c50ed96c02aada23361 includes administrator
+preview/rights/destination confirmation, durable source-ID/resource snapshots,
+private bounded downloads/local mux, creator provenance and library publication.
+Backend1acpassed full restored format, zero-warning Debug/Release and4,555tests/
+20skips locally and in exact-SHA Linux CI. C# is unchanged through e329; its client
+checks67tests/typecheck/lint/build and actual extracted-package browser workflows
+passed, including unsafe YouTube-source rejection, guidance and no-job checks.
+The new GitHub archive was independently source/hash/compiled-UI/GPL/castle verified;
+see DEVELOPMENT_PROGRESS.md for download, checksum and exact recovery evidence.
+
+Actual authorized public YouTube extraction/download is unverified (source network
+failure/HTTP403); the manifest records that honestly. Thumbnail/subtitle retention,
+playlists/channels/bulk synchronization and independent online creator metadata
+remain next work. This is not stable1.0, complete Phase1.4 or full platform/hardware
+certification. All original1.0 scope and prior development history remain intact.
+
+## Published YouTube prerequisite — full adapter still pending
+
+Internal source identity/metadata validation and a checksum-pinned Node24 dependency
+are published at47c47c3fa2c2a7d56f5983fc52ddeac2dac94c58. The full local gate
+passed4,535backend tests/20skips and64frontend tests, plus formatting, Debug/Release
+and native/archive/security coverage. Exact-SHA Linux/shared GitHub CI and the actual-package preview also passed.
+The new archive was independently downloaded and verified; see progress for its
+URL/checksum. This is a development preview, not complete Phase1.4 or stable1.0. This does not enable or
+complete YouTube importing. The owner's authorized real video failed normal
+outbound connections (`sourceNetwork`) in this workspace; actual download/library/
+playback remains unverified. Existing direct/batch importing is preserved.
+See DEVELOPMENT_PROGRESS.md and docs/CASTLUMORA_YOUTUBE_IMPORT.md for evidence,
+recovery and the exact next adapter milestone. All original1.0 scope is retained.
+
+
+## Current verified scope — Linux-only, atomic direct-URL batches
+
+Application95f3f028b88ca8504e40dfe076d343cbce1300fc is published and verified:
+Linux/shared CI,64frontend tests and the real package/browser multi-URL workflow
+passed. Native administration accepts1–25 authorized direct MP4 entries atomically;
+invalid batches create no partial jobs. Existing identity/rights/retries survive
+coalescing, persistence and independent execution/publication.
+
+Linux servers only for1.0; macOS/Windows servers are deferred indefinitely without
+unnecessary cross-platform removal. Validation is scoped to changed source; docs
+and client-only changes do not rebuild the unchanged backend. Unknown/shared
+changes retain full Linux security/backup/migration/native coverage. Policy changes
+exercise their contract locally and the complete changed pipeline in GitHub.
+
+See DEVELOPMENT_PROGRESS.md for exact test evidence, checksum, download and recovery.
+Next: secure YouTube source/runtime integration, then playlist/channel enumeration
+and native creator metadata. All original1.0 features and future1.0→2.0 migration
+planning remain; no rewrite or automatic main merge. Older entries are historical.
+
+## Verified persistent transient retries — current checkpoint
+
+Published application57129188fac4288002e4240cd311bf89059085e9 passes the full local
+gate (4,490backend passes/19existing skips,62frontend passes, zero-warning Debug/
+Release and full formatting) and required Linux/macOS/shared CI. Advisory Windows
+also passed. Opt-in network/rate-limit backoff is durable, cancellable, nonblocking
+and shares the existing three-attempt budget; old clients/jobs stay manual.
+
+The new Linux preview passed all three actual package/browser workflows and was
+independently download/hash/source/runtime/compiled-UI/GPL/branding verified:
+https://github.com/dangerousnick/Castlumora/actions/runs/43529697761/artifacts/14087106637
+See DEVELOPMENT_PROGRESS.md for checksum, evidence, platform limits and recovery.
+
+Next task: bounded atomic authorized multiple-direct-URL submissions with native
+admin controls and real restart/security/library tests, reusing the existing queue.
+Source/playlist/channel expansion, resources, online metadata and all remaining1.0
+requirements stay mandatory. No stable/full-parity or hardware-certification claim.
+The following under-verification notes are retained historical checkpoints.
+
+
+## Verified failure guidance; transient retry increment under verification
+
+Latest published required-CI baseline: e271d70985a0fdba0b6270af12cb24c8a0439ef8.
+Linux/macOS, Format/OpenAPI/ABI and the actual packaged preview passed; current
+Windows advisory CI also passed. Fixed redacted persistent failure guidance is
+complete. The owner migration-roadmap commit c91d90d084 is preserved.
+
+Current increment adds administrator opt-in, durable transient retry deadlines,
+nonblocking backoff/cancellation/recovery and the unchanged three-attempt ceiling.
+See [retry contract](docs/CASTLUMORA_IMPORT_RETRIES.md) and DEVELOPMENT_PROGRESS.md
+for exact verification/publication. Manual defaults and all safeguards remain.
+The full1.0 importer/source/metadata/resource and other requirements are unchanged.
+
+
+## Public imported-media playback verified; actionable failures in progress
+
+Publisheddc3147c523 passes required Linux/macOS/shared CI and three actual package
+browser workflows, including rights-confirmed public GPL import/hash/dedup/index/
+codec metadata/browser playback. New source is at the fixed failure-vocabulary /
+private diagnostics milestone (under verification, not yet published). See
+[operator codes and limits](docs/CASTLUMORA_IMPORT_FAILURES.md) and the exact
+checkpoint in DEVELOPMENT_PROGRESS.md. Windows staging cleanup remains advisory.
+Broader retry/resources/playlist/channel/bulk/online metadata and all remaining1.0
+requirements stay mandatory; the bounded preview is not stable or full parity.
+
+
+## Packaged authorized-import verification continuation
+
+Published3726c3314c passes required Linux/macOS/shared CI. Ordinary compiled-server
+Chromium runtime/form/rights/unsafe-source/viewer checks pass. The cloud refuses
+validated direct publicTCP443 despite proxied HTTP working; no policy bypass is
+permitted. A stronger normal extracted-package public GPL import/hash/dedup/index/
+codec/browser-playback workflow is being verified in GitHub, not yet claimed passed.
+See [evidence and boundaries](docs/verification-single-video-import-1.4.md).
+All full-importer/online-metadata and remaining1.0 scope stays mandatory.
+
+
+## Authorized single-video continuation — 2026-11-12
+
+The native-CI dependency repair is published as
+`36cf2b44a01c0f88c6f5c9ec979161790f03d8a1` with passing Linux/macOS/shared
+checks. The earlier repair/internal-only sections below are retained history.
+The publication stash has been applied once; do not restore it over current work.
+
+The integrated source now includes a private persistent single-worker queue,
+authorized direct HTTPS H264/AAC MP4 imports, progress/cancellation/manual retries,
+restart recovery, source/content deduplication, secure atomic library publication,
+private provenance and native administrator management. The actual owned TLS/native
+import → automatic indexing → media API bytes → server restart workflow passes.
+A first-library scan race required an ordinary queued scan when no import folder
+was indexed; inherited scans are not cancelled. Native paths are resolved at job
+execution and recovered jobs wait for core initialization. See
+[the exact contract and limits](docs/CASTLUMORA_SINGLE_VIDEO_IMPORT.md) and
+DEVELOPMENT_PROGRESS.md for final gate/CI/package evidence.
+
+This is a bounded initial workflow, not complete production importing or1.0 parity:
+32MiB/direct MP4 only, one worker, three manual attempts, no playlists/channels/
+YouTube page imports/bulk/schedules/quality/subtitle/artwork controls. Next extend
+source-aware online metadata and secure playlist/channel enumeration without
+weakening egress/destination authorization; then bulk/resource/retry/admin controls
+and remaining retained Phase1.4 requirements. All setup presets share features.
+
+
+## Required native-CI setup recovery
+
+Inspection5fd129d4d3 passed the full local gate and native macOS CI. Linux CI was
+cancelled after over16minutes of Ubuntu mirror DNS failures during dependency
+setup, before builds/tests; this is infrastructure, not a passing check. A reviewed
+dated/hash-pinned GitHub native fixture removes apt mirror dependence while
+retaining every test and Linux/macOS requirement. Validate/publish this repair
+before further feature pushes. Internal publication source with12passing native/
+file tests is preserved in the exact stash recorded in DEVELOPMENT_PROGRESS.md;
+restore it once after CI verification and complete indexing/API/UI integration.
+Public URL importing remains disabled; full1.0 scope is unchanged.
+
+
+## Native inspection continuation — internal, not publicly enabled
+
+Queue lifecycle0d3ea8c0bd is published with passing Linux/macOS/shared checks.
+Next increment validates bounded self-contained MP4 structures/references, native
+FFprobe properties and real first-frame FFmpeg decoding, including corrupt packets
+and real queue/TLS transport. No library publication or public URL job capability
+is claimed. See [inspection boundary](docs/CASTLUMORA_IMPORT_MEDIA_INSPECTION.md)
+and DEVELOPMENT_PROGRESS.md for exact verification and next steps. Safe idempotent
+library promotion/scanning and elevated administrator workflow remain the next
+required boundary; all1.0 import/creator/other functionality stays mandatory.
+
+
+## Persistent queue continuation — internal only
+
+Private durable single-worker job lifecycle now implemented with rights/provenance,
+opaque destination IDs, deduplication, progress, cancellation, bounded retries and
+restart recovery. Native TLS queue/runner integration is tested as transport only.
+No library publication, public URL jobs or importer production-readiness claim.
+See [queue contract](docs/CASTLUMORA_IMPORT_QUEUE.md) and DEVELOPMENT_PROGRESS.md
+for actual verification and exact next steps. Complete secure media inspection,
+idempotent library promotion/scanning and elevated admin management next; all
+playlist/channel/bulk and remaining1.0 requirements remain mandatory.
+
+
+## Latest verified checkpoint — 8aa77c0cc9
+
+Linux/macOS-required policy and native macOS importer executable prerequisites
+are published and verified. Both required platforms passed Debug/Release and all
+17 backend suites (4,365 passed/19 existing skips each); Mac ARM64 real-tool API
+cases ran (295/3). Windows advisory also passed (294/4 API) without changing its
+deferred release status. Full local gate and the new Linux packaged/browser preview
+passed. See [verification and download](docs/verification-platform-runtime-1.4.md).
+
+Persistent import queue/library integration remains the next task; public URL jobs
+are off. No full Mac installer, x64 Mac execution, Mint hardware or NAS/Docker
+certification is claimed. Main report-token adoption and branch-protection admin
+verification remain outstanding. All Castlumora 1.0 feature requirements remain.
+Historical pending/blocker entries below are retained, superseded by this checkpoint.
+
+## Native macOS importer prerequisite (current increment)
+
+Reviewed universal macOS executable selection/bundling/install paths are added for
+x64 and ARM64. Required macOS CI now supplies the real tool and exercises existing
+health/TLS/transport/cancellation/cleanup assertions. Official digest/checksum and
+local byte/hash/Mach-O inspection agree; native execution awaits exact-source CI.
+No complete macOS installer, public URL jobs, queue or production readiness is
+claimed. Linux/Windows pins and inherited compatibility code remain unchanged.
+Next: persistent authorized single-source queue and secure library integration.
+
+## Current platform policy — supersedes historical Windows blockers
+
+Linux/macOS/shared-code checks remain mandatory. Windows compatibility tests are
+advisory for Phase1.4 and stable1.0, with failure logs retained and inherited code
+preserved. Windows-specific staging cleanup stays tracked, not erased; shared
+security implications still require investigation. No1.0 feature scope is reduced.
+See [platform evidence](docs/CASTLUMORA_PLATFORM_SUPPORT.md). Required targets include
+Mint/Ubuntu, Debian, Docker/Linux NAS and verified macOS; actual runtime coverage
+is recorded separately from CI. Branch-protection inspection returned HTTP403;
+repository-level required-check configuration is not verified.
+
+The backup policy fix is already published at0293885c4b; ten real backup tests and
+the full Linux gate pass without a5GiB executor prerequisite. Production reserve
+remains unchanged. Resume bounded importer development after the workflow milestone
+is validated/published; do not repeatedly retry Windows-only failures.
+
+## Current CI correction before further feature work
+
+Backup policy fix and internal staging work published at0293885c4b after a passing
+full local gate. Linux/macOS CI, formatting, ABI, OpenAPI and the downloadable
+Linux preview passed. Windows has five abort/file-lock cleanup failures in the
+staging runner; fix and verify those before unrelated milestones. Main's legacy
+OpenAPI Report also needs reviewed adoption of PR3's standard-token handler.
+No automatic main merge, repeated failing pushes or full Phase1.4 completion claim.
+See DEVELOPMENT_PROGRESS.md for exact jobs, recovery steps and preview checksum.
+
+## Backup capacity validation
+
+Production retains its original approximately5GiB reserve. Integration tests use
+an internal per-instance policy while executing real SQLite export and ZIP
+creation; no global setting or production bypass is exposed. The pre-push gate
+reports capacity without applying a production-backup threshold to builds; actual
+failures remain fatal. Full local validation passed on190d5ea9ed (4,365 backend
+tests passed/19 existing skips;58 frontend tests passed). Publishing and exact-source
+CI verification follow the current DEVELOPMENT_PROGRESS.md checkpoint. Historical storage-blocked entries below are
+superseded by this design. Continue the existing importer after verified publishing.
+
+
+“Preserved” means this change does not alter the inherited implementation; it does **not** mean every backend feature was exercised in this workspace. See `docs/verification-web-1.3.md` and DEVELOPMENT_PROGRESS.md for actual executed checks. Legacy fallback requires the existing compatible Web distribution at `<server-base>/web/`; it may require its own login. No fallback is removed.
+
+| Feature group | Backend availability | Castlumora Web | Legacy fallback | Automated coverage | Manual/real verification and outstanding work |
+| --- | --- | --- | --- | --- | --- |
+| Server connection, base URL | Preserved | Pair once; retain address/device | Existing server setup | URL/base-path adapter tests | Loopback connection/authentication verified; real reverse-proxy deployment pending |
+| Accounts/passwords/auth/sessions | Preserved | Sign in/out; public profile suggestions; tab-scoped token | Full account/device management | API fixtures + server auth integration tests | No passwordless profile bypass; refresh/revocation UI pending |
+| Parental controls and permissions | Preserved | User-specific existing media endpoints; admin UI guard | Full policies | Server global-write denial tests | Full kids/adult policy matrix pending |
+| Movies and series | Preserved | Search, libraries, paging, details, seasons/episodes | Existing client | Adapter, component, browser flows | Real loopback movie browse/detail verified; large library/performance validation pending |
+| Music, photos, books, other types | Preserved; profile reader state added | Native music/photos/books, PDF/EPUB reader | Additional inherited formats retain fallback | Synthetic music/photo/book browser checks and reader access/isolation tests | Rich metadata/lyrics, comics/other book formats, offline and device/scale coverage pending |
+| Continue Watching | Preserved | Resume playback; independent server-backed hide preference | Existing resume remains unchanged | Filtering, isolation/persistence, menu tests | Legacy clients do not consume exclusions |
+| Up Next | Preserved | Existing NextUp API row | Full inherited interface | Adapter/fixture coverage | New-season notification/follows distinct and pending |
+| Watchlists/follows/interests | Additive watchlist file; inherited favorites unchanged | Separate My List | Existing favorites/collections | Adapter, preference and browser checks | Follows/interests/notifications not implemented |
+| Direct Play | Preserved | Browser H264/AAC MP4 profile and native video | Existing client | Negotiation/URL/unit + browser MP4 fixture | Actual loopback server + synthetic H264/AAC playback passed; see verification report |
+| Direct Stream/remux/transcoding | Preserved FFmpeg pipeline | Server-negotiated HLS via hls.js/native HLS; explicit compatible retry | Full player/quality settings | Fixture negotiation; inherited backend tests | Full remux/transcode/browser codec matrix pending |
+| Audio/subtitle selection | Preserved | Re-negotiate selected tracks; external VTT and server burn-in paths | Full inherited player | API/profile contracts | Multilingual/image/ASS fixtures and cross-browser validation pending |
+| Playback state/progress/resume | Preserved | Start/progress/pause/stop; cleanup only own stream IDs | Full inherited player | Browser event flow; inherited API tests | HLS timeline/seek edge cases require broader testing |
+| Chapters/trickplay/source/bitrate controls | Preserved | Not yet surfaced | Full inherited player | Existing backend suites only | New frontend controls pending |
+| Live TV channels/EPG | Preserved | Channel list, logos, next-three-hour program descriptions, play links | Full guide/groups | Client fixture/basic endpoint coverage | Real tuner/M3U/XMLTV fixture testing pending; group filter/full guide pending |
+| DVR/recordings/schedules | Preserved | Existing-client link | Full Live TV/DVR | Existing backend tests only | New scheduling/manage/delete controls pending |
+| Libraries/folders/scans/monitoring | Preserved | Read-only library browse | Full legacy administration | Existing backend tests; new views adapter | New create/scan/provider editor pending |
+| Metadata/artwork/collections/playlists | Existing APIs preserved | Native collection and private music playlist editing | Advanced inherited metadata/artwork interfaces | Actual collection and private-playlist lifecycle tests | Rich metadata/artwork editing and playlist sharing pending |
+| Category organization | Additive server configuration, no file moves | Metadata/folder-ID/manual OR rules, exclusions, types, profile restrictions | Original libraries untouched | Schema, adapter, filtering/persistence tests | Folder-name patterns, indexed pagination and full artwork picker pending |
+| Central presentation | Additive v1 draft/published files | Consume server rows/nav/theme/device settings | Legacy Web unchanged | Schema/persistence/conflict/authorization tests | Full preview fidelity, revision history/rollback pending |
+| Admin overview/users/sessions | Preserved | Read-only real server info/users/session counts | Full dashboard | Browser fixture + existing APIs | Storage/activity detail panels pending |
+| Layout/nav/category editor | Additive admin-authorized API | Reorder, label/color, category/profile rules, device sizes/safe zones, JSON editor, save/publish | Existing server config preserved | Browser/HTTP/store tests | Navigation icons, branding replacement and full banner picker pending |
+| Encoding/hardware acceleration | Preserved | Legacy dashboard link | All inherited settings | Existing backend tests only | Hardware/transcode tests not run on production |
+| Plugins/repositories/updates | Preserved | Legacy dashboard link | All inherited settings | No plugin architecture changes | Declarative plugin UI registry/native renderers roadmap only |
+| Networking/discovery/HTTPS/proxies/DLNA | Preserved where supported upstream | Server-base-aware requests | Full inherited settings/client ecosystem | Adapter URL tests | TLS proxy/discovery/DLNA hardware verification pending |
+| Logs/tasks/health/diagnostics | Preserved | Basic overview + legacy dashboard | All inherited tools | Existing suites only | New complete system screens pending |
+| Backup/restore/database | Preserved; no migrations | Legacy dashboard link | Existing backup/restore | No storage/schema changes | Include new castlumora config folder in backup strategy; explicit restore test pending |
+| Signup/invitations | Existing auth preserved; new registration not added | Not implemented | Existing admin user creation | None for proposed invitations | Admin enablement, expiry, cap/revocation future work |
+| Setup presets/native clients | Existing server startup preserved | Startup directs to existing setup | Full inherited setup | No feature locks introduced | Family/creator/business presets and TV/mobile renderers roadmap |
+| Tiers/payments/creator/cloud/offline/notifications | Existing server permissions/downloads preserved | Not implemented | Existing applicable server tools | None for proposed platform features | Optional/$0 tiers and full roadmap in PRODUCT_ROADMAP.md |
+| Built-in intro/outro skipper | Inherited media-segment API retained; native repeated-segment analysis not added | Skip controls/auto-skip not implemented | Existing configured plugin/client behavior is unchanged; no mandatory plugin chosen | No new detection/skip tests | Planned: built-in scheduled detection, central intervals, correction, profile modes, post-credit safeguards and cross-client verification |
+
+
+## Latest local importer increment (not published)
+
+Internal direct-HTTPS MP4 staging now has verified-runtime leasing, a fixed native
+subprocess contract, mandatory validating tunnel, private fixed-name outputs,
+resource checks, cancellation and owned cleanup. Complete API tests:295 passed,
+3 existing skips; no public URL jobs or production importer readiness. It does not
+validate playable containers, sanitize/publish metadata, promote media or scan a
+library. Full mandatory validation/publishing remains blocked by disk capacity.
+See [staging boundary](docs/CASTLUMORA_IMPORT_STAGING.md) and the current progress
+checkpoint; existing inventory below includes historical stages, not final parity.
+
+
+## Continuation checkpoint overrides
+
+The initial table records the foundation baseline. The following changes supersede its corresponding pending entries:
+
+- Playback: quality/source/chapter/seek/next-episode controls; actual synthetic HLS, multi-audio and external subtitles verified.
+- Categories: server-side pagination/totals, folder names, permission-preserving manual selections and artwork/title pickers implemented; actual restricted-library and synthetic catalog checks pass.
+- Presentation: published history (100 snapshots), restore-to-draft and explicit publish implemented and tested. Navigation icon rendering and complete preview fidelity remain pending.
+- Administration: native library/options/scan, users/policies/passwords/devices, encoding, network/general settings, tasks/triggers/logs, plugin/repository/catalog, backup and tuner/listing/channel-mapping screens implemented. Real encoding persistence and library/user/log loading verified. Plugin installation, backup restoration, tuner hardware and destructive system actions remain unverified.
+
+All other unfinished product groups remain unfinished; this checkpoint does not establish full master-spec parity.
+
+- Live TV/DVR continuation: native six-hour guide/channel/date filtering, paginated programs/recordings, single/series record options, schedule edit/cancel and player channel switching implemented. Actual synthetic schedule persistence/cancellation and two-channel playback/cleanup pass. Completed recording lifecycle, long-duration timeshift, physical tuners and channel groups remain pending.
+
+- Native skipper continuation: optional built-in same-season repeated-audio detection, scheduled extraction integration, central review/correction/approval, post-credit guard and per-profile manual/automatic/disabled browser modes implemented. Real synthetic detection and browser skipping pass. Suggestions require review; real-series accuracy, TV/mobile renderers and device verification remain unfinished. See docs/CASTLUMORA_SKIPPER.md.
+
+- Identity continuation: optional administrator-enabled signup, hashed expiring/revocable/capped invitations, disabled provisioning, private audit/recovery, server policy snapshots and explicit library pickers implemented. Actual HTTP/browser signup and remembered-address pairing pass. Linked multi-profile accounts, named kids/adult presets and device-refresh improvements remain unfinished.
+
+- Music continuation: native artist/album/track browsing, persistent queue/direct-or-MP3 playback, transport/progress and private playlist creation/editing implemented; actual synthetic music/playlist checks pass. Rich lyrics/metadata/sharing/scale/device coverage remains pending. Native photo/book/collection foundations are covered by the following checkpoint.
+
+- Shelves/reader continuation: native photo albums/all-photo browsing and image navigation/rotation/zoom/slideshow; book shelves, protected PDF/EPUB reading and profile-specific position/theme/font persistence; native collection creation/media add/remove/delete retaining files. Three actual-server synthetic shelf/reader/collection browser workflows pass. API tests verify permission-aware book access and claims-only state ownership; EPUB execution/resource/traversal safeguards are unit-tested. Comics/other ebook conversion, annotations/full-text/offline reading and broader real-library/accessibility/device coverage remain pending. See docs/CASTLUMORA_READER_AND_SHELVES.md.
+
+## Phase 1.4 packaging milestone — verified downloadable artifact
+
+Native first-run setup now uses the inherited Startup APIs and remembers the integrated server base, including reverse-proxy prefixes. No authentication or backend startup policy is changed. Packaging scripts produce self-contained .NET linux-x64 output plus compiled Castlumora Web, castle assets, dependency notices, an isolated loopback launcher and installation/checklist documents. Actual archive smoke tests passed; GitHub read-only Actions run 42702481467 rebuilt/extracted/tested and uploaded artifact 13712785582. The artifact was downloaded through the connected GitHub app and its inner checksum/source manifest verified. Source commit cc59df91a8c06364d6ca1e6944ba938031754bd7; see docs/verification-preview-1.4.md. This is not a stable release or whole-spec completion. Legacy compiled Web is not bundled; a help page and explicit compatible-assets attachment workflow disclose remaining native admin gaps. Mandatory yt-dlp/YouTube metadata features are retained in docs/CASTLUMORA_IMPORT_AND_CREATOR_METADATA.md and remain unimplemented, not optional plugins.
+
+Owner install guide: INSTALL_TEST_BUILD.md; systematic feature/limitations checklist: docs/TEST_BUILD_CHECKLIST.md. The GitHub artifact is sign-in protected and retained 30 days. Mint-compatible target is x86-64; CI ran on Ubuntu 24.04, local tests on Debian 13; no physical Mint/GPU/tuner certification.
+
+### Phase 1.4 DVR recorded-media lifecycle
+
+Native Recordings now refreshes automatically while visible and separates retained-file library removal from confirmed physical file deletion using server CanDelete. The recordings API preserves that explicitly requested field; no deletion authorization is broadened. Real synthetic M3U/XMLTV schedule/cancel/complete/file/play/remove/rescan/delete and denied-viewer checks pass; 81 LiveTV regression tests pass. Active-stop browser coverage, physical tuners, long duration, groups and per-user quotas remain pending. See docs/CASTLUMORA_DVR.md.
+
+- Active DVR stop continuation: explicit Stop recording for InProgress single timers, permission-denied viewer stop, retained nonempty partial file and actual partial playback verified in a separate Chromium/real-backend synthetic case. Frontend 48 tests/typecheck/lint/build pass. This does not certify quotas, real tuners or long-running DVR.
+
+### Node.js 24 development/CI continuation
+
+Node 24 LTS is declared in .nvmrc and frontend engines and consumed by preview CI. Clean install/typecheck/lint/48 tests/build pass; workflow lint and five OpenAPI handler tests pass. Missing upstream JF_BOT_TOKEN replaced with built-in github.token for OpenAPI comments. Live workflow_run rollout requires reviewed default-branch changes; old main notifications can continue until then. Release version-bump execution remains untested and has an existing missing build.yaml dependency. No application feature or license changes.
+
+### Native local creator metadata (first increment)
+
+Built-in .info.json reader for explicitly generic Video files: strict YouTube/source/filename IDs, channel IDs, title/date/escaped description, bounded offline reads, reader disable/order settings and inherited metadata locks. Actual existing-file repair, whole-item and field locks, unlock and conflicting-ID rejection pass. Browse/Search/My List include generic Video items; formatting-only safe descriptions and creator playback are tested. Full provider suite 532 pass (17 new), frontend 50 pass/typecheck/lint/build. Full online provider/dashboard/relationships/caching, bulk repair/duplicates and yt-dlp importing remain required and unfinished; no fuzzy movie/TV matching or silent type migration. See docs/CASTLUMORA_CREATOR_SIDECAR.md.
+
+### Native Metadata Management (selected items)
+
+Administrator reader enable/order, source ID/type inspection, title/description corrections, whole-item lock, confirmed source repair and reload now use persistent inherited APIs. Fresh complete DTO/library snapshots preserve unrelated fields/options. Frontend 56 tests/typecheck/lint/build pass; actual persisted settings/correction/lock/repair and denied-viewer item/refresh/library writes pass. No bulk repair, artwork editing, source-ID override, ambiguity queue, duplicate UI, online enrichment or safe importer is claimed. See docs/CASTLUMORA_METADATA_MANAGEMENT.md.
+
+### Refreshed exact-commit preview verification
+
+Source 835716785add501a27d98e979fa67d411c63b570: Windows/macOS/Ubuntu full server CI passes; Ubuntu 4,255 tests passed/19 skipped. Native frontend 56 and report-handler five tests pass; Format/ABI/OpenAPI Check pass. Actual downloaded package passed CI fresh/restart/library/playback plus five independent local compiled-web/server creator/metadata/movie/DVR workflows, including completed and retained-partial recording playback and authorization. Download/checksum/report in DEVELOPMENT_PROGRESS.md and docs/verification-node24-and-metadata.md. This is an intermediate preview, not complete master-spec acceptance.
+
+### Managed importer runtime prerequisite
+
+Native administrator status/install UI and protected endpoints manage only reviewed bundled yt-dlp assets. Linux/Windows x64 asset selection, hash/size verification before execution, atomic candidate installation, bounded clean-environment version checks and failure/cancellation cleanup implemented. Local API205/3 skips, HTTP132/3 skips, frontend58 and bundler5 tests pass; compiled real Linux native install/reload/health/viewer denials verified. CI actual Windows/Linux asset checks and preview installer smoke configured; report executed outcomes after publication. URL queues/downloads/egress protection/source scheduling remain mandatory unfinished work. See docs/CASTLUMORA_IMPORTER_RUNTIME.md.
+
+Managed-runtime source584e58c4ed is now verified in clean Linux/Windows/macOS CI and a downloaded/extracted Linux preview. Actual Linux/Windows pinned asset health tests ran. Packaged native install/reinstall/readiness/permission checks and original movie playback pass. Download/hash in DEVELOPMENT_PROGRESS.md; runtime readiness still does not enable URL import jobs.
+
+## Import connection safety prerequisite
+
+Internal per-connection HTTPS/public-address validation and DNS-pinned numeric connections are implemented; API264 passed/3 existing skips (59 new policy cases). This is not yet connected to yt-dlp: downloadJobsAvailable remains false. Next is the bounded subprocess egress adapter with TLS/redirect/resource fixtures, followed by destination safety and the durable authorized single-source queue. See docs/CASTLUMORA_IMPORT_NETWORK_POLICY.md. Full 1.0 import requirements remain mandatory; the verified584e runtime preview is preserved.
+
+## Bounded import tunnel prerequisite
+
+Internal authenticated loopback CONNECT adapter now enforces per-target public-address policy and bounded headers/connections/traffic/lifetime, preserving TLS verification. API278 passed/3 existing skips;14 real loopback cases include wrong-hostname rejection. Not connected to yt-dlp yet; URL downloading remains disabled. Next: verified executable leases, fixed-argument bounded runner and actual pinned-executable fixture tests, then persistent authorized queue/destination/scan workflow. All full1.0 import requirements remain mandatory.
+
+## Managed execution reservation and tunnel lifecycle
+
+Runtime leases now reverify executable integrity/version and prevent replacement during active execution, with idempotent release and administrator409 conflict. Tunnel listener stop/accept cancellation race corrected. Full API279 pass/3 existing skips. No actual download runner yet; downloading remains disabled. Next is bounded fixed-argument subprocess supervision through the authenticated tunnel, actual pinned-executable owned-HTTPS tests, then the complete persistent authorized queue and native controls. No1.0 requirement removed.
+
+## Actual downloader transport verification checkpoint
+
+The real pinned Linux yt-dlp executable now passes owned-HTTPS transfer and untrusted-certificate rejection through the authenticated tunnel in tests; full API281 pass/3 existing skips. This is transport verification, not a production job runner or enabled importer. Intermediate cafc Linux preview uploaded/downloaded/checksummed and packaged smoke passed; link and exact SHA in DEVELOPMENT_PROGRESS.md. Next: bounded production subprocess supervisor using leases/tunnel, then persistent authorized queue/destination/scan/native controls. Full1.0 scope retained.
+
+## Publishing verification correction
+
+SA1508 closing-brace whitespace corrected. Mandatory full pre-push validation and tracked hook added; initial enforcement tests pass, real full formatting/Debug/Release/CI-equivalent test checks remain pending. No publishing after failed or incomplete checks; no CI weakening. Complete this correction before further feature pushes; importer runner remains the next feature.
+
+Complete-publishing gate: full format and Debug build passed; Release was blocked by workspace ENOSPC, so nothing was pushed. Supported dependency hard-link copies and disk preflights added without skipping assets/tests. Full frozen-source validation and Windows fixture CI confirmation remain required before further feature publication.
+
+Publishing remains blocked: complete format and Debug/Release builds pass; full server suite4,341 pass/19 existing skips/1 environmental failure (unchanged backup requires5GiB free, executor has2.8GiB). No guard/test weakened or skipped; no new commits pushed. Need larger executor and full successful gate before publishing or resuming importer feature work.
+
+Storage investigation: safe cleanup recovered1.59GiB, raising available space to4.23GiB. The unchanged5GiB backup prerequisite remains unmet; no retry, gate bypass or application change. Need additional capacity/build headroom before full validation and publishing. See docs/verification-storage-cleanup.md.

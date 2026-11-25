@@ -1837,12 +1837,15 @@ namespace Emby.Server.Implementations.Session
         {
             CheckDisposed();
 
-            _logger.LogInformation("Logging out access token {0}", device.AccessToken);
+            _logger.LogInformation("Logging out device authorization record {DeviceRecordId}", device.Id);
 
             await _deviceManager.DeleteDevice(device).ConfigureAwait(false);
 
+            // Device IDs are client supplied, not authority to end another user/app's session.
             var sessions = Sessions
-                .Where(i => string.Equals(i.DeviceId, device.DeviceId, StringComparison.OrdinalIgnoreCase))
+                .Where(i => i.UserId.Equals(device.UserId)
+                    && string.Equals(i.Client, device.AppName, StringComparison.OrdinalIgnoreCase)
+                    && string.Equals(i.DeviceId, device.DeviceId, StringComparison.OrdinalIgnoreCase))
                 .ToList();
 
             foreach (var session in sessions)

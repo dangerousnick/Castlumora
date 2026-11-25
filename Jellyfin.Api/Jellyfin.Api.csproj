@@ -24,6 +24,11 @@
     <ProjectReference Include="..\src\Jellyfin.Networking\Jellyfin.Networking.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <EmbeddedResource Include="../packaging/yt-dlp/release.json" LogicalName="Castlumora.YtDlpRelease" />
+    <EmbeddedResource Include="../packaging/node/release.json" LogicalName="Castlumora.NodeRelease" />
+  </ItemGroup>
+
   <!-- Code Analyzers -->
   <ItemGroup Condition=" '$(Configuration)' == 'Debug' ">
     <PackageReference Include="IDisposableAnalyzers">
@@ -42,6 +47,9 @@
   <ItemGroup>
     <AssemblyAttribute Include="System.Runtime.CompilerServices.InternalsVisibleTo">
       <_Parameter1>Jellyfin.Api.Tests</_Parameter1>
+    </AssemblyAttribute>
+    <AssemblyAttribute Include="System.Runtime.CompilerServices.InternalsVisibleTo">
+      <_Parameter1>Jellyfin.Server.Integration.Tests</_Parameter1>
     </AssemblyAttribute>
   </ItemGroup>
 

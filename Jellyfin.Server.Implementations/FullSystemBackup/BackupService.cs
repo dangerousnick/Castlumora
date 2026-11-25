@@ -35,6 +35,7 @@ public class BackupService : IBackupService
     private readonly IJellyfinDatabaseProvider _jellyfinDatabaseProvider;
     private readonly IHostApplicationLifetime _hostApplicationLifetime;
     private readonly ILibraryManager _libraryManager;
+    private readonly BackupStoragePolicy _storagePolicy;
     private static readonly JsonSerializerOptions _serializerSettings = new JsonSerializerOptions(JsonSerializerDefaults.General)
     {
         AllowTrailingCommas = true,
@@ -61,7 +62,22 @@ public class BackupService : IBackupService
         IJellyfinDatabaseProvider jellyfinDatabaseProvider,
         IHostApplicationLifetime applicationLifetime,
         ILibraryManager libraryManager)
+        : this(logger, dbProvider, applicationHost, applicationPaths, jellyfinDatabaseProvider, applicationLifetime, libraryManager, new BackupStoragePolicy())
     {
+    }
+
+    internal BackupService(
+        ILogger<BackupService> logger,
+        IDbContextFactory<JellyfinDbContext> dbProvider,
+        IServerApplicationHost applicationHost,
+        IServerApplicationPaths applicationPaths,
+        IJellyfinDatabaseProvider jellyfinDatabaseProvider,
+        IHostApplicationLifetime applicationLifetime,
+        ILibraryManager libraryManager,
+        BackupStoragePolicy storagePolicy)
+    {
+        ArgumentNullException.ThrowIfNull(storagePolicy);
+        _storagePolicy = storagePolicy;
         _logger = logger;
         _dbProvider = dbProvider;
         _applicationHost = applicationHost;
@@ -153,6 +169,23 @@ public class BackupService : IBackupService
             }
 
             CopyDirectory("Config", _applicationPaths.ConfigurationDirectoryPath);
+            if (!OperatingSystem.IsWindows())
+            {
+                var profiles = Path.Combine(_applicationPaths.ConfigurationDirectoryPath, "castlumora", "profiles");
+                if (Directory.Exists(profiles))
+                {
+                    File.SetUnixFileMode(profiles, UnixFileMode.UserRead | UnixFileMode.UserWrite | UnixFileMode.UserExecute);
+                    foreach (var name in new[] { "profiles.json", "profiles.v1.json", "credentials.key" })
+                    {
+                        var path = Path.Combine(profiles, name);
+                        if (File.Exists(path))
+                        {
+                            File.SetUnixFileMode(path, UnixFileMode.UserRead | UnixFileMode.UserWrite);
+                        }
+                    }
+                }
+            }
+
             CopyDirectory("Data", _applicationPaths.DataPath, exclude: ["metadata", "metadata-default"]);
             CopyDirectory("Root", _applicationPaths.RootFolderPath);
             CopyDirectory("Data/metadata", _applicationPaths.InternalMetadataPath);
@@ -296,20 +329,14 @@ public class BackupService : IBackupService
             Directory.CreateDirectory(backupFolder);
         }
 
-        var backupStorageSpace = StorageHelper.GetFreeSpaceOf(_applicationPaths.BackupPath);
-
-        const long FiveGigabyte = 5_368_709_115;
-        if (backupStorageSpace.FreeSpace < FiveGigabyte)
-        {
-            throw new InvalidOperationException($"The backup directory '{backupStorageSpace.Path}' does not have at least '{StorageHelper.HumanizeStorageSize(FiveGigabyte)}' free space. Cannot create backup.");
-        }
+        _storagePolicy.Validate(_applicationPaths.BackupPath);
 
         var backupPath = Path.Combine(backupFolder, $"jellyfin-backup-{manifest.DateCreated.ToLocalTime():yyyyMMddHHmmss}.zip");
 
         try
         {
             _logger.LogInformation("Attempting to create a new backup at {BackupPath}", backupPath);
-            var fileStream = File.OpenWrite(backupPath);
+            var fileStream = OpenPrivateArchive(backupPath);
             await using (fileStream.ConfigureAwait(false))
             using (var zipArchive = new ZipArchive(fileStream, ZipArchiveMode.Create, false))
             {
@@ -429,6 +456,7 @@ public class BackupService : IBackupService
 
                 CopyDirectory(Path.Combine(_applicationPaths.ConfigurationDirectoryPath, "users"), Path.Combine("Config", "users"));
                 CopyDirectory(Path.Combine(_applicationPaths.ConfigurationDirectoryPath, "ScheduledTasks"), Path.Combine("Config", "ScheduledTasks"));
+                CopyDirectory(Path.Combine(_applicationPaths.ConfigurationDirectoryPath, "castlumora", "profiles"), Path.Combine("Config", "castlumora", "profiles"));
                 CopyDirectory(Path.Combine(_applicationPaths.RootFolderPath), "Root");
                 CopyDirectory(Path.Combine(_applicationPaths.DataPath, "collections"), Path.Combine("Data", "collections"));
                 CopyDirectory(Path.Combine(_applicationPaths.DataPath, "playlists"), Path.Combine("Data", "playlists"));
@@ -597,6 +625,36 @@ public class BackupService : IBackupService
             Trickplay = options.Trickplay,
             Database = options.Database
         };
+    }
+
+    private static FileStream OpenPrivateArchive(string path)
+    {
+        var options = new FileStreamOptions
+        {
+            Mode = FileMode.OpenOrCreate,
+            Access = FileAccess.Write,
+            Share = FileShare.None
+        };
+        if (!OperatingSystem.IsWindows())
+        {
+            options.UnixCreateMode = UnixFileMode.UserRead | UnixFileMode.UserWrite;
+        }
+
+        var stream = new FileStream(path, options);
+        try
+        {
+            if (!OperatingSystem.IsWindows())
+            {
+                File.SetUnixFileMode(path, UnixFileMode.UserRead | UnixFileMode.UserWrite);
+            }
+
+            return stream;
+        }
+        catch
+        {
+            stream.Dispose();
+            throw;
+        }
     }
 
     /// <summary>

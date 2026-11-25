@@ -114,17 +114,32 @@ namespace Jellyfin.LiveTv.IO
 
             _process.Start();
 
-            cancellationToken.Register(Stop);
+            using var cancellationRegistration = cancellationToken.Register(Stop);
 
             onStarted();
 
-            // Important - don't await the log task or we won't be able to kill ffmpeg when the user stops playback
-            _ = StartStreamingLog(_process.StandardError.BaseStream, _logFileStream);
+            // Keep draining stderr while the owned process runs; await it only after exit.
+            var logTask = StartStreamingLog(_process.StandardError.BaseStream, _logFileStream);
 
             _logger.LogInformation("ffmpeg recording process started for {Path}", _targetPath);
 
             // Block until ffmpeg exits
-            await _taskCompletionSource.Task.ConfigureAwait(false);
+            try
+            {
+                await _taskCompletionSource.Task.ConfigureAwait(false);
+            }
+            catch (FfmpegException exception) when (cancellationToken.IsCancellationRequested)
+            {
+                // The owned process has exited after our explicit stop or duration limit.
+                // Keep genuine failures observable when no cancellation was requested.
+                throw new OperationCanceledException("Recording was stopped.", exception, cancellationToken);
+            }
+            finally
+            {
+                // Exit may precede onStarted/log initialization. The exit callback only
+                // signals completion; the recorder retains ownership until stderr is drained.
+                await logTask.ConfigureAwait(false);
+            }
         }
 
         private string GetCommandLineArgs(MediaSourceInfo mediaSource, string inputTempFile, string targetFile)
@@ -264,31 +279,23 @@ namespace Jellyfin.LiveTv.IO
         /// </summary>
         private void OnFfMpegProcessExited(Process process)
         {
-            using (process)
+            _hasExited = true;
+            var exitCode = process.ExitCode;
+            _logger.LogInformation("FFMpeg recording exited with code {ExitCode} for {Path}", exitCode, _targetPath);
+
+            if (exitCode == 0)
             {
-                _hasExited = true;
-
-                _logFileStream?.Dispose();
-                _logFileStream = null;
-
-                var exitCode = process.ExitCode;
-
-                _logger.LogInformation("FFMpeg recording exited with code {ExitCode} for {Path}", exitCode, _targetPath);
-
-                if (exitCode == 0)
-                {
-                    _taskCompletionSource.TrySetResult(true);
-                }
-                else
-                {
-                    _taskCompletionSource.TrySetException(
-                        new FfmpegException(
-                            string.Format(
-                                CultureInfo.InvariantCulture,
-                                "Recording for {0} failed. Exit code {1}",
-                                _targetPath,
-                                exitCode)));
-                }
+                _taskCompletionSource.TrySetResult(true);
+            }
+            else
+            {
+                _taskCompletionSource.TrySetException(
+                    new FfmpegException(
+                        string.Format(
+                            CultureInfo.InvariantCulture,
+                            "Recording for {0} failed. Exit code {1}",
+                            _targetPath,
+                            exitCode)));
             }
         }
 

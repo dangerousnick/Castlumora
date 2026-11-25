@@ -1,0 +1,46 @@
+#!/usr/bin/env bash
+set -euo pipefail
+umask 077
+package_root=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)
+state_root=${CASTLUMORA_DATA_DIR:-${XDG_DATA_HOME:-$HOME/.local/share}/castlumora-preview}
+state_root=$(realpath -m -- "$state_root")
+port=${CASTLUMORA_PORT:-28096}
+if [[ ! $port =~ ^[0-9]+$ ]] || (( port < 1024 || port > 65535 )); then echo 'CASTLUMORA_PORT must be between 1024 and 65535.' >&2; exit 2; fi
+if [[ -e $state_root && ! -f $state_root/.castlumora-preview ]] && [[ -n $(ls -A -- "$state_root") ]]; then
+  echo 'Refusing to use an existing unmarked directory. Choose a new CASTLUMORA_DATA_DIR; never use production data.' >&2; exit 2
+fi
+mkdir -p -- "$state_root"/{data,config,cache,logs}
+touch -- "$state_root/.castlumora-preview"
+if [[ ! -f $state_root/config/network.xml ]]; then
+  cat > "$state_root/config/network.xml" <<XML
+<?xml version="1.0" encoding="utf-8"?>
+<NetworkConfiguration>
+<LocalNetworkAddresses><string>127.0.0.1</string></LocalNetworkAddresses>
+<EnableIPv4>true</EnableIPv4><EnableIPv6>false</EnableIPv6>
+<InternalHttpPort>$port</InternalHttpPort><PublicHttpPort>$port</PublicHttpPort>
+<EnableRemoteAccess>false</EnableRemoteAccess><AutoDiscovery>false</AutoDiscovery>
+<EnableHttps>false</EnableHttps><RequireHttps>false</RequireHttps>
+</NetworkConfiguration>
+XML
+else
+  saved_port=$(sed -n 's:.*<InternalHttpPort>\([0-9]*\)</InternalHttpPort>.*:\1:p' "$state_root/config/network.xml" | head -n 1)
+  if [[ -n ${CASTLUMORA_PORT:-} && $saved_port != "$port" ]]; then echo "Existing configuration uses port $saved_port; change Networking settings instead of CASTLUMORA_PORT." >&2; exit 2; fi
+  port=${saved_port:-$port}
+fi
+ffmpeg_path=${CASTLUMORA_FFMPEG:-$(command -v jellyfin-ffmpeg || command -v ffmpeg || true)}
+if [[ -z $ffmpeg_path && -x /usr/lib/jellyfin-ffmpeg/ffmpeg ]]; then ffmpeg_path=/usr/lib/jellyfin-ffmpeg/ffmpeg; fi
+if [[ ! -x $ffmpeg_path ]]; then echo 'Install a compatible FFmpeg (see INSTALL_TEST_BUILD.md), or set CASTLUMORA_FFMPEG to its executable.' >&2; exit 2; fi
+if [[ -n ${CASTLUMORA_LEGACY_WEB_DIR:-} ]]; then
+  legacy=$(realpath -e -- "$CASTLUMORA_LEGACY_WEB_DIR")
+  if [[ ! -f $legacy/index.html || $legacy == "$package_root/web" ]]; then echo 'Legacy Web directory must be a separate compatible compiled distribution.' >&2; exit 2; fi
+  if [[ -L $package_root/web/legacy ]]; then
+    if [[ $(readlink -f -- "$package_root/web/legacy") != "$legacy" ]]; then echo 'Existing legacy Web link points elsewhere; remove it explicitly before changing the selection.' >&2; exit 2; fi
+  elif [[ ! -e $package_root/web/legacy ]]; then ln -s -- "$legacy" "$package_root/web/legacy"
+  else echo 'Remove the packaged legacy help directory before attaching optional compiled legacy assets (see instructions).' >&2; exit 2
+  fi
+fi
+mkdir -p -- "$state_root/cache/tmp"
+export TMPDIR="$state_root/cache/tmp"
+export DOTNET_BUNDLE_EXTRACT_BASE_DIR="$state_root/cache/dotnet"
+printf 'Castlumora 1.0 Development Preview\nOpen http://127.0.0.1:%s/web/\nData: %s\nStop: Ctrl+C\n' "$port" "$state_root"
+exec "$package_root/server/jellyfin" --datadir "$state_root/data" --configdir "$state_root/config" --cachedir "$state_root/cache" --logdir "$state_root/logs" --webdir "$package_root/web" --ffmpeg "$ffmpeg_path" "$@"

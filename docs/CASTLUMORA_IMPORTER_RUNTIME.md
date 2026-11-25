@@ -1,0 +1,72 @@
+# Managed yt-dlp runtime — completed prerequisite
+
+This increment supplies an administrator-owned executable lifecycle, not the media-import queue. The subsequent [authorized single-video workflow](CASTLUMORA_SINGLE_VIDEO_IMPORT.md) builds on this prerequisite. Playlist/channel processing and scheduled imports remain unfinished. Full authorized importing remains a required Castlumora 1.0 feature. Existing native creator sidecars/Metadata Management work independently and are unchanged.
+
+## Owner workflow
+
+Use a complete new Linux development preview, finish setup and sign in as administrator. Open **Administration → Imports & Sources**. The page reports the selected platform, reviewed version, integrity state and whether the bundled asset is present. Choose **Install bundled runtime**, confirm, then use **Check runtime**. Ready means the executable matches the pinned hash and returned the exact expected version; it does not mean importing, FFmpeg, JS challenge runtimes or source permissions are ready. A verified integrated preview exposes the single-video form only when the runtime and native media dependencies are available.
+
+The preview carries the Linux x64 executable and its notices/source materials. Installation is offline and requires no separate downloader/plugin or hand-operated yt-dlp command. Development builds without a bundled asset show a meaningful missing-bundle state. Linux x64 uses the glibc asset. macOS x64 and ARM64 now select the separately
+reviewed universal executable through distinct osx-x64/osx-arm64 package paths;
+Windows x64 retains its original .exe and compatibility code. Unknown platforms
+remain unsupported for this prerequisite without disabling the inherited server.
+Required Linux/macOS CI prepares real platform fixtures; Windows checks remain
+advisory. A macOS native executable is not a self-contained Castlumora macOS app:
+macOS installation/Gatekeeper, packaging and hardware certification remain separate
+unverified work. The distributable preview remains Linux x64.
+
+## Integrity, updates and storage
+
+The reviewed release is **2026.10.26**, pinned in `packaging/yt-dlp/release.json`, embedded into the server assembly and used by the build bundler. Official API digests and release SHA2-256SUMS agreed:
+
+- Linux x64 yt-dlp_linux: `767ba9dce7052aa196f8b12652f433d76de128ba168966fa84b6394d5e6c6795` (41,166,968 bytes).
+- macOS x64/ARM64 yt-dlp_macos: `0f922c15ccc0b83eefa1c8bc9104e434318c4bf16e408e1ee93b7745a6efe0aa` (37,466,304 bytes; universal x86_64/arm64 Mach-O).
+- Windows x64 yt-dlp.exe: `f5389d3698ecde4ef06f4e6b1ce0294fe9ac1396228c8990b8d3416d6d177a7d` (23,575,744 bytes).
+
+Only assets shipped under the application's `tools/yt-dlp/<version>/<platform>/` can be installed. No API accepts arbitrary paths, versions, flags or executable URLs. The service copies to the server DataPath beneath `castlumora/tools/yt-dlp/<version>/<platform>/`, verifies exact size/hash again, checks the candidate version, and atomically replaces the active file. Failed/canceled candidates do not overwrite the previous executable. Old version directories are retained for rollback with their matching application package; no automatic updater runs. A reviewed package/manifest change is the controlled update mechanism.
+
+Managed/bundled path components reject symlinks/reparse points. POSIX owned tool/temp directories and executable use owner-only permissions; Windows uses its platform file/loader behavior. Hash verification precedes **every** health execution. A status read never installs or downloads. Runtime state survives restart as verified files, without a database migration. A crash during copy can leave an ignored nonce .tmp file; a retry validates a fresh candidate, never executes an incomplete file. Cleanup of abandoned files after abrupt OS termination is a later housekeeping improvement.
+
+Health invokes only `--ignore-config --no-plugin-dirs --version` with shell execution disabled, a clean child environment, private per-check extraction directory, a 15-second execution timeout, 4,096-character caps on each output stream and bounded cleanup waits. Cancellation/oversized output stops the owned process tree. It does not kill shared FFmpeg sessions or other processes. These narrow health checks do not claim to implement full long-running import/FFmpeg process-group/Job Object supervision; that remains required where appropriate for the download engine.
+
+Endpoints `GET Castlumora/Imports/Runtime` and `POST Castlumora/Imports/Runtime/Install` require existing administrator elevation. Anonymous/viewer reads and writes are denied independently of the UI. The runtime prerequisite alone reports `downloadJobsAvailable=false`; the controller derives the integrated capability from runtime health and hosted importer/native dependency availability. Cookie handling and DRM bypass are not provided.
+
+## Supply chain and licensing
+
+Build-time `packaging/yt-dlp/bundle.py` uses only fixed official HTTPS release hosts, validates redirects, bounds streamed length, checks the reviewed SHA before promotion and never executes downloads. Unknown existing files are not overwritten; it does not remove another operation's temporary download. CI/preview packaging run six bundler cases covering these boundaries and macOS paths/source/notices/private permissions.
+
+The unmodified pinned executable, verified release source archive, original LICENSE, complete upstream THIRD_PARTY_LICENSES.txt and Castlumora NOTICE.md are shipped together. yt-dlp itself is Unlicense, but the PyInstaller standalone executable combines GPLv3+ and other components: do not mislabel it Unlicense-only. Preserve complete upstream notices/source references and source materials when redistributing. Existing Castlumora/Jellyfin GPL attribution is unchanged.
+
+Developer preparation: `python3 packaging/yt-dlp/bundle.py --platform linux-x64 --system-root /path/to/server` (or osx-arm64/osx-x64 on macOS; win-x64 remains available for advisory Windows compatibility). The output is an application distribution input; administrators use the native installer instead. Updates change the reviewed manifest and package, not a live arbitrary-download setting.
+
+## Verification and limits
+
+Local Release API/server builds passed. API regression suite: **205 passed, 3 existing Windows-specific skips**, including ten new runtime cases and actual pinned Linux installation/reopen health. Full HTTP integration suite: **132 passed, 3 existing skips**; new test covers anonymous/viewer denial, missing-bundle failure and ignored malicious executable/URL/flag input. Frontend **58 tests/typecheck/lint/build** passed. Five bundler security tests passed. Targeted repository formatter passed with workspace-load warnings; GitHub checks remain the authoritative clean-workspace confirmation after publishing.
+
+Actual compiled server + compiled web on the marked owned loopback fixture passed native install, version/hash readiness, reload/recheck and viewer denials. A rerun waits for the actual reinstall response before reload, avoiding a false positive from the previously ready executable. An excessive-output test found a temporary-directory cleanup issue; fixed by observing that exception before cleanup and rerun successfully. CI runs the real approved Linux and Windows assets through the same install/reopen test, and the Linux preview restart workflow installs/checks its bundled runtime after real library/playback testing. Record executed CI/package results in DEVELOPMENT_PROGRESS.md; configuring a job is not proof it passed.
+
+Remaining importer work: authorized source policy, strict egress/DNS/redirect/SSRF protections for subprocess network access, destination/filename isolation, persistent queue/history/cancel/retry/resume, quality/subtitles/thumbnails, provenance/deduplication, scan-on-success, bulk/playlist/channel/scheduled sources and resource controls. Do not treat version readiness as production import readiness. No real Mint hardware certification or claim of full 1.0 acceptance.
+
+## Native macOS increment — execution evidence
+
+GitHub release API digest, official SHA2-256SUMS and the locally downloaded file
+agree with the macOS pin above. File inspection confirms both x86_64 and ARM64;
+no macOS binary was executed on the Linux workspace. The bundler never executes
+downloads. Local Linux runtime/transport regressions and passing native ARM64 macOS CI
+results at 8aa77c0cc9 are recorded in DEVELOPMENT_PROGRESS.md and PR3, with failures disclosed.
+macOS CI now receives the real executable rather than a missing fixture; original
+health, TLS/transport, cancellation, output and cleanup assertions remain intact.
+This does not enable public URL jobs or finish the persistent importer lifecycle.
+
+Real-executable deadline fixtures share a non-parallel xUnit collection, keeping
+fixed startup deadlines independent from unrelated CPU-heavy cases. Explicit
+within-test lease/concurrency assertions remain unchanged. CI test projects run
+serially, matching the local gate; no assertion, native asset, timeout or test is
+removed. A previously blocked Linux run timed out before TLS in AcquireAsync;
+the complete API suite subsequently passed with this scheduling correction.
+
+At 8aa77c0cc9, required native ARM64 macOS CI installed the reviewed binary and
+passed the full API suite (295 passed, three existing platform skips), including
+the real executable cases. All 17 Mac backend projects passed. x64 mapping and
+universal Mach-O bytes were verified; x64 execution and graphical macOS app
+installation remain unverified. See verification-platform-runtime-1.4.md.
