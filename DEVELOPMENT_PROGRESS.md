@@ -1,34 +1,74 @@
 # Castlumora Web Phase 1.3 development progress
 
-## Current milestone — filtered Surprise Me and rerolling
+## Verified filtered Surprise Me checkpoint
 
-Continues verified notification checkpointfc5b230519; backend application source
-b36e52cd1b remains unchanged. Replaced the bare random-movie jump with a real native
-selection page: Movie/Episode, allowed library, any/unwatched/watched filters,
-recent50pick exclusions, explicit Start over, details/play links, empty/error states,
-and cancellation of stale identity/filter responses. Picks stay in memory per visit;
-selection/rerolling do not alter watchlists, preferences or playback history. Queries
-use the current viewing identity and native authorization; empty libraries do not
-fall back to an unscoped all-media query. Invalid/repeated responses fail explicitly.
+Last completed milestone: native filtered Movie/Episode selection and safe rerolling.
+Latest published application: `97b1051cfae7c0c7830d41512e60ef8354bdf243`.
+Current branch: `development/castlumora-web-1.3`; PR3 remains open. Continues the
+verified private notification/profile work; no completed code was reset.
 
-Eight focused UI tests, typecheck/lint/build passed with no new lint warnings.
-A real integrated Release-server workflow passed30.6seconds (28.8s case), including
-actual Movie and Episode library/unwatched/watched queries, distinct/exhausted/reset
-picks, exact native media identity, details navigation, unchanged progress, and the
-existing notification read-state/cold-restart/dismissal proof. The browser uses
-accessible combobox roles after diagnosing the initial exact-label locator issue.
-No new dependency, backend API, schema or validation-policy implementation was added.
-The preview's verification report is extended to describe its new assertions.
+The header Surprise Me control opens a real selection page with Movie/Episode,
+allowed-library and any/unwatched/watched filters. Native queries use the viewing
+identity, one local non-missing result, and at most50recent exclusions. Rerolls,
+exhaustion, explicit Start over, details/play links and empty/error states work.
+Invalid/repeated results and late responses from an old identity are rejected.
+Picks/filters reset per visit/profile; selection/rerolls never alter watched history,
+watchlists or preferences. No automatic playback or persistent taste profile is implied.
 
-Current branch: development/castlumora-web-1.3; PR3 remains open. Latest published
-checkpoint:fc5b230519f64202b89450140e5e7f4e6b07acc3. Usage status: Not accessible.
-Next exact steps: normal git push of the clean committed snapshot through the
-applicable unchanged gate; verify exact-source
-hosted checks and all six NEW extracted-package workflows; independently download/
-hash the new preview and publish its checkpoint. Backend formatting/Debug/Release/
-4650tests remain verified at unchangedb36e52cd1b; do not claim they reran locally for
-this client increment. The earlier preview below lacks the filtered selection page.
-Then continue remaining non-YouTube1.0 requirements. No automatic main merge.
+Local verification:8focused UI tests (including bounds, identity changes and denial),
+Prettier, typecheck/lint/build, and the unchanged applicable normal pre-push gate:
+129tests in31files plus hook/shell/report-handler checks. Backend source is unchanged
+fromb36e52cd1b; its restored formatting2468files/0changes, .NET10 Debug/Release and
+4650passes/20existing skips were reused locally, not falsely claimed as rerun.
+Exact-source hosted Linux Tests45646109583 did run and pass all17backend suites:
+4650passes/20existing skips/0failures (independently retrieved logs). Hosted Format,
+OpenAPI Check and ABI also passed. No validation policy or analyzer was weakened.
+
+A fresh integrated Release-server Chromium proof passed30.6seconds (28.8s case):
+actual Movie/Episode libraries, watched/unwatched queries, distinct/exhausted/reset
+picks, native IDs/file paths, details navigation and unchanged progress, alongside
+notification read-state/reload/cold restart/dismissal. Browser label lookup was
+corrected to accessible combobox roles; no application assertion was disabled.
+Preview45646109473 passed all six actual extracted-package browser executions
+(5.8s; three cases42.9s;6.2s;5.6s), including the new discovery and existing profile/
+notification/playback/import/recovery assertions.
+
+Download: https://github.com/dangerousnick/Castlumora/actions/runs/45646109473/artifacts/15038945558
+Archive: `Castlumora-1.0-dev-97b1051cfae7-linux-x64.tar.gz`.
+SHA256: `9a03826b8d50439d1987a63d9574b196a0c33d3c04cdc94b11a50d6c7ea962d7`.
+Independent download verified uploaded ZIP/archive digests, exact source/manifest,
+compiled selection and notification/profile/device controls, integrated server/web/
+bundled runtimes,16castle assets, GPL/dependency licenses and source-matching guides,
+updated installation instructions and feature-testing checklist. GitHub sign-in is
+required; artifact expires2026-12-25. This is a development preview, not stable1.0
+or Phase1.4 completion. Physical Mint/NAS/GPU/tuner and production-scale installations
+remain unverified. Earlier unchanged actual-package Debian13/stableFFmpeg7.1.5 DVR/HLS
+evidence remains separate. The main-only OpenAPI Report awaits reviewed adoption
+of the existing token/artifact fix; it is distinct from passing OpenAPI Check.
+
+Unfinished work: no uncommitted source at this checkpoint. All remaining non-YouTube
+1.0 requirements remain, including broader notifications, interests/recommendations,
+remaining administration/skipping/layout/category refinements, creator/business/
+resource/cloud/offline features and stable-release acceptance. Further YouTube work
+stays deferred. Preserve all permanent requirements and historical checkpoints.
+
+Next development task: favorite-genre interests and native movie recommendations.
+Reuse the inherited permission-aware Genres, UserFavoriteItems and Movies/Recommendations
+APIs and per-user SQLite preferences instead of recreating backend architecture.
+Build a real Discovery interface, safe bounded/paged genre selection, explanatory
+native recommendation groups, diverse unplayed interest rows, private persistence
+and honest cold-start/errors. Verify current-identity queries, restart persistence,
+profile isolation, no hidden metadata and unchanged movie progress with focused/API/
+actual-browser tests. Publish through the normal applicable gate, verify exact-source
+hosted checks and independently download/hash the next development preview.
+
+Usage status: Not accessible; no quota/reset percentage or automatic resume claimed.
+Recovery: fetch origin, inspect status/log and read permanent specs/progress. Continue
+the existing branch from its latest published state, preserving newer work. Install
+hooks with scripts/install-git-hooks.sh; use focused tests, commit a clean snapshot,
+then normal git push origin development/castlumora-web-1.3. Do not bypass the gate,
+merge main automatically or claim unrun tests/platform certification.
+
 
 ## Verified private episode notification center
 
