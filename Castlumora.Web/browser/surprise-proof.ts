@@ -1,3 +1,4 @@
+import { verifyDiscovery } from './discover-proof';
 import { copyFileSync, mkdtempSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { tmpdir } from 'node:os';
@@ -241,6 +242,13 @@ export async function verifySurprise(
       )
     ).json();
     expect(history(retainedMovie.Items)).toEqual(history([movie!]));
+    return await verifyDiscovery(page, request, preview, {
+      userId: fixture.userId,
+      headers: fixture.headers,
+      movieId: movie!.Id,
+      movieDirectory,
+      movieLibraryName: movieName,
+    });
   } finally {
     page.off('request', observe);
   }

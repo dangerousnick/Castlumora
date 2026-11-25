@@ -18,6 +18,7 @@ import Live from './pages/Live';
 import Profiles from './pages/Profiles';
 import Administration from './admin/Administration';
 import { Feedback } from './components/Media';
+const Discover = lazy(() => import('./pages/Discover'));
 const Surprise = lazy(() => import('./pages/Surprise'));
 const Notifications = lazy(() => import('./pages/Notifications'));
 const Shelf = lazy(() => import('./shelf/Shelf'));
@@ -207,6 +208,7 @@ function Shell({
                   <Route path="/profiles" element={<Profiles />} />
                   <Route path="/notifications" element={<Notifications />} />
                   <Route path="/surprise" element={<Surprise />} />
+                  <Route path="/discover" element={<Discover />} />
                   <Route path="/browse" element={<Browse />} />
                   <Route path="/search" element={<Browse />} />
                   <Route path="/list" element={<Browse />} />

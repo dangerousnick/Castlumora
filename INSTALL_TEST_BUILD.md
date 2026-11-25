@@ -118,3 +118,10 @@ does not play or mark media watched; use Play pick when ready. Picks/filters res
 when leaving or switching profile; only the last50successful picks are excluded.
 Follow TEST_BUILD_CHECKLIST.md and include logs/reproduction steps when reporting
 problems. These controls do not establish complete personalization/release readiness.
+
+Browse → **Discover recommendations** lets each viewing profile choose native
+favorite genres and see local movie recommendations from interests and viewing
+history. Changes persist on the server and are shared with compatible clients as
+genre favorites. Empty history shows a cold-start message; choosing interests does
+not play or mark a movie watched. See CASTLUMORA_ACCOUNTS_AND_PROFILES.md for limits
+and TEST_BUILD_CHECKLIST.md for profile/privacy/restart tests.

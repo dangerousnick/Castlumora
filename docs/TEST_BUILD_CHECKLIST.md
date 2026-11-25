@@ -273,3 +273,17 @@ only that profile's media is available. Last50successful picks are excluded per
 filter set; this temporary history is separate from real watched history. No
 automatic playback or persistent discovery preferences are implied. Verification
 evidence and the exact preview source are recorded in DEVELOPMENT_PROGRESS.md.
+
+## Genre interests and personalized movie discovery
+
+Browse → Discover recommendations. With two accessible movies sharing a genre,
+watch or favorite one to seed native history. Verify the server explains a matching
+unplayed suggestion. Select a favorite genre, reload/restart and confirm it stays
+selected and guides unplayed interest picks without duplicate cards. Remove it and
+confirm the server acknowledges the change. Switch to another viewing profile;
+interests/history must be independent, and inaccessible/R-rated genres must stay
+hidden for a restricted child. Selection does not mark movies played. Test paging,
+empty history, denied writes and refresh errors. Unknown reasons remain neutral,
+and no broad random query substitutes for absent interests. Options page100; up to
+four interest rows/native groups are shown. See account/profile guide and progress
+for reader bounds, exact verification and remaining cross-media personalization.

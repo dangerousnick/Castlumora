@@ -1,3 +1,4 @@
+import { verifyDiscoveryRestart } from './discover-proof';
 import { verifySurprise } from './surprise-proof';
 import { copyFileSync, mkdirSync, mkdtempSync, readFileSync, writeFileSync } from 'node:fs';
 import { join, dirname } from 'node:path';
@@ -163,7 +164,7 @@ export async function verifyFollowing(page: Page, request: APIRequestContext, pr
   await expect(page.getByRole('button', { name: 'Mark unread', exact: true })).toBeEnabled();
   await page.reload();
   await expect(page.getByText('0 unread notifications', { exact: true })).toBeVisible();
-  await verifySurprise(page, request, preview, {
+  const discovery = await verifySurprise(page, request, preview, {
     userId: owner.user.Id,
     headers,
     libraryName: name,
@@ -176,7 +177,14 @@ export async function verifyFollowing(page: Page, request: APIRequestContext, pr
   expect(after.hiddenResume).toEqual(before.hiddenResume);
   writeFileSync(
     join(root, 'following-proof.json'),
-    JSON.stringify({ id, ownerId: owner.user.Id, directory, libraryName: name, notificationId }),
+    JSON.stringify({
+      id,
+      ownerId: owner.user.Id,
+      directory,
+      libraryName: name,
+      notificationId,
+      discovery,
+    }),
     { mode: 0o600 },
   );
 }
@@ -194,6 +202,7 @@ export async function verifyFollowingRestart(
     await readPreview(request, endpoint('Castlumora/Following'), { headers })
   ).json();
   expect(current.seriesIds.map(canonical)).toContain(canonical(witness.id));
+  await verifyDiscoveryRestart(page, request, preview, root, headers);
   const notices = await (
     await readPreview(request, endpoint('Castlumora/Notifications'), { headers })
   ).json();

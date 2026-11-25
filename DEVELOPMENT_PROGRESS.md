@@ -1,5 +1,35 @@
 # Castlumora Web Phase 1.3 development progress
 
+## Current milestone — private interests and native movie recommendations
+
+Continues verified discovery checkpointa04255d8bd; backend code remains unchanged
+fromb36e52cd1b. Browse → Discover recommendations now provides native favorite-genre
+interests, paged visible movie genres, up to four diverse unplayed interest rows and
+four native history/favorite recommendation groups with real explanations. Native
+per-user SQLite favorites persist interests across clients/restarts without a new
+schema/service. Current viewing identity is explicit on every request; hidden genres
+are omitted by native visibility, duplicate item IDs are suppressed across rows, and
+unknown reasons/cold-start/denied/malformed/over-capacity responses are handled honestly.
+No random fallback is mislabeled personalized; no external AI service is called.
+
+Nine focused API/UI tests, typecheck/lint/build passed. A fresh integrated Release-
+server Chromium proof passed49.3seconds (47.9s case): real native genre matching and
+recommendations, confirmed interest writes/reload, R-rated genre visibility denied
+to a restricted managed child, parent/child favorite isolation, password-verified
+return to owner, unchanged movie progress and persistence through a cold restart.
+The existing notification and Surprise Me proofs also passed. The first checkbox
+fixture action assumed immediate local state; it now clicks and waits for server
+confirmation without making the application optimistic or weakening denial tests.
+
+Current branch: development/castlumora-web-1.3; PR3 remains open. Latest published
+checkpoint:a04255d8bdb5c55c45fe878dabdfc933a26c9e76. Usage status: Not accessible.
+Next exact steps: commit the clean snapshot; normal git push through the applicable
+unchanged gate; verify exact-source Linux/shared checks and all six NEW extracted-
+package workflows; independently download/hash the new preview and checkpoint it.
+Backend formatting/Debug/Release/4650tests remain verified at unchangedb36e52cd1b;
+no new local backend pass is claimed. The earlier preview lacks this personalized
+Discovery page. Then resume remaining non-YouTube1.0 work. No automatic main merge.
+
 ## Verified filtered Surprise Me checkpoint
 
 Last completed milestone: native filtered Movie/Episode selection and safe rerolling.

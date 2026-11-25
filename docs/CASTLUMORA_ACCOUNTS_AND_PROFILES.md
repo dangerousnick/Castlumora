@@ -323,3 +323,27 @@ to resume the recorded setup after correcting the cause. Recovery rechecks curre
 owner/library restrictions, retains identity/history and reuses the original derived
 secret. Legacy ambiguous review/deletion states are not reactivated. Check the
 published-source checkpoint before claiming a downloadable preview has this feature.
+
+## Private genre interests and movie discovery
+
+Browse → Discover recommendations uses native Genres, UserFavoriteItems and
+Movies/Recommendations APIs with the current viewing identity. Selecting a genre
+stores its native per-user favorite flag in SQLite; compatible clients see the same
+favorite. Managed profiles have separate flags/history. Only movie genres reachable
+through current library/rating permissions are listed. Revoked/unavailable genres
+are omitted without resetting their retained native favorite data. Changes require
+confirmed server success; no optimistic successful save is claimed.
+
+Genre options are paged100 at a time. The bounded reader accepts up to1000visible
+favorite genres; a larger set produces an explicit review message instead of
+silently losing preferences. Up to four visible favorite genres supply unplayed
+local Movie rows; four native recommendation categories provide up to eight items
+each. Duplicate media IDs are suppressed across these rows. Native reasons explain
+recently played/liked/director/actor suggestions; unknown kinds degrade to a neutral
+server label. Empty history has an honest cold-start message. No external AI,
+cloud taste service, automatic playback or watched-progress mutation is introduced.
+This is movie discovery, not completed recommendations for every media type.
+
+Native SQLite backups retain these preferences using unchanged production backup
+safeguards. See DEVELOPMENT_PROGRESS.md for exact-source verification, preview
+checksum, child/rating isolation and actual cold-restart evidence.

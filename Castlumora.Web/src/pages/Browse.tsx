@@ -50,6 +50,11 @@ export default function Browse() {
                 : 'Pick a story. Make it a night.'}
           </p>
         </div>
+        {!list && !searching && (
+          <Link to="/discover" className="button secondary">
+            Discover recommendations
+          </Link>
+        )}
         <Link to="/shelf/photos" className="button secondary">
           Photos
         </Link>
