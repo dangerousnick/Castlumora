@@ -106,3 +106,15 @@ are separate from a tested macOS desktop installer. Windows compatibility is
 advisory and deferred for Phase 1.4/stable 1.0. See CASTLUMORA_PLATFORM_SUPPORT.md
 inside the package for evidence and remaining checks. No broader support claim
 follows merely from compiling source.
+
+## Try personal discovery controls
+
+Open **Notifications** from the profile menu to opt in to on-refresh episode alerts
+for followed shows. Existing episodes establish a baseline; read/dismiss state is
+private to the current viewing profile. See CASTLUMORA_NOTIFICATIONS.md for limits.
+Use the header **Surprise Me** button for Movie/Episode, allowed-library and
+watched-state filters. Choose a title, reroll, or explicitly start over. Selection
+does not play or mark media watched; use Play pick when ready. Picks/filters reset
+when leaving or switching profile; only the last50successful picks are excluded.
+Follow TEST_BUILD_CHECKLIST.md and include logs/reproduction steps when reporting
+problems. These controls do not establish complete personalization/release readiness.

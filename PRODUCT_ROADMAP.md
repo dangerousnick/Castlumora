@@ -1,5 +1,35 @@
 # Castlumora product roadmap
 
+## Current milestone — filtered Surprise Me and rerolling
+
+Continues verified notification checkpointfc5b230519; backend application source
+b36e52cd1b remains unchanged. Replaced the bare random-movie jump with a real native
+selection page: Movie/Episode, allowed library, any/unwatched/watched filters,
+recent50pick exclusions, explicit Start over, details/play links, empty/error states,
+and cancellation of stale identity/filter responses. Picks stay in memory per visit;
+selection/rerolling do not alter watchlists, preferences or playback history. Queries
+use the current viewing identity and native authorization; empty libraries do not
+fall back to an unscoped all-media query. Invalid/repeated responses fail explicitly.
+
+Eight focused UI tests, typecheck/lint/build passed with no new lint warnings.
+A real integrated Release-server workflow passed30.6seconds (28.8s case), including
+actual Movie and Episode library/unwatched/watched queries, distinct/exhausted/reset
+picks, exact native media identity, details navigation, unchanged progress, and the
+existing notification read-state/cold-restart/dismissal proof. The browser uses
+accessible combobox roles after diagnosing the initial exact-label locator issue.
+No new dependency, backend API, schema or validation-policy implementation was added.
+The preview's verification report is extended to describe its new assertions.
+
+Current branch: development/castlumora-web-1.3; PR3 remains open. Latest published
+checkpoint:fc5b230519f64202b89450140e5e7f4e6b07acc3. Usage status: Not accessible.
+Next exact steps: normal git push of the clean committed snapshot through the
+applicable unchanged gate; verify exact-source
+hosted checks and all six NEW extracted-package workflows; independently download/
+hash the new preview and publish its checkpoint. Backend formatting/Debug/Release/
+4650tests remain verified at unchangedb36e52cd1b; do not claim they reran locally for
+this client increment. The earlier preview below lacks the filtered selection page.
+Then continue remaining non-YouTube1.0 requirements. No automatic main merge.
+
 ## Verified episode notification center — b36e52cd1b
 
 Profile-private opt-in/on-refresh episode alerts, historical/new-show baselines,

@@ -1,3 +1,4 @@
+import { verifySurprise } from './surprise-proof';
 import { copyFileSync, mkdirSync, mkdtempSync, readFileSync, writeFileSync } from 'node:fs';
 import { join, dirname } from 'node:path';
 import { tmpdir } from 'node:os';
@@ -162,6 +163,12 @@ export async function verifyFollowing(page: Page, request: APIRequestContext, pr
   await expect(page.getByRole('button', { name: 'Mark unread', exact: true })).toBeEnabled();
   await page.reload();
   await expect(page.getByText('0 unread notifications', { exact: true })).toBeVisible();
+  await verifySurprise(page, request, preview, {
+    userId: owner.user.Id,
+    headers,
+    libraryName: name,
+    directory,
+  });
   const after = await (
     await readPreview(request, endpoint('Castlumora/Presentation/Preferences'), { headers })
   ).json();

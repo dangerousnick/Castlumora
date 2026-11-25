@@ -259,3 +259,17 @@ profile must have independent settings/state; revoke library access and confirm
 entries and unread counts disappear. Pause/resume baselines missed additions.
 Detection is on-refresh; background/email/push/recording/separate season alerts
 remain unavailable. See CASTLUMORA_NOTIFICATIONS.md for bounds and test evidence.
+
+## Filtered Surprise Me and rerolling
+
+Use the header **Surprise Me** button. Select Movies or Episodes, an allowed library,
+and Any watch status/Unwatched/Watched. Choose a title; verify it fits those filters.
+Reroll to get a different recent pick; exhaust a small fixture and use Start over
+to include previous picks again. Open picked details or deliberately choose Play pick.
+Selection/rerolls must not change played progress or watchlists. Empty matches and
+denied requests must show an honest result/error, never a fallback outside the
+selected scope. Switch viewing profile and confirm filters/pick history reset and
+only that profile's media is available. Last50successful picks are excluded per
+filter set; this temporary history is separate from real watched history. No
+automatic playback or persistent discovery preferences are implied. Verification
+evidence and the exact preview source are recorded in DEVELOPMENT_PROGRESS.md.

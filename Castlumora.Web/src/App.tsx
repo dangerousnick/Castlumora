@@ -18,6 +18,7 @@ import Live from './pages/Live';
 import Profiles from './pages/Profiles';
 import Administration from './admin/Administration';
 import { Feedback } from './components/Media';
+const Surprise = lazy(() => import('./pages/Surprise'));
 const Notifications = lazy(() => import('./pages/Notifications'));
 const Shelf = lazy(() => import('./shelf/Shelf'));
 const PhotoViewer = lazy(() => import('./shelf/PhotoViewer'));
@@ -103,15 +104,6 @@ function Shell({
     window.addEventListener('resize', resize);
     return () => window.removeEventListener('resize', resize);
   }, []);
-  async function surprise() {
-    try {
-      const items = await api.items({ SortBy: 'Random', Limit: 1, IncludeItemTypes: 'Movie' });
-      if (items.Items[0]) navigate('/item/' + items.Items[0].Id);
-      else setNotice('No movies are available to this profile yet.');
-    } catch (e) {
-      setNotice(errorText(e));
-    }
-  }
   const device = deviceClass(width);
   const settings = layout.devices[device];
   const style = {
@@ -157,7 +149,7 @@ function Shell({
             <div className="header-actions">
               <button
                 className="icon-button"
-                onClick={() => void surprise()}
+                onClick={() => navigate('/surprise')}
                 title="Surprise Me"
                 aria-label="Surprise Me"
               >
@@ -214,6 +206,7 @@ function Shell({
                   <Route path="/" element={<Home />} />
                   <Route path="/profiles" element={<Profiles />} />
                   <Route path="/notifications" element={<Notifications />} />
+                  <Route path="/surprise" element={<Surprise />} />
                   <Route path="/browse" element={<Browse />} />
                   <Route path="/search" element={<Browse />} />
                   <Route path="/list" element={<Browse />} />
